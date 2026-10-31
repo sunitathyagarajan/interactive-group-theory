@@ -7,6 +7,7 @@ Interactive lessons on molecular symmetry and group theory, published with GitHu
 ## Lessons
 
 - [Water's vibrational modes](https://sunitathyagarajan.github.io/interactive-group-theory/water-vibrations.html): use the C₂ᵥ point group to find the symmetries of H₂O's three vibrations.
+- [Ammonia's vibrational modes](https://sunitathyagarajan.github.io/interactive-group-theory/ammonia-vibrations.html): use the C₃ᵥ point group, with its classes and degenerate E pairs, to find the symmetries of NH₃'s six vibrations.
 
 ## Running locally
 
