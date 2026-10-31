@@ -54,6 +54,8 @@ sub,sup{font-size:.72em;line-height:0}
 .seg button{border:0;background:none;padding:6px 12px;font:500 13px var(--mono);cursor:pointer;color:var(--muted)}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
 .conv{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.back{font:500 13px var(--body);color:var(--accent);text-decoration:none;padding-bottom:4px;margin-left:auto}
+.back:hover{text-decoration:underline}
 .conv .lbl{font:500 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 
 /* ---------- stage ---------- */
@@ -147,6 +149,7 @@ td.fn{font-family:var(--body);font-style:italic;color:var(--muted);text-align:le
 td.fn mark{background:none;color:var(--ink);font-weight:600}
 td.fn mark.tr{box-shadow:inset 0 -2px 0 var(--b1)}
 td.fn mark.ro{box-shadow:inset 0 -2px 0 var(--a2)}
+td.fn mark.qd{box-shadow:inset 0 -2px 0 var(--accent)}
 tr.total th,tr.total td{background:var(--accent-soft);font-weight:600}
 tr.sub td,tr.sub th{color:var(--muted)}
 td.p1{color:var(--good);font-weight:600}
@@ -192,6 +195,26 @@ td.q{color:var(--muted)}
 .cbox b{font:600 13px var(--mono)}
 .cbox b.p1{color:var(--good)}.cbox b.m1{color:var(--bad)}.cbox b.q{color:var(--muted)}
 
+.yn{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;vertical-align:middle}
+.yn button{border:0;background:var(--surface);padding:3px 10px;font:500 13px var(--body);cursor:pointer;color:var(--muted)}
+.yn button+button{border-left:1px solid var(--line)}
+.yn button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.yn.ok{border-color:var(--good);box-shadow:0 0 0 1px var(--good)}
+.yn.no{border-color:var(--bad);box-shadow:0 0 0 1px var(--bad)}
+.rd{font:500 12px var(--mono);color:var(--stage-muted)}
+.rd b{color:var(--stage-ink)}.rd b.on{color:#ff8fc0}.rd b.on2{color:#8fdcff}
+.spec{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 12px 6px;margin:12px 0}
+.spec svg{display:block;width:100%;height:auto;overflow:visible}
+.spec .base{stroke:var(--line);stroke-width:1}
+.spec .ax{font:500 11px var(--mono);fill:var(--muted)}
+.spec .pl{font:600 13px var(--body);fill:var(--ink)}
+.spec .lb{font:500 10.5px var(--mono);fill:var(--muted)}
+.spec .stick{stroke-width:2;stroke-linecap:round}
+.spec .ir{stroke:var(--b1);fill:var(--b1)}.spec .ra{stroke:var(--accent);fill:var(--accent)}
+.spec circle{stroke:var(--surface);stroke-width:2}
+.spec .hit{fill:transparent;stroke:none}
+.tip{position:absolute;left:0;top:0;pointer-events:none;background:var(--ink);color:var(--bg);font:500 12px var(--body);padding:4px 8px;border-radius:6px;white-space:nowrap;transform:translate(-50%,calc(-100% - 8px));display:none;z-index:2}
+
 .nav{display:flex;justify-content:space-between;gap:10px;margin-top:28px;padding-top:16px;border-top:1px solid var(--line)}
 
 @media (max-width:900px){
@@ -225,6 +248,7 @@ td.q{color:var(--muted)}
       <div class="kicker">Group theory · C<sub>2v</sub> · H<sub>2</sub>O</div>
       <h1>Water's vibrational modes</h1>
     </div>
+    <a class="back" href="index.html">← All lessons</a>
     <div class="conv">
       <span class="lbl" id="conv-lbl">Molecular plane</span>
       <div class="seg" role="group" aria-labelledby="conv-lbl">
@@ -290,10 +314,11 @@ const chip = ir => `<span class="chip ${ir.cls}">${ir.html}</span>`;
 /* ---------- state ---------- */
 const S = {
   step:0, plane:'xz', axes:true, elements:false, labels:true,
-  arrows:'none', fieldId:null, playing:!reduced, phase:0,
+  arrows:'none', fieldId:null, part:0, playing:!reduced, phase:0,
   anim:null, hold:null,
   seenOps:{}, cart:{}, cartLast:null, modeTests:{}, motionSeen:{},
   inputs:{}, check4:null, check5:null, showWork:false, vibRevealed:false,
+  sel:{}, check8:null, reveal8:false,
 };
 
 /* ---------- molecular model (display units, centre of mass at origin) ---------- */
@@ -307,6 +332,7 @@ function buildModel(){
   const u = S.plane === 'xz' ? V(1,0,0) : V(0,1,0);      // in-plane, perpendicular to C2
   const n = S.plane === 'xz' ? V(0,1,0) : V(1,0,0);      // normal to the molecular plane
   const zO = 0.0652, zH = zO - 0.5865, a = 0.7575;
+  RESP = {};
   ATOMS = [
     {key:'O',  html:'O',               el:'O', pos:V(0,0,zO).multiplyScalar(SCALE)},
     {key:'H1', html:'H<sub>1</sub>',   el:'H', pos:u.clone().multiplyScalar(a).add(V(0,0,zH)).multiplyScalar(SCALE)},
@@ -327,13 +353,13 @@ function buildModel(){
     Rx:{kind:'rot', html:'R<sub><i>x</i></sub>', name:'Rotation about <i>x</i>', vecs:rot(V(1,0,0))},
     Ry:{kind:'rot', html:'R<sub><i>y</i></sub>', name:'Rotation about <i>y</i>', vecs:rot(V(0,1,0))},
     Rz:{kind:'rot', html:'R<sub><i>z</i></sub>', name:'Rotation about <i>z</i>', vecs:rot(V(0,0,1))},
-    nu1:{kind:'vib', html:'ν<sub>1</sub>', name:'Symmetric stretch', wn:3657,
+    nu1:{kind:'vib', html:'ν<sub>1</sub>', name:'Symmetric stretch', wn:3657, bands:[3657],
          desc:'Both O–H bonds lengthen and shorten together. The H–O–H angle barely changes.',
          vecs:norm([recoil(b1,b2), b1, b2])},
-    nu2:{kind:'vib', html:'ν<sub>2</sub>', name:'Bend', wn:1595,
+    nu2:{kind:'vib', html:'ν<sub>2</sub>', name:'Bend', wn:1595, bands:[1595],
          desc:'The H–O–H angle opens and closes like scissors. Bond lengths barely change.',
          vecs:norm([recoil(p1,p2), p1, p2])},
-    nu3:{kind:'vib', html:'ν<sub>3</sub>', name:'Antisymmetric stretch', wn:3756,
+    nu3:{kind:'vib', html:'ν<sub>3</sub>', name:'Antisymmetric stretch', wn:3756, bands:[3756],
          desc:'One O–H bond lengthens while the other shortens, so the oxygen rocks side to side.',
          vecs:norm([recoil(b1,b2.clone().negate()), b1, b2.clone().negate()])},
   };
@@ -356,6 +382,30 @@ function cartCells(op){
   const p = perm(op), E = [V(1,0,0),V(0,1,0),V(0,0,1)];
   return ATOMS.map((at,i) => E.map(e => p[i] === i ? Math.round(mul(op.M,e).dot(e)) : null));
 }
+
+/* ---------- how a vibration couples to light (step 8) ---------- */
+// toy models, symmetric by construction: point charges for the dipole, bond-additive polarizability
+const CHARGE = [-0.8, 0.4, 0.4];
+const BONDS = [[0,1],[0,2]];
+function polar(P){
+  const A = [[0,0,0],[0,0,0],[0,0,0]];
+  BONDS.forEach(([i,j]) => {
+    const d = P[j].clone().sub(P[i]), L = d.length(), u = [d.x/L, d.y/L, d.z/L], par = L*L, perp = .3*L*L;   // each bond is easier to polarize along its length
+    for (let a=0;a<3;a++) for (let c=0;c<3;c++) A[a][c] += (par - perp)*u[a]*u[c] + (a === c ? perp : 0);
+  });
+  return A;
+}
+let RESP = {};
+function response(id, part){
+  const k = id + ':' + part; if (RESP[k]) return RESP[k];
+  const F = FIELDS[id], vecs = F.parts ? F.parts[part] : F.vecs, P = ATOMS.map(at => at.pos), eps = 1e-4;
+  const dmu = vecs.reduce((s,v,i)=> s.addScaledVector(v, CHARGE[i]), V(0,0,0));
+  const Ap = polar(P.map((p,i)=> p.clone().addScaledVector(vecs[i], eps))), Am = polar(P.map((p,i)=> p.clone().addScaledVector(vecs[i], -eps)));
+  const dA = Ap.map((row,a)=> row.map((x,c)=> (x - Am[a][c])/(2*eps))), A0 = polar(P);
+  const n0 = Math.hypot(...A0.flat()), nd = Math.hypot(...dA.flat());
+  return RESP[k] = {dmu, ir:dmu.length() > 1e-6, A0, dA, n0, nd, raman:nd > 1e-5*n0};
+}
+const irActive = ir => ir.lin.length > 0, ramanActive = ir => ir.quad !== '';
 
 /* ---------- three.js scene ---------- */
 const stageEl = $('stage'), canvas = $('gl'), labelsEl = $('labels');
@@ -439,6 +489,12 @@ function placeBond(mesh, a, b){
   mesh.quaternion.setFromUnitVectors(UP, d.divideScalar(L));
   mesh.scale.set(.075, L, .075);
 }
+
+// step 8 overlays: the oscillating dipole change and the polarizability ellipsoid
+const dipArrow = makeArrow(0xff5fa2, {r:.05, hr:.13, hl:.3}); dipArrow.visible = false; scene.add(dipArrow);
+const ellip = new THREE.Group(); ellip.matrixAutoUpdate = false; ellip.visible = false; scene.add(ellip);
+ellip.add(new THREE.Mesh(GEO.sphere, new THREE.MeshStandardMaterial({color:0x7fd6ff, transparent:true, opacity:.12, depthWrite:false, side:THREE.DoubleSide})));
+ellip.add(new THREE.Mesh(new THREE.SphereGeometry(1,20,12), new THREE.MeshBasicMaterial({color:0x7fd6ff, wireframe:true, transparent:true, opacity:.2, depthWrite:false})));
 
 function arrowSpecs(){
   if (S.arrows === 'cart'){
@@ -586,6 +642,16 @@ function frame(now){
   });
   for (let k = specs.length; k < livePool.length; k++){ livePool[k].visible = false; ghostPool[k].visible = false; }
 
+  const resp = S.step === SPEC_STEP && field && !activeOp ? response(S.fieldId, S.part) : null;
+  dipArrow.visible = !!(resp && resp.ir); ellip.visible = !!resp;
+  if (resp){
+    const s = Math.sin(S.phase);   // in step with the atoms
+    if (resp.ir) placeArrow(dipArrow, V(0,0,0), resp.dmu.clone().normalize().multiplyScalar(1.5*s));
+    const k = 4.2/(resp.A0[0][0] + resp.A0[1][1] + resp.A0[2][2]), gain = resp.raman ? .35*resp.n0/resp.nd*s : 0;
+    const A = resp.A0.map((row,a)=> row.map((x,c)=> k*(x + gain*resp.dA[a][c])));
+    ellip.matrix.set(A[0][0],A[0][1],A[0][2],0, A[1][0],A[1][1],A[1][2],0, A[2][0],A[2][1],A[2][2],0, 0,0,0,1); ellip.matrixWorldNeedsUpdate = true;
+  }
+
   axesGroup.visible = S.axes;
   const hotId = activeOp && activeOp.kind !== 'E' ? activeOp.id : null;
   ['C2','sxz','syz'].forEach(id => ELEM[id].set(S.elements || hotId === id, hotId === id));
@@ -619,7 +685,9 @@ function renderShowing(){
   if (S.arrows === 'cart') el.innerHTML = `<div class="legend"><span><i style="background:var(--x)"></i>x</span><span><i style="background:var(--y)"></i>y</span><span><i style="background:var(--z)"></i>z</span></div>`;
   else if (S.arrows === 'field'){
     const f = FIELDS[S.fieldId];
-    el.innerHTML = `<span><b>${f.html}</b> ${f.kind==='vib' ? f.name : ''}</span><button class="mini" id="play">${S.playing ? 'Pause' : 'Play'}</button>`;
+    const r = S.step === SPEC_STEP && response(S.fieldId, S.part);
+    const readout = r ? `<span class="rd">Δμ <b class="${r.ir?'on':''}">${r.ir ? 'oscillates' : 'zero'}</b> · Δα <b class="${r.raman?'on2':''}">${r.raman ? 'oscillates' : 'zero'}</b></span>` : '';
+    el.innerHTML = `<span><b>${f.html}</b> ${f.kind==='vib' ? f.name : ''}</span><button class="mini" id="play">${S.playing ? 'Pause' : 'Play'}</button>${readout}`;
     $('play').onclick = () => { S.playing = !S.playing; renderShowing(); };
   } else el.innerHTML = '';
 }
@@ -632,21 +700,25 @@ function setArrows(kind, fieldId){
 const opButtons = () => `<div class="btnrow">${OPS.map(op => `<button class="btn" data-op="${op.id}">${op.html}</button>`).join('')}</div>`;
 const opHead = (first='') => `<thead><tr><th>${first}</th>${OPS.map(op => `<th>${op.html}</th>`).join('')}</tr></thead>`;
 const charCells = ch => ch.map(c => `<td>${fmt(c)}</td>`).join('');
-function charTable(hl){
+// hl underlines translations and rotations (step 6); sel underlines the IR (x, y, z) and Raman (quadratic) functions instead (step 8)
+function charTable(hl, sel){
   const fn = (ir) => {
-    const lin = ir.lin.map(s => hl ? `<mark class="tr">${s}</mark>` : s), rot = ir.rot.map(s => hl ? `<mark class="ro">${s}</mark>` : s);
+    const lin = ir.lin.map(s => hl ? `<mark class="tr">${s}</mark>` : s), rot = ir.rot.map(s => hl && !sel ? `<mark class="ro">${s}</mark>` : s);
     return [...lin, ...rot].join(', ');
   };
+  const quad = ir => sel && ir.quad ? `<mark class="qd">${ir.quad}</mark>` : ir.quad;
   return `<div class="tablewrap"><table>${opHead('C<sub>2v</sub>').replace('</tr>','<th></th><th></th></tr>')}<tbody>${
-    IRREPS.map(ir => `<tr><th>${chip(ir)}</th>${charCells(ir.chi)}<td class="fn">${fn(ir)}</td><td class="fn">${ir.quad}</td></tr>`).join('')
+    IRREPS.map(ir => `<tr><th>${chip(ir)}</th>${charCells(ir.chi)}<td class="fn">${fn(ir)}</td><td class="fn">${quad(ir)}</td></tr>`).join('')
   }</tbody></table></div>`;
 }
 const isTR = id => id && FIELDS[id] && FIELDS[id].kind !== 'vib';
 const isMode = id => id && FIELDS[id] && FIELDS[id].kind === 'vib';
+const vibIrreps = () => reduce(gamma3N().map((x,k)=> x - sumChars(['Tx','Ty','Tz'])[k] - sumChars(['Rx','Ry','Rz'])[k]));
+const MODES = ['nu1','nu2','nu3'];
 
 const STEPS = [
   {short:'Count motions', enter(){ setArrows('none'); S.elements = false; }, html(){ return `
-    <p class="eyebrow">Step 1 of 7</p>
+    <p class="eyebrow">Step 1 of 8</p>
     <h2>Count the ways water can move</h2>
     <p>Describing where every atom of an <i>N</i>-atom molecule is takes 3<i>N</i> coordinates: an <i>x</i>, <i>y</i> and <i>z</i> for each atom. Water has <i>N</i> = 3, so it has <strong>9 degrees of freedom</strong>.</p>
     <div class="dof" role="img" aria-label="9 degrees of freedom split into 3 translations, 3 rotations and 3 vibrations">
@@ -679,7 +751,7 @@ const STEPS = [
       </article>`; }).join('');
     const allSeen = OPS.every(op => S.seenOps[op.id]);
     return `
-    <p class="eyebrow">Step 2 of 7</p>
+    <p class="eyebrow">Step 2 of 8</p>
     <h2>Watch each symmetry operation</h2>
     <p>A symmetry operation moves the molecule into a position you cannot tell apart from where it started. Apply each one and note which atoms <strong>stay exactly where they were</strong>. Those unmoved atoms are the only ones that will count in the next step.</p>
     <div class="cards">${cards}</div>
@@ -697,7 +769,7 @@ const STEPS = [
       </table></div>` : `<p class="hint">Apply an operation to fill in the tally.</p>`;
     const done = OPS.every(op => S.cart[op.id]);
     return `
-    <p class="eyebrow">Step 3 of 7</p>
+    <p class="eyebrow">Step 3 of 8</p>
     <h2>Attach <i>x</i>, <i>y</i>, <i>z</i> vectors to every atom</h2>
     <p>Put three unit vectors on each atom. These 9 vectors are the basis for ${G3N}: any motion of the molecule is some combination of them.</p>
     <p>Each operation sends the 9 vectors to new places, which you can write as a 9 × 9 matrix. The <strong>character</strong> χ of that operation is the trace of the matrix, the sum of its diagonal. A vector only lands on the diagonal if it stays on its own atom, which gives three simple rules:</p>
@@ -720,7 +792,7 @@ const STEPS = [
     const inputs = OPS.map((op,k) => `<td><input class="cell-in ${c ? (c[k] ? 'ok':'no') : ''}" id="g3n-${op.id}" inputmode="numeric" autocomplete="off" aria-label="χ(Γ3N) for ${op.id}" value="${S.inputs['g3n-'+op.id] ?? ''}"></td>`).join('');
     const allOk = c && c.every(Boolean);
     return `
-    <p class="eyebrow">Step 4 of 7</p>
+    <p class="eyebrow">Step 4 of 8</p>
     <h2>Build ${G3N} with the shortcut</h2>
     <p>Every unmoved atom contributes the same amount: the trace of the 3 × 3 matrix that the operation applies to (<i>x</i>, <i>y</i>, <i>z</i>). So</p>
     <div class="formula">χ(R) = (number of unmoved atoms) × (contribution per unmoved atom)</div>
@@ -742,7 +814,7 @@ const STEPS = [
     const work = IRREPS.map((ir,k) => `<i>n</i>(${ir.html}) = ¼ [ ${g.map((x,j) => `(${fmt(x)})(${fmt(ir.chi[j])})`).join(' + ')} ] = ¼ (${fmt(g.reduce((s,x,j)=>s+x*ir.chi[j],0))}) = <b>${n[k]}</b>`).join('<br>');
     const allOk = c && c.every(Boolean);
     return `
-    <p class="eyebrow">Step 5 of 7</p>
+    <p class="eyebrow">Step 5 of 8</p>
     <h2>Reduce ${G3N}</h2>
     <p>${G3N} is reducible: it is a sum of the four irreducible representations in the character table. The reduction formula tells you how many times each one appears.</p>
     <div class="formula"><i>n</i><sub><i>i</i></sub> = <span class="frac"><span>1</span><span><i>h</i></span></span> Σ<sub><i>R</i></sub> <i>g</i>(<i>R</i>) · χ(<i>R</i>) · χ<sub><i>i</i></sub>(<i>R</i>)</div>
@@ -762,7 +834,7 @@ const STEPS = [
     const motion = id => { const f = FIELDS[id], ir = irrepOf(fieldChars(id)); return `<button class="motion ${S.fieldId===id?'active':''}" data-field="${id}"><span class="nm">${f.html}</span><span class="ir">${S.motionSeen[id] ? chip(ir) : 'Show me'}</span></button>`; };
     const allSeen = Object.keys(FIELDS).filter(isTR).every(id => S.motionSeen[id]);
     return `
-    <p class="eyebrow">Step 6 of 7</p>
+    <p class="eyebrow">Step 6 of 8</p>
     <h2>Remove translations and rotations</h2>
     <p>${G3N} contains every motion, including those that do not stretch or bend anything. The character table tells you which irreducible representations they belong to: translations transform like <i>x</i>, <i>y</i>, <i>z</i>, and rotations like R<sub><i>x</i></sub>, R<sub><i>y</i></sub>, R<sub><i>z</i></sub>.</p>
     ${charTable(true)}
@@ -793,22 +865,90 @@ const STEPS = [
         <div class="chars">${boxes} <span>→ ${known ? chip(ir) : '<span class="muted">apply all four</span>'}</span></div>
       </article>`; }).join('');
     const found = ['nu1','nu2','nu3'].every(id => OPS.every(op => op.id in (S.modeTests[id]||{})));
-    const sel = ['nu1','nu2','nu3'].map(id => { const f = FIELDS[id], ir = irrepOf(fieldChars(id)), k = OPS.every(op => op.id in (S.modeTests[id]||{}));
-      return `<tr><th>${f.html} ${f.name}</th><td>${k ? chip(ir) : '?'}</td><td class="fn">${k ? `yes, like ${ir.lin.join(', ')}` : '?'}</td><td class="fn">${k ? `yes, like ${ir.quad}` : '?'}</td></tr>`; }).join('');
     const v3 = irrepOf(fieldChars('nu3'));
     return `
-    <p class="eyebrow">Step 7 of 7</p>
+    <p class="eyebrow">Step 7 of 8</p>
     <h2>Check the result against the real vibrations</h2>
-    <p>${GV} = ${repHTML(reduce(gamma3N().map((x,k)=> x - sumChars(['Tx','Ty','Tz'])[k] - sumChars(['Rx','Ry','Rz'])[k])))} predicts two totally symmetric vibrations and one that changes sign under ${OPS[1].html}. Test that. Pick a mode, then apply each operation in the viewer. If the yellow displacement pattern maps onto itself, the character is +1. If every arrow reverses, it is −1.</p>
+    <p>${GV} = ${repHTML(vibIrreps())} predicts two totally symmetric vibrations and one that changes sign under ${OPS[1].html}. Test that. Pick a mode, then apply each operation in the viewer. If the yellow displacement pattern maps onto itself, the character is +1. If every arrow reverses, it is −1.</p>
     <div class="modes">${modes}</div>
     <p class="hint">The oxygen arrows are drawn 3× longer than true scale so you can see them. Oxygen is 16 times heavier than hydrogen, so it moves much less.</p>
     ${found ? `<div class="callout"><strong>All three found.</strong> Two A<sub>1</sub> modes and one ${v3.html} mode, exactly as the reduction predicted.</div>` : ''}
-    <h3>Selection rules</h3>
-    <p>A fundamental is <strong>IR active</strong> if its irreducible representation matches <i>x</i>, <i>y</i> or <i>z</i> (the dipole moment changes). It is <strong>Raman active</strong> if it matches a quadratic function (the polarizability changes).</p>
-    <div class="tablewrap"><table><thead><tr><th>Mode</th><th>Symmetry</th><th>IR</th><th>Raman</th></tr></thead><tbody>${sel}</tbody></table></div>
-    <p>All three fundamentals of water are both IR and Raman active. C<sub>2v</sub> has no inversion centre, so the rule of mutual exclusion does not apply. The A<sub>1</sub> modes change the dipole along <i>z</i>; ν<sub>3</sub> changes it along ${v3.lin[0]}.</p>
-    <p class="muted">Why is the highest-frequency band called ν<sub>3</sub>? Modes are numbered by symmetry species first (A<sub>1</sub> before B), then by decreasing wavenumber within each species.</p>`; }},
+    <p class="muted">Why is the highest-frequency band called ν<sub>3</sub>? Modes are numbered by symmetry species first (A<sub>1</sub> before B), then by decreasing wavenumber within each species.</p>
+    <p>Next: which of these vibrations can you actually see in a spectrum?</p>`; }},
+
+  {short:'IR & Raman', enter(){ setArrows('field', isMode(S.fieldId) ? S.fieldId : MODES[0]); S.elements = false; }, html(){ return selectionStep(); }},
 ];
+const SPEC_STEP = STEPS.length - 1;
+
+/* ---------- step 8: selection rules ---------- */
+const specNote = () => `C<sub>2v</sub> has no centre of inversion, so nothing stops a mode from being both IR and Raman active, and all three fundamentals of water are. The A<sub>1</sub> modes change the dipole along <i>z</i>, the <i>C</i><sub>2</sub> axis; ν<sub>3</sub> changes it along ${irrepOf(fieldChars('nu3')).lin[0]}. Compare that with carbon dioxide and benzene, where the rule of mutual exclusion applies.`;
+function spectrumSVG(){
+  const W = 600, PH = 62, GAP = 30, TOP = 20, X = wn => 34 + (4000 - wn)/3600*(W - 54);
+  const panels = [['Infrared', 'ir', irActive], ['Raman', 'ra', ramanActive]];
+  let svg = '';
+  panels.forEach(([name, cls, test], p) => {
+    const y0 = TOP + p*(PH + GAP), base = y0 + PH;
+    svg += `<text class="pl" x="0" y="${y0 - 6}">${name}</text><line class="base" x1="34" x2="${W - 20}" y1="${base}" y2="${base}"/>`;
+    const bands = MODES.flatMap(id => { const ir = irrepOf(fieldChars(id)); return test(ir) ? FIELDS[id].bands.map(wn => ({id, ir, wn})) : []; }).sort((a,b) => b.wn - a.wn);
+    let lastX = -99;
+    bands.forEach(b => {
+      const x = X(b.wn), lab = x - lastX > 36; if (lab) lastX = x;   // label only where it won't collide; the tooltip carries the rest
+      svg += `<g data-tip="${FIELDS[b.id].html} ${FIELDS[b.id].name} · ${b.ir.html} · ${b.wn} cm<sup>−1</sup>"><line class="stick ${cls}" x1="${x}" x2="${x}" y1="${base}" y2="${y0 + 16}"/><circle class="${cls}" cx="${x}" cy="${y0 + 16}" r="4"/>${lab ? `<text class="lb" x="${x}" y="${y0 + 6}" text-anchor="middle">${b.wn}</text>` : ''}<rect class="hit" x="${x - 8}" y="${y0}" width="16" height="${PH}"/></g>`;
+    });
+    if (!bands.length) svg += `<text class="lb" x="${W/2}" y="${y0 + PH/2}" text-anchor="middle">no fundamentals</text>`;
+  });
+  const ay = TOP + 2*PH + GAP + 16;
+  for (let t = 4000; t >= 500; t -= 500) svg += `<text class="ax" x="${X(t)}" y="${ay}" text-anchor="middle">${t}</text>`;
+  svg += `<text class="ax" x="${(W + 14)/2}" y="${ay + 18}" text-anchor="middle">wavenumber / cm⁻¹</text>`;
+  return `<div class="spec"><svg viewBox="0 0 ${W} ${ay + 24}" role="img" aria-label="Predicted infrared and Raman stick spectra">${svg}</svg><div class="tip" id="tip"></div></div>`;
+}
+function selectionStep(){
+  const nv = vibIrreps();
+  const species = IRREPS.map((ir,k) => ({ir, n:nv[k], modes:MODES.filter(id => irrepOf(fieldChars(id)) === ir)})).filter(s => s.n > 0);
+  const c = S.check8, done = S.reveal8 || (c && Object.values(c).every(Boolean));
+  const yn = (s, key) => {
+    const v = (S.sel[s.ir.id] || {})[key], st = c ? (c[s.ir.id + key] ? 'ok' : 'no') : '';
+    return `<span class="yn ${st}" role="group" aria-label="${key === 'ir' ? 'IR' : 'Raman'} active for ${s.ir.id}"><button data-yn="${s.ir.id}|${key}|1" aria-pressed="${v === true}">Yes</button><button data-yn="${s.ir.id}|${key}|0" aria-pressed="${v === false}">No</button></span>`;
+  };
+  const why = ir => done ? `<td class="fn">${irActive(ir) ? `IR: like ${ir.lin.join(', ')}` : 'IR: no <i>x</i>, <i>y</i>, <i>z</i>'}; ${ramanActive(ir) ? `Raman: like ${ir.quad}` : 'Raman: no quadratic'}</td>` : '';
+  const rows = species.map(s => `<tr><th>${chip(s.ir)} <span class="muted">${s.modes.map(id => FIELDS[id].html).join(', ')}</span></th><td>${yn(s,'ir')}</td><td>${yn(s,'ra')}</td>${why(s.ir)}</tr>`).join('');
+  const count = test => MODES.filter(id => test(irrepOf(fieldChars(id)))).length;
+  const silent = MODES.filter(id => { const ir = irrepOf(fieldChars(id)); return !irActive(ir) && !ramanActive(ir); });
+  return `
+    <p class="eyebrow">Step ${SPEC_STEP + 1} of ${STEPS.length}</p>
+    <h2>Which vibrations show up in IR and Raman spectra?</h2>
+    <p>Light can only excite a vibration if the vibration changes something the light's oscillating electric field can push on. The two common kinds of vibrational spectroscopy push on different things:</p>
+    <ul>
+      <li><strong>Infrared absorption</strong> needs the vibration to change the <strong>dipole moment</strong> μ. The dipole is a vector, and its components μ<sub><i>x</i></sub>, μ<sub><i>y</i></sub>, μ<sub><i>z</i></sub> transform like <i>x</i>, <i>y</i> and <i>z</i>.</li>
+      <li><strong>Raman scattering</strong> needs the vibration to change the <strong>polarizability</strong> α, how easily the electron cloud is distorted. α is a 3 × 3 tensor, and its components α<sub><i>xx</i></sub>, α<sub><i>xy</i></sub>, … transform like the quadratic functions <i>x</i><sup>2</sup>, <i>xy</i>, ….</li>
+    </ul>
+    <h3>Watch it happen</h3>
+    <p>Pick a mode. The <strong>pink arrow</strong> is the change in dipole, Δμ, worked out from partial charges on the atoms. The <strong>translucent shape</strong> is the polarizability ellipsoid, from a simple model in which each bond is easier to polarize along its length. If the arrow never appears, the mode cannot absorb IR. If the ellipsoid holds still, the mode cannot Raman scatter.</p>
+    <div class="btnrow">${MODES.map(id => `<button class="btn ${S.fieldId===id?'active':''}" data-field="${id}">${FIELDS[id].html} ${FIELDS[id].name}</button>`).join('')}</div>
+    <p class="hint">These are toy models, but they respect the molecule's symmetry, so they always agree with the group theory below.</p>
+    <h3>The group theory shortcut</h3>
+    <p>The strength of a transition from the ground state to the first excited level of a mode depends on the integral ⟨0|μ|1⟩. An integral over all space is zero unless its integrand is totally symmetric. The ground state is totally symmetric, and the excited level has the symmetry of the mode, so the integral can only survive if the mode has the same symmetry as one of μ<sub><i>x</i></sub>, μ<sub><i>y</i></sub>, μ<sub><i>z</i></sub>. The same argument with α gives the Raman rule. In practice:</p>
+    <ol>
+      <li>Find each vibration's irreducible representation. You did this in step ${SPEC_STEP}.</li>
+      <li>It is <strong>IR active</strong> if that row of the character table lists <i>x</i>, <i>y</i> or <i>z</i> (underlined in orange below).</li>
+      <li>It is <strong>Raman active</strong> if that row lists a quadratic function such as <i>x</i><sup>2</sup>, <i>z</i><sup>2</sup> or <i>xy</i> (underlined in blue).</li>
+      <li>A vibration that is neither is <strong>silent</strong>: it exists, but neither technique sees it directly.</li>
+    </ol>
+    ${charTable(true, true)}
+    <h3>Your turn</h3>
+    <p>For each symmetry species in ${GV} = ${repHTML(nv)}, decide whether it is IR active and whether it is Raman active.</p>
+    <div class="tablewrap"><table><thead><tr><th>Species</th><th>IR active?</th><th>Raman active?</th>${done ? '<th></th>' : ''}</tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="btnrow"><button class="btn primary" data-action="check8">Check</button><button class="btn" data-action="reveal8">Show answer</button></div>
+    ${c && !done ? `<p class="fb no">Not quite. Look along each species' row: is there an <i>x</i>, <i>y</i> or <i>z</i>? Is there a quadratic function?</p>` : ''}
+    ${done ? `${c && !S.reveal8 ? '<p class="fb ok">Correct.</p>' : ''}
+      <h3>The predicted spectra</h3>
+      <p>Each IR- or Raman-active fundamental gives one band. Prediction: <strong>${count(irActive)}</strong> IR band${count(irActive) === 1 ? '' : 's'} and <strong>${count(ramanActive)}</strong> Raman band${count(ramanActive) === 1 ? '' : 's'}${silent.length ? `, with ${silent.map(id => FIELDS[id].html).join(', ')} silent` : ''}.</p>
+      ${spectrumSVG()}
+      <p class="hint">Stick heights are not intensities: group theory says whether a band can appear, not how strong it is. Hover a stick for details. Real spectra also show weaker overtone and combination bands.</p>
+      <h3>Centres of inversion and mutual exclusion</h3>
+      <p>If a molecule has a centre of inversion, <i>x</i>, <i>y</i> and <i>z</i> all change sign under <i>i</i> (they are <i>u</i>), and every quadratic function keeps its sign (<i>g</i>). So a <i>u</i> vibration can only be IR active and a <i>g</i> vibration can only be Raman active. No vibration can be both: this is the <strong>rule of mutual exclusion</strong>.</p>
+      <p>${specNote()}</p>` : ''}`;
+}
 
 function renderStepper(){
   $('stepper').innerHTML = STEPS.map((s,i) => `<li><button data-step="${i}" ${i===S.step?'aria-current="step"':''} class="${i<S.step?'done':''}"><span class="n">${i+1}</span>${s.short.replace('Γ3N', G3N)}</button></li>`).join('');
@@ -832,9 +972,14 @@ $('body').addEventListener('click', e => {
   const opB = e.target.closest('[data-op]'); if (opB){ applyOp(opB.dataset.op); return; }
   const fB = e.target.closest('[data-field]');
   if (fB){ const id = fB.dataset.field; S.motionSeen[id] = true; setArrows('field', id); renderLesson(); return; }
+  const ynB = e.target.closest('[data-yn]');
+  if (ynB){ const [ir, key, v] = ynB.dataset.yn.split('|'); (S.sel[ir] ||= {})[key] = v === '1'; S.check8 = null; renderLesson(); return; }
   const a = e.target.closest('[data-action]'); if (!a) return;
-  const g = gamma3N(), n = reduce(g);
+  const g = gamma3N(), n = reduce(g), nv = vibIrreps();
+  const vib = IRREPS.filter((ir,k) => nv[k] > 0);
   switch (a.dataset.action){
+    case 'check8': S.check8 = {}; vib.forEach(ir => { const s = S.sel[ir.id] || {}; S.check8[ir.id+'ir'] = s.ir === irActive(ir); S.check8[ir.id+'ra'] = s.ra === ramanActive(ir); }); break;
+    case 'reveal8': vib.forEach(ir => S.sel[ir.id] = {ir:irActive(ir), ra:ramanActive(ir)}); S.reveal8 = true; S.check8 = null; break;
     case 'check4': S.check4 = OPS.map((op,k) => parseNum(S.inputs['g3n-'+op.id]) === g[k]); break;
     case 'reveal4': OPS.forEach((op,k) => S.inputs['g3n-'+op.id] = fmt(g[k])); S.check4 = OPS.map(() => true); break;
     case 'check5': S.check5 = IRREPS.map((ir,k) => parseNum(S.inputs['n-'+ir.id]) === n[k]); break;
@@ -843,12 +988,21 @@ $('body').addEventListener('click', e => {
   }
   renderLesson();
 });
+// spectrum tooltips
+$('body').addEventListener('pointermove', e => {
+  const tip = $('tip'); if (!tip) return;
+  const t = e.target.closest('[data-tip]');
+  if (!t){ tip.style.display = 'none'; return; }
+  const box = tip.parentElement.getBoundingClientRect(), r = t.getBoundingClientRect();
+  tip.innerHTML = t.dataset.tip; tip.style.display = 'block';
+  tip.style.left = (r.left + r.width/2 - box.left) + 'px'; tip.style.top = (r.top - box.top) + 'px';
+});
 
 document.querySelectorAll('[data-plane]').forEach(b => b.addEventListener('click', () => {
   if (S.plane === b.dataset.plane) return;
   S.plane = b.dataset.plane;
   document.querySelectorAll('[data-plane]').forEach(x => x.setAttribute('aria-pressed', x.dataset.plane === S.plane));
-  Object.assign(S, {seenOps:{}, cart:{}, cartLast:null, modeTests:{}, check4:null, check5:null, inputs:{}});
+  Object.assign(S, {seenOps:{}, cart:{}, cartLast:null, modeTests:{}, check4:null, check5:null, inputs:{}, sel:{}, check8:null, reveal8:false});
   buildModel(); cam.theta = defaultTheta(); resetOp(); renderShowing(); renderLesson();
 }));
 

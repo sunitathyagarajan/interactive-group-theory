@@ -1,0 +1,1145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Benzene Vibrations in D₆ₕ</title>
+<meta name="description" content="An interactive lesson on the vibrational modes of benzene using the D6h point group, ending with IR and Raman selection rules.">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Spectral:ital,wght@0,500;0,600;1,500&display=swap">
+<style>
+/* Layout: a sticky 3D "lab bench" on the left, the worked lesson on the right; on phones the bench pins to the top */
+:root{
+  --bg:#edf0f4; --surface:#ffffff; --surface-2:#f5f7fa; --ink:#16202b; --muted:#5a6775; --line:#d5dce5;
+  --accent:#1f56c9; --accent-soft:#e2eafb; --accent-ink:#ffffff;
+  --good:#1d7548; --good-soft:#dff2e7; --bad:#b4372e; --bad-soft:#fbe5e2;
+  --a1:#1d7548; --a2:#7647b5; --b:#1a7aa1; --e:#b8640f;
+  --stage:#0c141d; --stage-2:#142131; --stage-ink:#dbe5ee; --stage-muted:#8a9bab; --stage-line:#26384c;
+  --x:#f2a23a; --y:#45d0a0; --z:#93a6ff; --mode:#ffd35c;
+  --display:"Spectral", Georgia, "Times New Roman", serif;
+  --body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1319; --surface:#151c24; --surface-2:#1a232d; --ink:#e2e8ef; --muted:#93a1b0; --line:#28333f;
+    --accent:#7aa2ff; --accent-soft:#1d2a45; --accent-ink:#0b1220;
+    --good:#5fd09a; --good-soft:#143326; --bad:#ff8a7f; --bad-soft:#3a1c1a;
+    --a1:#5fd09a; --a2:#b993f0; --b:#5cc2ea; --e:#f0a85a;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1319; --surface:#151c24; --surface-2:#1a232d; --ink:#e2e8ef; --muted:#93a1b0; --line:#28333f;
+  --accent:#7aa2ff; --accent-soft:#1d2a45; --accent-ink:#0b1220;
+  --good:#5fd09a; --good-soft:#143326; --bad:#ff8a7f; --bad-soft:#3a1c1a;
+  --a1:#5fd09a; --a2:#b993f0; --b:#5cc2ea; --e:#f0a85a;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 var(--body);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+sub,sup{font-size:.72em;line-height:0}
+
+.app{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);grid-template-areas:"stage head" "stage lesson";grid-template-rows:auto 1fr;column-gap:32px;padding-inline:16px;padding-block:16px;max-width:1520px;margin:0 auto}
+
+/* ---------- header ---------- */
+.head{grid-area:head;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 20px;padding-block:6px 18px;border-bottom:1px solid var(--line)}
+.brand .kicker{font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.brand h1{font:600 clamp(26px,3vw,34px)/1.1 var(--display);margin:6px 0 0;text-wrap:balance;letter-spacing:-.01em}
+.back{font:500 13px var(--body);color:var(--accent);text-decoration:none;padding-bottom:4px}
+.back:hover{text-decoration:underline}
+
+/* ---------- stage ---------- */
+.stage{grid-area:stage;position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);align-self:start;height:calc(100dvh - 32px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));min-height:480px;max-height:980px;border-radius:14px;overflow:hidden;background:var(--stage);color:var(--stage-ink);isolation:isolate}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+.stage canvas:active{cursor:grabbing}
+.labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.lab{position:absolute;left:0;top:0;font:500 13px/1 var(--mono);color:var(--stage-ink);text-shadow:0 1px 3px #000c;white-space:nowrap;will-change:transform}
+.lab.axis{font-style:italic;font-size:14px}
+.lab.atom{font:600 14px/1 var(--body)}
+.lab.elem{font:500 12px/1 var(--mono);color:#ffe28a;background:#0c141dcc;padding:3px 6px;border-radius:4px}
+.lab.elem.sv1{color:#9cc3ff}.lab.elem.sv2{color:#e0b3ff}.lab.elem.sv3{color:#ffb3cb}
+.st-top{position:absolute;inset:12px 12px auto 12px;display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:flex-start;pointer-events:none}
+.st-top>*{pointer-events:auto}
+.toggles{display:flex;flex-wrap:wrap;gap:6px}
+.tg{border:1px solid var(--stage-line);background:#0c141dcc;color:var(--stage-muted);border-radius:999px;padding:4px 11px;font:500 12px var(--body);cursor:pointer}
+.tg[aria-pressed="true"]{color:var(--stage-ink);border-color:#4b6380;background:var(--stage-2)}
+.showing{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;background:#0c141dd9;border:1px solid var(--stage-line);border-radius:10px;padding:6px 10px;font-size:12.5px}
+.showing:empty{display:none}
+.legend{display:flex;gap:10px;font:500 12px var(--mono)}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.mini{border:1px solid var(--stage-line);background:var(--stage-2);color:var(--stage-ink);border-radius:6px;padding:2px 8px;font:500 12px var(--body);cursor:pointer}
+.mini[aria-pressed="true"]{background:#ffd35c;color:#1a1400;border-color:#ffd35c}
+.partners{display:inline-flex;gap:4px}
+.st-bottom{position:absolute;inset:auto 12px 12px 12px;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.caption{align-self:flex-start;max-width:min(100%,560px);background:#0c141de6;border:1px solid var(--stage-line);border-radius:10px;padding:8px 12px;font-size:13.5px;line-height:1.45;pointer-events:auto}
+.caption b{color:#fff}
+.opbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;pointer-events:auto;background:#0c141de6;border:1px solid var(--stage-line);border-radius:12px;padding:6px}
+.opbar .lbl{font:500 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--stage-muted);padding:0 6px}
+.sop{border:1px solid #33506e;background:var(--stage-2);color:var(--stage-ink);border-radius:8px;padding:6px 12px;font:500 14px var(--body);cursor:pointer;min-width:52px}
+.sop:hover{border-color:#6f93bd;background:#1b2c41}
+.sop.active{background:#ffd35c;color:#1a1400;border-color:#ffd35c}
+.sop.reset{margin-left:auto;color:var(--stage-muted);min-width:0}
+.nogl{position:absolute;inset:0;display:grid;place-items:center;padding:24px;text-align:center;color:var(--stage-muted)}
+
+/* ---------- lesson ---------- */
+.lesson{grid-area:lesson;min-width:0;padding-block:18px 48px;scroll-margin-top:16px}
+.stepper{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:22px;list-style:none;padding:0}
+.stepper button{display:flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 11px 4px 5px;font-size:12.5px;cursor:pointer;color:var(--muted)}
+.stepper button .n{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--surface-2);font:500 11px var(--mono);color:var(--muted)}
+.stepper button[aria-current="step"]{border-color:var(--accent);color:var(--ink)}
+.stepper button[aria-current="step"] .n{background:var(--accent);color:var(--accent-ink)}
+.stepper button.done .n{background:var(--accent-soft);color:var(--accent)}
+.body{max-width:66ch}
+.eyebrow{font:500 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 4px}
+.body h2{font:600 26px/1.2 var(--display);margin:0 0 12px;text-wrap:balance}
+.body h3{font:600 18px/1.3 var(--display);margin:26px 0 8px}
+.body p{margin:0 0 12px}
+.body ul{margin:0 0 12px;padding-left:20px}
+.body li{margin-bottom:4px}
+.muted{color:var(--muted)}
+.hint{color:var(--muted);font-size:14px;font-style:italic}
+.callout{background:var(--accent-soft);border-radius:10px;padding:12px 14px;margin:14px 0;font-size:14.5px}
+.callout strong{color:var(--accent)}
+.formula{font:500 17px/1.6 var(--display);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:12px 0;text-align:center;overflow-x:auto}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.9em;margin:0 3px}
+.frac>span:first-child{border-bottom:1px solid currentColor;padding:0 3px}
+.mono{font-family:var(--mono)}
+
+.dof{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:14px 0 8px}
+.dof .s{border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.dof .s b{font:600 24px/1 var(--display)}
+.dof .s span{font-size:12.5px;color:var(--muted)}
+.dof .t{background:var(--surface);border:1px solid var(--line)}
+.dof .r{background:var(--surface);border:1px solid var(--line)}
+.dof .v{background:var(--accent-soft);border:1px solid var(--accent)}
+.dof .v b{color:var(--accent)}
+
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}
+.opcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.opcard:last-child:nth-child(odd){grid-column:1/-1}
+.opcard header{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.opsym{font:600 20px/1 var(--display)}
+.opname{font-size:13px;color:var(--muted)}
+.opcard p{font-size:14px;margin:0}
+.um{font-size:13.5px;border-top:1px dashed var(--line);padding-top:6px;margin-top:auto}
+.um .lbl{font:500 10.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-right:6px}
+.um b{font:600 16px var(--mono);color:var(--good)}
+
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13.5px;font-weight:500;align-self:flex-start}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.active{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.btnrow.tight{margin:2px 0 0;gap:6px}
+
+.tablewrap{overflow-x:auto;margin:12px 0;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:7px 10px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+tr:last-child>th,tr:last-child>td{border-bottom:0}
+thead th{font:500 13px var(--body);color:var(--muted);background:var(--surface-2)}
+tbody th{text-align:left;font-weight:500}
+td{font-family:var(--mono);font-variant-numeric:tabular-nums}
+td.fn{font-family:var(--body);font-style:italic;color:var(--muted);text-align:left}
+td.fn mark{background:none;color:var(--ink);font-weight:600}
+td.fn mark.tr{box-shadow:inset 0 -2px 0 var(--e)}
+td.fn mark.ro{box-shadow:inset 0 -2px 0 var(--a2)}
+td.fn mark.qd{box-shadow:inset 0 -2px 0 var(--accent)}
+tr.total th,tr.total td{background:var(--accent-soft);font-weight:600}
+tr.sub td,tr.sub th{color:var(--muted)}
+td.p1{color:var(--good);font-weight:600}
+td.m1{color:var(--bad);font-weight:600}
+td.z{color:var(--muted)}
+td.q{color:var(--muted)}
+.cell-in{width:58px;padding:5px 6px;text-align:center;font:500 14px var(--mono);border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink)}
+.cell-in.ok{border-color:var(--good);background:var(--good-soft)}
+.cell-in.no{border-color:var(--bad);background:var(--bad-soft)}
+.fb{font-size:14px;margin:6px 0 12px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+
+.chip{display:inline-flex;align-items:center;gap:5px;font:600 13.5px var(--body);color:var(--c);background:color-mix(in srgb,var(--c) 13%,transparent);border-radius:6px;padding:1px 7px;white-space:nowrap}
+.chip.a1{--c:var(--a1)}.chip.a2{--c:var(--a2)}.chip.e{--c:var(--e)}
+.rep{font:600 18px var(--display)}
+.result{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:12px 0}
+.result .lhs{font:600 18px var(--display)}
+
+.matrices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.mat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+.mat .t{font:600 15px var(--display)}
+.mat .grid{display:grid;grid-template-columns:repeat(3,44px);gap:2px 2px;font:500 13px var(--mono);text-align:center;border-left:1.5px solid var(--ink);border-right:1.5px solid var(--ink);padding:2px 4px;border-radius:3px}
+.mat .grid span.d{color:var(--accent);font-weight:600}
+.mat .tr{font:500 12px var(--mono);color:var(--muted)}
+
+.work{font:14px/1.9 var(--mono);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;overflow-x:auto;white-space:nowrap}
+
+.motions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0}
+.motion{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 10px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:4px;min-width:0}
+.motion:hover{border-color:var(--accent)}
+.motion.active{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.motion .nm{font:600 15px var(--display)}
+.motion .ir{font-size:13px;color:var(--muted)}
+
+.modes{display:flex;flex-direction:column;gap:10px;margin:12px 0}
+.mode{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:start}
+.mode.active{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.mode h4{margin:0;font:600 17px var(--display)}
+.mode .wn{font:500 13px var(--mono);color:var(--muted)}
+.mode p{grid-column:1/-1;margin:0;font-size:14px}
+.mode .chars{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.cbox{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:7px;padding:3px 8px;font-size:13px;background:var(--surface-2)}
+.cbox b{font:600 13px var(--mono)}
+.cbox b.p1{color:var(--good)}.cbox b.m1{color:var(--bad)}.cbox b.q{color:var(--muted)}
+
+.yn{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;vertical-align:middle}
+.yn button{border:0;background:var(--surface);padding:3px 10px;font:500 13px var(--body);cursor:pointer;color:var(--muted)}
+.yn button+button{border-left:1px solid var(--line)}
+.yn button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.yn.ok{border-color:var(--good);box-shadow:0 0 0 1px var(--good)}
+.yn.no{border-color:var(--bad);box-shadow:0 0 0 1px var(--bad)}
+.rd{font:500 12px var(--mono);color:var(--stage-muted)}
+.rd b{color:var(--stage-ink)}.rd b.on{color:#ff8fc0}.rd b.on2{color:#8fdcff}
+.spec{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 12px 6px;margin:12px 0}
+.spec svg{display:block;width:100%;height:auto;overflow:visible}
+.spec .base{stroke:var(--line);stroke-width:1}
+.spec .ax{font:500 11px var(--mono);fill:var(--muted)}
+.spec .pl{font:600 13px var(--body);fill:var(--ink)}
+.spec .lb{font:500 10.5px var(--mono);fill:var(--muted)}
+.spec .stick{stroke-width:2;stroke-linecap:round}
+.spec .ir{stroke:var(--e);fill:var(--e)}.spec .ra{stroke:var(--accent);fill:var(--accent)}
+.spec circle{stroke:var(--surface);stroke-width:2}
+.spec .hit{fill:transparent;stroke:none}
+.tip{position:absolute;left:0;top:0;pointer-events:none;background:var(--ink);color:var(--bg);font:500 12px var(--body);padding:4px 8px;border-radius:6px;white-space:nowrap;transform:translate(-50%,calc(-100% - 8px));display:none;z-index:2}
+
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:28px;padding-top:16px;border-top:1px solid var(--line)}
+
+@media (max-width:900px){
+  .app{grid-template-columns:minmax(0,1fr);grid-template-areas:"head" "stage" "lesson";grid-template-rows:auto auto auto;row-gap:12px}
+  .head{padding-block:2px 12px}
+  .stage{top:env(safe-area-inset-top,0px);height:48dvh;min-height:320px;z-index:5;border-radius:12px}
+  .lesson{scroll-margin-top:calc(48dvh + 16px);padding-top:6px}
+  .lab.elem{display:none}
+  .caption{font-size:12.5px;line-height:1.4;padding:6px 10px;max-height:4.6em;overflow-y:auto}
+  .opbar{gap:4px;padding:4px}
+  .sop{padding:4px 9px;min-width:42px;font-size:13px}
+  .st-bottom{inset:auto 8px 8px 8px;gap:6px}
+  .st-top{inset:8px 8px auto 8px}
+}
+@media (max-width:560px){
+  .cards,.matrices{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .motions{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .caption{font-size:12.5px;padding:6px 10px}
+  .sop{padding:5px 8px;min-width:38px;font-size:13px}
+  .opbar .lbl{display:none}
+  .tg{font-size:11px;padding:3px 9px}
+}
+@media (max-width:400px){ .cards{grid-template-columns:minmax(0,1fr)} }
+.chip.b{--c:var(--b)}
+.lab.elem.sh{color:#9cc3ff}.lab.elem.sv{color:#e0b3ff}.lab.elem.sd{color:#ffb3cb}.lab.elem.c2p{color:#ffc58f}.lab.elem.c2pp{color:#c4ffb6}
+td.desc{white-space:normal;text-align:left;font-family:var(--body);color:var(--muted);min-width:220px}
+.btn.sm{padding:3px 9px;font-size:12.5px}
+.opbar .sop{min-width:44px;padding:5px 9px}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="head">
+    <div class="brand">
+      <div class="kicker">Group theory · D<sub>6h</sub> · C<sub>6</sub>H<sub>6</sub></div>
+      <h1>Benzene's vibrational modes</h1>
+    </div>
+    <a class="back" href="index.html">← All lessons</a>
+  </header>
+
+  <section class="stage" id="stage" aria-label="3D model of a benzene molecule">
+    <canvas id="gl" tabindex="0" aria-label="Drag or use arrow keys to rotate. Scroll to zoom."></canvas>
+    <div class="labels" id="labels"></div>
+    <div class="st-top">
+      <div class="toggles">
+        <button class="tg" id="tg-axes" aria-pressed="true">Axes</button>
+        <button class="tg" id="tg-elem" aria-pressed="false">Symmetry elements</button>
+        <button class="tg" id="tg-labels" aria-pressed="true">Labels</button>
+      </div>
+      <div class="showing" id="showing"></div>
+    </div>
+    <div class="st-bottom">
+      <div class="caption" id="caption"></div>
+      <div class="opbar" id="opbar"><span class="lbl">Apply</span></div>
+    </div>
+  </section>
+
+  <main class="lesson" id="lesson">
+    <ol class="stepper" id="stepper"></ol>
+    <div class="body" id="body"></div>
+    <div class="nav">
+      <button class="btn" id="prev">← Previous</button>
+      <button class="btn primary" id="next">Next →</button>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = id => document.getElementById(id);
+const V = (x,y,z) => new THREE.Vector3(x,y,z);
+const fmt = n => { n = Math.round(n*1000)/1000; if (n === 0) n = 0; return n < 0 ? '−' + (-n) : String(n); };
+const fmtS = n => n > 0 ? '+' + n : fmt(n);
+const parseNum = s => { if (s == null) return NaN; s = String(s).trim().replace(/[−–]/g,'-'); return s === '' ? NaN : Number(s); };
+const R3 = Math.sqrt(3)/2;
+const snap = v => Math.abs(v - Math.round(v)) < 1e-6 ? Math.round(v) : v;
+// D6h produces cos 60° = ½ and sin 60° = √3/2; show those as exact values
+const nice = v => {
+  v = snap(v); if (Number.isInteger(v)) return fmt(v);
+  const s = v < 0 ? '−' : '', a = Math.abs(v);
+  if (Math.abs(a - .5) < 1e-6) return s + '½';
+  if (Math.abs(a - R3) < 1e-6) return s + '√3/2';
+  return fmt(v);
+};
+const niceS = v => snap(v) > 0 ? '+' + nice(v) : nice(v);
+
+/* ---------- point group data ---------- */
+const rad = d => d*Math.PI/180, dir = d => [Math.cos(rad(d)), Math.sin(rad(d)), 0], Z = [0,0,1];
+const rotM = (ax, t) => { const [x,y,z] = ax, c = Math.cos(t), s = Math.sin(t), C = 1 - c;
+  return [[c+x*x*C, x*y*C-z*s, x*z*C+y*s], [y*x*C+z*s, c+y*y*C, y*z*C-x*s], [z*x*C-y*s, z*y*C+x*s, c+z*z*C]]; };
+const reflM = n => [0,1,2].map(a => [0,1,2].map(c => (a === c ? 1 : 0) - 2*n[a]*n[c]));
+const mulM = (A,B) => A.map(r => [0,1,2].map(c => r[0]*B[0][c] + r[1]*B[1][c] + r[2]*B[2][c]));
+const clean = M => M.map(r => r.map(v => Math.abs(v - Math.round(v)) < 1e-9 ? Math.round(v) + 0 : v));
+const SIGH = reflM(Z), rz = d => rotM(Z, rad(d));
+// All 24 operations. C_k sits at azimuth 60°·(k−1); C2′ axes and σv planes pass through atoms, C2″ axes and σd planes between them.
+const OPS = [];
+const addOp = (id, cls, html, name, M, anim, elems=[]) => OPS.push({id, cls, html, name, M:clean(M), ...anim, elems});
+addOp('E',   'E',  '<i>E</i>', 'Identity', rz(0), {kind:'E'});
+addOp('C6',  'C6', '<i>C</i><sub>6</sub>', 'Rotation by 60°', rz(60), {kind:'rot', axis:Z, angle:rad(60)}, ['Cz']);
+addOp('C65', 'C6', '<i>C</i><sub>6</sub><sup>5</sup>', 'Rotation by 300°', rz(300), {kind:'rot', axis:Z, angle:rad(-60)}, ['Cz']);
+addOp('C3',  'C3', '<i>C</i><sub>3</sub>', 'Rotation by 120°', rz(120), {kind:'rot', axis:Z, angle:rad(120)}, ['Cz']);
+addOp('C32', 'C3', '<i>C</i><sub>3</sub><sup>2</sup>', 'Rotation by 240°', rz(240), {kind:'rot', axis:Z, angle:rad(-120)}, ['Cz']);
+addOp('C2',  'C2', '<i>C</i><sub>2</sub>', 'Rotation by 180°', rz(180), {kind:'rot', axis:Z, angle:Math.PI}, ['Cz']);
+[0,1,2].forEach(k => addOp('C2p'+(k+1), 'C2p', '<i>C</i><sub>2</sub>′', `Rotation by 180° about the axis through C${k+1} and C${k+4}`, rotM(dir(60*k), Math.PI), {kind:'rot', axis:dir(60*k), angle:Math.PI}, ['C2p'+(k+1)]));
+[0,1,2].forEach(k => addOp('C2pp'+(k+1), 'C2pp', '<i>C</i><sub>2</sub>″', 'Rotation by 180° about an axis between atoms', rotM(dir(30+60*k), Math.PI), {kind:'rot', axis:dir(30+60*k), angle:Math.PI}, ['C2pp'+(k+1)]));
+addOp('i',   'i',  '<i>i</i>', 'Inversion through the centre', mulM(SIGH, rz(180)), {kind:'imp', angle:Math.PI}, ['inv']);
+addOp('S3',  'S3', '<i>S</i><sub>3</sub>', 'Rotate 120°, then reflect in the molecular plane', mulM(SIGH, rz(120)), {kind:'imp', angle:rad(120)}, ['Cz','sh']);
+addOp('S35', 'S3', '<i>S</i><sub>3</sub><sup>5</sup>', 'Rotate 240°, then reflect in the molecular plane', mulM(SIGH, rz(240)), {kind:'imp', angle:rad(-120)}, ['Cz','sh']);
+addOp('S6',  'S6', '<i>S</i><sub>6</sub>', 'Rotate 60°, then reflect in the molecular plane', mulM(SIGH, rz(60)), {kind:'imp', angle:rad(60)}, ['Cz','sh']);
+addOp('S65', 'S6', '<i>S</i><sub>6</sub><sup>5</sup>', 'Rotate 300°, then reflect in the molecular plane', mulM(SIGH, rz(300)), {kind:'imp', angle:rad(-60)}, ['Cz','sh']);
+addOp('sh',  'sh', 'σ<sub>h</sub>', 'Reflection in the molecular plane', SIGH, {kind:'refl', normal:Z}, ['sh']);
+[0,1,2].forEach(k => addOp('sd'+(k+1), 'sd', 'σ<sub>d</sub>', 'Reflection through a vertical plane between atoms', reflM(dir(30+60*k+90)), {kind:'refl', normal:dir(30+60*k+90)}, ['sd'+(k+1)]));
+[0,1,2].forEach(k => addOp('sv'+(k+1), 'sv', 'σ<sub>v</sub>', `Reflection through the vertical plane containing C${k+1} and C${k+4}`, reflM(dir(60*k+90)), {kind:'refl', normal:dir(60*k+90)}, ['sv'+(k+1)]));
+const CLASSES = [
+  {id:'E',    html:'<i>E</i>',                 g:1, rep:'E',     desc:'Do nothing.'},
+  {id:'C6',   html:'2<i>C</i><sub>6</sub>',    g:2, rep:'C6',    desc:'Rotate 60° (or 300°) about the <i>z</i> axis.'},
+  {id:'C3',   html:'2<i>C</i><sub>3</sub>',    g:2, rep:'C3',    desc:'Rotate 120° (or 240°) about <i>z</i>.'},
+  {id:'C2',   html:'<i>C</i><sub>2</sub>',     g:1, rep:'C2',    desc:'Rotate 180° about <i>z</i>.'},
+  {id:'C2p',  html:'3<i>C</i><sub>2</sub>′',   g:3, rep:'C2p1',  desc:'Rotate 180° about an in-plane axis through two opposite carbons and their hydrogens.'},
+  {id:'C2pp', html:'3<i>C</i><sub>2</sub>″',   g:3, rep:'C2pp2', desc:'Rotate 180° about an in-plane axis through the midpoints of two opposite C–C bonds.'},
+  {id:'i',    html:'<i>i</i>',                 g:1, rep:'i',     desc:'Send every atom through the centre to the opposite side.'},
+  {id:'S3',   html:'2<i>S</i><sub>3</sub>',    g:2, rep:'S3',    desc:'Rotate 120° about <i>z</i>, then reflect through the molecular plane.'},
+  {id:'S6',   html:'2<i>S</i><sub>6</sub>',    g:2, rep:'S6',    desc:'Rotate 60° about <i>z</i>, then reflect through the molecular plane.'},
+  {id:'sh',   html:'σ<sub>h</sub>',            g:1, rep:'sh',    desc:'Reflect through the molecular plane.'},
+  {id:'sd',   html:'3σ<sub>d</sub>',           g:3, rep:'sd2',   desc:'Reflect through a vertical plane that cuts between atoms, bisecting two opposite C–C bonds.'},
+  {id:'sv',   html:'3σ<sub>v</sub>',           g:3, rep:'sv1',   desc:'Reflect through a vertical plane that contains two opposite C–H bonds.'},
+].map(c => ({...c, ops:OPS.filter(op => op.cls === c.id), rep:OPS.find(op => op.id === c.rep)}));
+const ORDER = OPS.length;
+const QA = '<i>x</i><sup>2</sup> + <i>y</i><sup>2</sup>, <i>z</i><sup>2</sup>', QE1 = '(<i>xz</i>, <i>yz</i>)', QE2 = '(<i>x</i><sup>2</sup> − <i>y</i><sup>2</sup>, <i>xy</i>)';
+const IRREPS = [
+  {id:'A1g', cls:'a1', html:'A<sub>1g</sub>', chi:[1, 1, 1, 1, 1, 1,  1, 1, 1, 1, 1, 1],          lin:[], rot:[], quad:QA},
+  {id:'A2g', cls:'a2', html:'A<sub>2g</sub>', chi:[1, 1, 1, 1,-1,-1,  1, 1, 1, 1,-1,-1],          lin:[], rot:['R<sub><i>z</i></sub>'], quad:''},
+  {id:'B1g', cls:'b',  html:'B<sub>1g</sub>', chi:[1,-1, 1,-1, 1,-1,  1,-1, 1,-1, 1,-1],          lin:[], rot:[], quad:''},
+  {id:'B2g', cls:'b',  html:'B<sub>2g</sub>', chi:[1,-1, 1,-1,-1, 1,  1,-1, 1,-1,-1, 1],          lin:[], rot:[], quad:''},
+  {id:'E1g', cls:'e',  html:'E<sub>1g</sub>', chi:[2, 1,-1,-2, 0, 0,  2, 1,-1,-2, 0, 0],          lin:[], rot:['(R<sub><i>x</i></sub>, R<sub><i>y</i></sub>)'], quad:QE1},
+  {id:'E2g', cls:'e',  html:'E<sub>2g</sub>', chi:[2,-1,-1, 2, 0, 0,  2,-1,-1, 2, 0, 0],          lin:[], rot:[], quad:QE2},
+  {id:'A1u', cls:'a1', html:'A<sub>1u</sub>', chi:[1, 1, 1, 1, 1, 1, -1,-1,-1,-1,-1,-1],          lin:[], rot:[], quad:''},
+  {id:'A2u', cls:'a2', html:'A<sub>2u</sub>', chi:[1, 1, 1, 1,-1,-1, -1,-1,-1,-1, 1, 1],          lin:['<i>z</i>'], rot:[], quad:''},
+  {id:'B1u', cls:'b',  html:'B<sub>1u</sub>', chi:[1,-1, 1,-1, 1,-1, -1, 1,-1, 1,-1, 1],          lin:[], rot:[], quad:''},
+  {id:'B2u', cls:'b',  html:'B<sub>2u</sub>', chi:[1,-1, 1,-1,-1, 1, -1, 1,-1, 1, 1,-1],          lin:[], rot:[], quad:''},
+  {id:'E1u', cls:'e',  html:'E<sub>1u</sub>', chi:[2, 1,-1,-2, 0, 0, -2,-1, 1, 2, 0, 0],          lin:['(<i>x</i>, <i>y</i>)'], rot:[], quad:''},
+  {id:'E2u', cls:'e',  html:'E<sub>2u</sub>', chi:[2,-1,-1, 2, 0, 0, -2, 1, 1,-2, 0, 0],          lin:[], rot:[], quad:''},
+];
+const G3N = 'Γ<sub>3<i>N</i></sub>', GV = 'Γ<sub>vib</sub>', GT = 'Γ<sub>trans</sub>', GR = 'Γ<sub>rot</sub>';
+const chip = ir => `<span class="chip ${ir.cls}">${ir.html}</span>`;
+const classIdx = id => CLASSES.findIndex(c => c.id === id);
+
+/* ---------- state ---------- */
+const S = {
+  step:0, axes:true, elements:false, labels:true,
+  arrows:'none', fieldId:null, part:0, playing:!reduced, phase:0,
+  anim:null, hold:null,
+  seenOps:{}, cart:{}, cartLast:null, modeTests:{}, motionSeen:{},
+  inputs:{}, check4:null, check5:null, showWork:false, vibRevealed:false,
+  sel:{}, check8:null, reveal8:false,
+};
+
+/* ---------- molecular model (display units, centre of mass at origin) ---------- */
+const SCALE = 0.95;
+let ATOMS = [], FIELDS = {}, SPECIES = [], MODES = [];
+function mul(M,v){ return V(M[0][0]*v.x+M[0][1]*v.y+M[0][2]*v.z, M[1][0]*v.x+M[1][1]*v.y+M[1][2]*v.z, M[2][0]*v.x+M[2][1]*v.y+M[2][2]*v.z); }
+const trace = M => M[0][0]+M[1][1]+M[2][2];
+// approximate fundamentals (cm⁻¹) by species, in pattern order (highest first, except B2u: its first pattern is the C–H bend, its second the Kekulé ring stretch)
+const WN = {A1g:[3062,993], A2g:[1350], B2g:[990,707], E1g:[846], E2g:[3047,1596,1178,606], A2u:[673], B1u:[3068,1010], B2u:[1150,1309], E1u:[3063,1482,1038], E2u:[967,398]};
+// starting motions for the projection operators, each on a single atom (C1 is atom 0, H1 is atom 6, both on the +x axis)
+const SEEDS = [
+  {name:'C–H stretch',           atom:6, d:[1,0,0]},
+  {name:'ring stretch',          atom:0, d:[1,0,0]},
+  {name:'C–H in-plane bend',     atom:6, d:[0,1,0]},
+  {name:'ring deformation',      atom:0, d:[0,1,0]},
+  {name:'C–H out-of-plane bend', atom:6, d:[0,0,1]},
+  {name:'ring pucker',           atom:0, d:[0,0,1]},
+];
+// displacement patterns are arrays of one vector per atom
+const zeroQ = () => ATOMS.map(() => V(0,0,0));
+const dotQ = (A,B) => A.reduce((s,a,i)=> s + a.dot(B[i]), 0);
+const addQ = (A,B,k=1) => A.map((a,i)=> a.clone().addScaledVector(B[i], k));
+const unitQ = A => { const n = Math.sqrt(dotQ(A,A)); return A.map(a => a.clone().divideScalar(n)); };
+const orthoQ = (A, basis) => basis.reduce((Q,b) => addQ(Q, b, -dotQ(Q,b)), A);   // basis must be orthonormal
+function actQ(op, Q){ const p = perm(op), out = []; Q.forEach((d,i) => out[p[i]] = mul(op.M, d)); return out; }
+// projection operator: Σ χ(R)·R, which keeps only the part of Q that belongs to one irreducible representation
+const projectQ = (ir, Q) => OPS.reduce((s,op) => addQ(s, actQ(op,Q), ir.chi[classIdx(op.cls)]), zeroQ());
+
+function buildModel(){
+  // r(C–C) = 1.397 Å, r(C–H) = 1.084 Å
+  const rC = 1.397, rH = rC + 1.084;
+  ATOMS = [];
+  for (let k=0;k<6;k++){ const [c,s] = dir(60*k); ATOMS.push({key:'C'+(k+1), html:`C<sub>${k+1}</sub>`, el:'C', pos:V(rC*c, rC*s, 0).multiplyScalar(SCALE)}); }
+  for (let k=0;k<6;k++){ const [c,s] = dir(60*k); ATOMS.push({key:'H'+(k+1), html:`H<sub>${k+1}</sub>`, el:'H', pos:V(rH*c, rH*s, 0).multiplyScalar(SCALE)}); }
+  PERM = new Map(); RESP = {};
+  const norm = vecs => { const m = Math.max(...vecs.map(v=>v.length())); return vecs.map(v=>v.clone().multiplyScalar(0.75/m)); };
+  const rot = ax => norm(ATOMS.map(at => ax.clone().cross(at.pos)));
+  const tr = ax => ATOMS.map(() => ax.clone().multiplyScalar(0.7));
+  // degenerate (E) motions carry two partner patterns in `parts`; everything else has a single `vecs`
+  FIELDS = {
+    Tz:{kind:'trans', html:'T<sub><i>z</i></sub>', name:'Translation along <i>z</i>', vecs:tr(V(0,0,1))},
+    Txy:{kind:'trans', html:'(T<sub><i>x</i></sub>, T<sub><i>y</i></sub>)', name:'Translation along <i>x</i> or <i>y</i>',
+         parts:[tr(V(1,0,0)), tr(V(0,1,0))], partHTML:['T<sub><i>x</i></sub>','T<sub><i>y</i></sub>']},
+    Rz:{kind:'rot', html:'R<sub><i>z</i></sub>', name:'Rotation about <i>z</i>', vecs:rot(V(0,0,1))},
+    Rxy:{kind:'rot', html:'(R<sub><i>x</i></sub>, R<sub><i>y</i></sub>)', name:'Rotation about <i>x</i> or <i>y</i>',
+         parts:[rot(V(1,0,0)), rot(V(0,1,0))], partHTML:['R<sub><i>x</i></sub>','R<sub><i>y</i></sub>']},
+  };
+  // orthonormal basis for the six translations and rotations, to strip them out of the vibration patterns
+  const TR = [];
+  [V(1,0,0),V(0,1,0),V(0,0,1)].forEach(ax => { TR.push(ATOMS.map(() => ax.clone())); TR.push(ATOMS.map(at => ax.clone().cross(at.pos))); });
+  const TRB = TR.reduce((B,q) => { const r = orthoQ(q, B); return dotQ(r,r) > 1e-9 ? [...B, unitQ(r)] : B; }, []);
+  // For each vibrational species, project the starting motions in turn and keep the first independent results.
+  // For a 2-D species, partner a is σv-symmetric and partner b σv-antisymmetric. Whichever part a starting motion gives,
+  // the other partner comes from rotating it by C6 and keeping the opposite part, so both lie in the same irreducible pair.
+  const SV = OPS.find(op => op.id === 'sv1'), C6 = OPS.find(op => op.id === 'C6');
+  const half = (Q, sign) => addQ(Q, actQ(SV, Q), sign);   // σv-symmetric (+1) or antisymmetric (−1) part, ×2
+  const big = Q => Math.sqrt(dotQ(Q,Q)) > 1e-6;
+  const nv = vibIrreps();
+  SPECIES = []; MODES = [];
+  IRREPS.forEach((ir,k) => {
+    const n = nv[k], two = ir.chi[0] === 2; if (!n) return;
+    const found = [];
+    for (const sd of SEEDS){
+      if (found.length === n) break;
+      let Q = zeroQ(); Q[sd.atom] = V(...sd.d);
+      Q = orthoQ(projectQ(ir, Q), TRB);
+      if (!two){
+        Q = orthoQ(Q, found.map(f => f.a));
+        if (big(Q)) found.push({a:unitQ(Q), seed:sd});
+        continue;
+      }
+      const s = orthoQ(half(Q, 1), found.map(f => f.a)), t = orthoQ(half(Q, -1), found.map(f => f.b));
+      if (big(s)){ const a = unitQ(s); found.push({a, b:unitQ(half(actQ(C6, a), -1)), seed:sd}); }
+      else if (big(t)){ const b = unitQ(t); found.push({a:unitQ(half(actQ(C6, b), 1)), b, seed:sd}); }
+    }
+    const ids = found.map((f,j) => {
+      const id = `${ir.id}_${j+1}`, wn = WN[ir.id][j];
+      FIELDS[id] = {kind:'vib', species:ir.id, html:`${ir.html} #${j+1}`, name:`mainly ${f.seed.name}`, wn, bands:[wn],
+        ...(two ? {parts:[norm(f.a), norm(f.b)], partHTML:['partner a','partner b']} : {vecs:norm(f.a)})};
+      return id;
+    });
+    SPECIES.push({ir, n, ids}); MODES.push(...ids);
+  });
+}
+const fieldVecs = F => F.parts ? F.parts[S.part] : F.vecs;
+
+let PERM = new Map();
+function perm(op){
+  if (!PERM.has(op)) PERM.set(op, ATOMS.map(at => { const w = mul(op.M, at.pos); return ATOMS.findIndex(b => b.pos.distanceTo(w) < 1e-3); }));
+  return PERM.get(op);
+}
+function unmoved(op){ return perm(op).map((j,i)=> j===i ? i : -1).filter(i=>i>=0); }
+const gamma3N = () => CLASSES.map(c => unmoved(c.rep).length * snap(trace(c.rep.M)));
+// How the partner patterns Q_k of a motion mix under op: R·Q_k = Σ_l D[l][k] Q_l, so D = G⁻¹B with G = ⟨Q_l,Q_k⟩ and B = ⟨Q_l,R·Q_k⟩
+function fieldMatrix(op, F){
+  const Q = F.parts || [F.vecs];
+  const RQ = Q.map(q => actQ(op, q));
+  const G = Q.map(a => Q.map(c => dotQ(a,c))), B = Q.map(a => RQ.map(rq => dotQ(a,rq)));
+  if (Q.length === 1) return [[B[0][0]/G[0][0]]];
+  const det = G[0][0]*G[1][1] - G[0][1]*G[1][0], Gi = [[G[1][1]/det, -G[0][1]/det], [-G[1][0]/det, G[0][0]/det]];
+  return Gi.map(row => [0,1].map(k => row[0]*B[0][k] + row[1]*B[1][k]));
+}
+const fieldDiag = (op, F) => fieldMatrix(op, F).map((row,k) => snap(row[k]));
+const fieldChar = (op, F) => Math.round(fieldDiag(op, F).reduce((a,c)=> a + c, 0));
+const fieldChars = id => CLASSES.map(c => fieldChar(c.rep, FIELDS[id]));
+const sumChars = ids => CLASSES.map((c,k) => ids.reduce((s,id)=> s + fieldChars(id)[k], 0));
+const reduce = ch => IRREPS.map(ir => ch.reduce((s,x,k)=> s + CLASSES[k].g*x*ir.chi[k], 0)/ORDER);
+const irrepOf = ch => IRREPS.find(ir => ir.chi.every((c,k)=> c === ch[k]));
+const repHTML = ns => ns.map((n,k)=> n ? `${n>1?n:''}${IRREPS[k].html}` : '').filter(Boolean).join(' + ') || '0';
+const vibIrreps = () => reduce(gamma3N().map((x,k)=> x - sumChars(['Tz','Txy'])[k] - sumChars(['Rz','Rxy'])[k]));
+function cartCells(op){
+  const p = perm(op), E3 = [V(1,0,0),V(0,1,0),V(0,0,1)];
+  return ATOMS.map((at,i) => E3.map(e => p[i] === i ? snap(mul(op.M,e).dot(e)) : null));
+}
+
+/* ---------- how a vibration couples to light (step 8) ---------- */
+// toy models, symmetric by construction: point charges for the dipole, bond-additive polarizability
+const CHARGE = [...Array(6).fill(-0.12), ...Array(6).fill(0.12)];
+const BONDS = [...[0,1,2,3,4,5].map(k => [k, (k+1)%6]), ...[0,1,2,3,4,5].map(k => [k, k+6])];
+function polar(P){
+  const A = [[0,0,0],[0,0,0],[0,0,0]];
+  BONDS.forEach(([i,j]) => {
+    const d = P[j].clone().sub(P[i]), L = d.length(), u = [d.x/L, d.y/L, d.z/L], par = L*L, perp = .3*L*L;   // each bond is easier to polarize along its length
+    for (let a=0;a<3;a++) for (let c=0;c<3;c++) A[a][c] += (par - perp)*u[a]*u[c] + (a === c ? perp : 0);
+  });
+  return A;
+}
+let RESP = {};
+function response(id, part){
+  const k = id + ':' + part; if (RESP[k]) return RESP[k];
+  const F = FIELDS[id], vecs = F.parts ? F.parts[part] : F.vecs, P = ATOMS.map(at => at.pos), eps = 1e-4;
+  const dmu = vecs.reduce((s,v,i)=> s.addScaledVector(v, CHARGE[i]), V(0,0,0));
+  const Ap = polar(P.map((p,i)=> p.clone().addScaledVector(vecs[i], eps))), Am = polar(P.map((p,i)=> p.clone().addScaledVector(vecs[i], -eps)));
+  const dA = Ap.map((row,a)=> row.map((x,c)=> (x - Am[a][c])/(2*eps))), A0 = polar(P);
+  const n0 = Math.hypot(...A0.flat()), nd = Math.hypot(...dA.flat());
+  return RESP[k] = {dmu, ir:dmu.length() > 1e-6, A0, dA, n0, nd, raman:nd > 1e-5*n0};
+}
+const irActive = ir => ir.lin.length > 0, ramanActive = ir => ir.quad !== '';
+
+/* ---------- three.js scene ---------- */
+const stageEl = $('stage'), canvas = $('gl'), labelsEl = $('labels');
+let renderer;
+try { renderer = new THREE.WebGLRenderer({canvas, antialias:true}); }
+catch(err){ stageEl.insertAdjacentHTML('beforeend','<div class="nogl">This browser could not start WebGL, so the 3D model is unavailable. The lesson still works.</div>'); }
+
+const COL = {C:0x7d8996, H:0xe9eef3, bond:0x8e9cac, x:0xf2a23a, y:0x45d0a0, z:0x93a6ff, mode:0xffd35c, cz:0xffd35c, c2p:0xffa95c, c2pp:0x9dff8a, sh:0x5d9cff, sv:0xc283ff, sd:0xff7fae, halo:0x7dffc0};
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100);
+camera.up.set(0,0,1);
+scene.add(camera);
+scene.add(new THREE.HemisphereLight(0xe4ecff, 0x1b2430, 0.85));
+const key = new THREE.DirectionalLight(0xffffff, 0.85); key.position.set(3,4,6); camera.add(key);
+
+const GEO = {shaft:new THREE.CylinderGeometry(1,1,1,14), head:new THREE.ConeGeometry(1,1,20), sphere:new THREE.SphereGeometry(1,40,28), bond:new THREE.CylinderGeometry(1,1,1,20)};
+const UP = V(0,1,0);
+function makeArrow(color, o={}){
+  const op = o.opacity ?? 1;
+  const mat = new THREE.MeshStandardMaterial({color, roughness:.45, metalness:.05, transparent:op<1, opacity:op, depthWrite:op>=1});
+  const g = new THREE.Group(), shaft = new THREE.Mesh(GEO.shaft, mat), head = new THREE.Mesh(GEO.head, mat);
+  g.add(shaft, head);
+  g.userData = {shaft, head, mat, r:o.r ?? .035, hr:o.hr ?? .09, hl:o.hl ?? .2};
+  return g;
+}
+function placeArrow(g, from, vec){
+  const L = vec.length(); if (L < 1e-3){ g.visible = false; return; }
+  g.visible = true;
+  const {shaft, head, r, hr} = g.userData, hl = Math.min(g.userData.hl, L*.5);
+  g.position.copy(from);
+  g.quaternion.setFromUnitVectors(UP, vec.clone().divideScalar(L));
+  shaft.scale.set(r, L-hl, r); shaft.position.set(0, (L-hl)/2, 0);
+  head.scale.set(hr, hl, hr);  head.position.set(0, L-hl/2, 0);
+}
+
+// axes
+const AX = 3.3;
+const axesGroup = new THREE.Group(); scene.add(axesGroup);
+[[V(1,0,0),COL.x],[V(0,1,0),COL.y],[V(0,0,1),COL.z]].forEach(([d,c]) => {
+  const a = makeArrow(c, {opacity:.8, r:.012, hr:.05, hl:.16}); placeArrow(a, d.clone().multiplyScalar(-AX), d.clone().multiplyScalar(2*AX + .2)); axesGroup.add(a);
+});
+
+// symmetry elements: one entry per axis, plane or centre, switched on together or lit up by the operation in progress
+const ELEM = {};
+function axisElem(id, d, len, color){
+  const v = V(...d);
+  const mat = new THREE.LineDashedMaterial({color, dashSize:.14, gapSize:.09, transparent:true, opacity:.8});
+  const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([v.clone().multiplyScalar(-len), v.clone().multiplyScalar(len)]), mat); line.computeLineDistances();
+  const tube = new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,2*len,10), new THREE.MeshBasicMaterial({color, transparent:true, opacity:0, depthWrite:false}));
+  tube.quaternion.setFromUnitVectors(UP, v);
+  const grp = new THREE.Group(); grp.add(line, tube); scene.add(grp);
+  ELEM[id] = {set(on, hot){ grp.visible = on; tube.material.opacity = hot ? .55 : 0; mat.opacity = hot ? 1 : .4; }};
+}
+function planeElem(id, geo, color, quiet){
+  const fill = new THREE.MeshBasicMaterial({color, transparent:true, opacity:quiet, side:THREE.DoubleSide, depthWrite:false});
+  const edge = new THREE.LineBasicMaterial({color, transparent:true, opacity:.4});
+  const grp = new THREE.Group(); grp.add(new THREE.Mesh(geo, fill), new THREE.LineSegments(new THREE.EdgesGeometry(geo), edge)); scene.add(grp);
+  ELEM[id] = {set(on, hot){ grp.visible = on; fill.opacity = hot ? .26 : quiet; edge.opacity = hot ? .95 : quiet*5; }};
+}
+axisElem('Cz', Z, 2.8, COL.cz);
+[0,1,2].forEach(k => { axisElem('C2p'+(k+1), dir(60*k), 3.4, COL.c2p); axisElem('C2pp'+(k+1), dir(30+60*k), 3.4, COL.c2pp); });
+planeElem('sh', new THREE.CircleGeometry(3.2, 64), COL.sh, .06);
+[0,1,2].forEach(k => {
+  const vert = az => { const g = new THREE.PlaneGeometry(6.8, 3.0); g.rotateX(Math.PI/2); g.rotateZ(rad(az)); return g; };
+  planeElem('sv'+(k+1), vert(60*k), COL.sv, .04);
+  planeElem('sd'+(k+1), vert(30+60*k), COL.sd, .04);
+});
+(function(){
+  const m = new THREE.Mesh(new THREE.SphereGeometry(.11, 20, 14), new THREE.MeshBasicMaterial({color:COL.cz}));
+  scene.add(m); ELEM.inv = {set(on){ m.visible = on; }};
+})();
+const ELEM_IDS = Object.keys(ELEM);
+// placement and style of each element's label
+const ELEM_LABELS = {Cz:['<i>C</i><sub>6</sub>', V(0,0,3.0), 'elem'], sh:['σ<sub>h</sub>', V(2.4,-2.4,0), 'elem sh'], inv:['<i>i</i>', V(0,0,0), 'elem']};
+[0,1,2].forEach(k => {
+  const at = (az, r, h) => { const [c,s] = dir(az); return V(r*c, r*s, h); };
+  ELEM_LABELS['C2p'+(k+1)] = ['<i>C</i><sub>2</sub>′', at(60*k, 3.6, 0), 'elem c2p'];
+  ELEM_LABELS['C2pp'+(k+1)] = ['<i>C</i><sub>2</sub>″', at(30+60*k, 3.6, 0), 'elem c2pp'];
+  ELEM_LABELS['sv'+(k+1)] = ['σ<sub>v</sub>', at(60*k, 3.3, 1.4), 'elem sv'];
+  ELEM_LABELS['sd'+(k+1)] = ['σ<sub>d</sub>', at(30+60*k, 3.3, 1.4), 'elem sd'];
+});
+
+// molecule: "live" copy is transformed by the operation, "ghost" stays at the starting position
+const live = new THREE.Group(); live.matrixAutoUpdate = false; scene.add(live);
+const ghost = new THREE.Group(); scene.add(ghost);
+const atomMeshes = [], ghostMeshes = [], bonds = [];
+[...Array(6).fill('C'), ...Array(6).fill('H')].forEach(el => {
+  const m = new THREE.Mesh(GEO.sphere, new THREE.MeshStandardMaterial({color:COL[el], roughness:.32, metalness:0}));
+  m.scale.setScalar(el==='C' ? .28 : .19); live.add(m); atomMeshes.push(m);
+  const g = new THREE.Mesh(GEO.sphere, new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:.12, depthWrite:false}));
+  g.scale.setScalar(el==='C' ? .42 : .32); ghost.add(g); ghostMeshes.push(g);
+});
+BONDS.forEach(() => { const b = new THREE.Mesh(GEO.bond, new THREE.MeshStandardMaterial({color:COL.bond, roughness:.5})); live.add(b); bonds.push(b); });
+const livePool = [], ghostPool = [];
+function poolArrow(pool, parent, k, ghostly){
+  while (pool.length <= k){ const a = makeArrow(0xffffff, ghostly ? {opacity:.28} : {}); parent.add(a); pool.push(a); }
+  return pool[k];
+}
+function placeBond(mesh, a, b){
+  const d = b.clone().sub(a), L = d.length();
+  mesh.position.copy(a).addScaledVector(d, .5);
+  mesh.quaternion.setFromUnitVectors(UP, d.divideScalar(L));
+  mesh.scale.set(.065, L, .065);
+}
+
+// step 8 overlays: the oscillating dipole change and the polarizability ellipsoid
+const dipArrow = makeArrow(0xff5fa2, {r:.05, hr:.13, hl:.3}); dipArrow.visible = false; scene.add(dipArrow);
+const ellip = new THREE.Group(); ellip.matrixAutoUpdate = false; ellip.visible = false; scene.add(ellip);
+ellip.add(new THREE.Mesh(GEO.sphere, new THREE.MeshStandardMaterial({color:0x7fd6ff, transparent:true, opacity:.12, depthWrite:false, side:THREE.DoubleSide})));
+ellip.add(new THREE.Mesh(new THREE.SphereGeometry(1,20,12), new THREE.MeshBasicMaterial({color:0x7fd6ff, wireframe:true, transparent:true, opacity:.2, depthWrite:false})));
+
+function arrowSpecs(){
+  if (S.arrows === 'cart'){
+    const out = [];
+    ATOMS.forEach((at,i) => [[V(1,0,0),COL.x],[V(0,1,0),COL.y],[V(0,0,1),COL.z]].forEach(([d,c]) => out.push({atom:i, vec:d.multiplyScalar(.55), color:c})));
+    return out;
+  }
+  if (S.arrows === 'field' && FIELDS[S.fieldId]) return fieldVecs(FIELDS[S.fieldId]).map((v,i)=>({atom:i, vec:v, color:COL.mode})).filter(s => s.vec.length() > .04);
+  return [];
+}
+
+// operation animation
+const ease = t => t<.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2;
+function exactMatrix(op){ const M = op.M, m = new THREE.Matrix4(); m.set(M[0][0],M[0][1],M[0][2],0, M[1][0],M[1][1],M[1][2],0, M[2][0],M[2][1],M[2][2],0, 0,0,0,1); return m; }
+// a reflection animated as a squash through the mirror plane
+function squash(normal, e){
+  const m = new THREE.Matrix4();
+  let s = 1 - 2*e; if (Math.abs(s) < .02) s = s < 0 ? -.02 : .02;
+  const [x,y,z] = normal, k = s - 1;
+  m.set(1+k*x*x, k*x*y, k*x*z, 0,  k*y*x, 1+k*y*y, k*y*z, 0,  k*z*x, k*z*y, 1+k*z*z, 0,  0,0,0,1);
+  return m;
+}
+function opMatrix(op, e){
+  const m = new THREE.Matrix4();
+  if (op.kind === 'rot') m.makeRotationAxis(V(...op.axis), op.angle*e);
+  else if (op.kind === 'refl') return squash(op.normal, e);
+  else if (op.kind === 'imp'){   // improper rotations (and i) play as a rotation about z, then the σh reflection
+    m.makeRotationAxis(V(0,0,1), op.angle*Math.min(1, 2*e));
+    if (e > .5) m.premultiply(squash(Z, 2*e - 1));
+  }
+  return m;
+}
+function computeResult(op){
+  const r = {op, unmoved:unmoved(op), kind:S.arrows};
+  if (S.arrows === 'cart'){ r.cells = cartCells(op); r.chi = snap(r.cells.flat().reduce((s,c)=> s + (c||0), 0)); }
+  if (S.arrows === 'field') { r.diag = fieldDiag(op, FIELDS[S.fieldId]); r.chi = fieldChar(op, FIELDS[S.fieldId]); r.fieldId = S.fieldId; }
+  return r;
+}
+function applyOp(id){
+  const op = OPS.find(o => o.id === id);
+  S.hold = null;
+  S.anim = {op, t0:performance.now(), dur: reduced ? 1 : ({E:800, imp:2200}[op.kind] || 1600), result:computeResult(op)};
+  setCaption(`Applying ${op.html}…`);
+  markOpButtons(id);
+}
+function finishOp(){
+  const r = S.anim.result; S.hold = {op:r.op, result:r}; S.anim = null;
+  S.seenOps[r.op.id] = true;
+  if (r.kind === 'cart'){ S.cart[r.op.id] = r; S.cartLast = r.op.id; }
+  if (r.kind === 'field' && FIELDS[r.fieldId].kind === 'vib'){ (S.modeTests[FIELDS[r.fieldId].species] ||= {})[r.op.cls] = r.chi; }
+  ghostMeshes.forEach((g,i) => { const um = r.unmoved.includes(i); g.material.color.setHex(um ? COL.halo : 0xffffff); g.material.opacity = um ? .3 : .1; });
+  setCaption(resultCaption(r));
+  if ([1,2,6].includes(S.step)) renderLesson();
+}
+function resetOp(){
+  S.anim = null; S.hold = null; markOpButtons(null);
+  ghostMeshes.forEach(g => { g.material.color.setHex(0xffffff); g.material.opacity = .12; });
+  setCaption(defaultCaption());
+}
+function moveText(op){
+  const moved = perm(op).filter((j,i) => j !== i).length;
+  if (!moved) return '';
+  return moved === ATOMS.length ? ' Every atom has moved to another atom\'s place.' : ` The other ${moved} atoms have moved to each other's places.`;
+}
+function resultCaption(r){
+  const names = r.unmoved.map(i => ATOMS[i].html).join(', ') || 'none';
+  let s = `<b>${r.op.html}</b> done. Unmoved atoms (green halo): <b>${names}</b>.` + moveText(r.op);
+  if (r.kind === 'cart') s += ` Faint arrows show where the vectors started. Sum of contributions on unmoved atoms: χ = <b>${fmt(r.chi)}</b>.`;
+  if (r.kind === 'field'){
+    const F = FIELDS[r.fieldId];
+    if (!F.parts) s += r.chi > 0 ? ' The yellow pattern lands on itself: χ = <b>+1</b>.' : ' The yellow pattern is reversed: χ = <b>−1</b>.';
+    else {
+      const mixed = r.diag.some(d => !Number.isInteger(d));
+      s += `${mixed ? ' The pattern has turned into a mix of the two partners.' : ''} How much of each partner survives: ${F.partHTML[0]} <b>${niceS(r.diag[0])}</b>, ${F.partHTML[1]} <b>${niceS(r.diag[1])}</b>. The pair's character is their sum: χ = <b>${fmt(r.chi)}</b>.`;
+    }
+  }
+  return s;
+}
+function defaultCaption(){
+  if (S.arrows === 'cart') return 'Thirty-six unit vectors: <i>x</i>, <i>y</i>, <i>z</i> on each atom. Apply an operation and watch where each one ends up.';
+  if (S.arrows === 'field'){
+    const F = FIELDS[S.fieldId];
+    if (F.parts) return `Showing ${F.partHTML[S.part]} of the degenerate pair ${F.html}. Apply an operation and see how much of each partner survives.`;
+    return `Showing ${F.kind === 'vib' ? F.html + ', ' + F.name : F.name.toLowerCase()}. Apply an operation: does the yellow pattern stay the same (+1) or reverse (−1)?`;
+  }
+  return 'Drag to rotate, scroll to zoom. Apply an operation to see what it does to the molecule.';
+}
+function setCaption(html){ $('caption').innerHTML = html; }
+function markOpButtons(id){ document.querySelectorAll('.sop[data-op]').forEach(b => b.classList.toggle('active', b.dataset.op === id)); }
+
+// camera orbit
+const DEFAULT_CAM = {theta:-0.75, phi:0.95, r:9.2};   // oblique, so in-plane and out-of-plane motion both show
+const cam = {...DEFAULT_CAM};
+function placeCamera(){
+  const {theta, phi, r} = cam;
+  camera.position.set(r*Math.sin(phi)*Math.cos(theta), r*Math.sin(phi)*Math.sin(theta), r*Math.cos(phi));
+  camera.lookAt(0,0,0);
+}
+let drag = null;
+canvas.addEventListener('pointerdown', e => { drag = {x:e.clientX, y:e.clientY}; canvas.setPointerCapture(e.pointerId); });
+canvas.addEventListener('pointermove', e => {
+  if (!drag) return;
+  cam.theta -= (e.clientX - drag.x) * .008;
+  cam.phi = Math.min(Math.PI-.12, Math.max(.12, cam.phi - (e.clientY - drag.y) * .008));
+  drag = {x:e.clientX, y:e.clientY};
+});
+['pointerup','pointercancel'].forEach(t => canvas.addEventListener(t, () => drag = null));
+canvas.addEventListener('wheel', e => { e.preventDefault(); cam.r = Math.min(16, Math.max(5, cam.r * Math.exp(e.deltaY*.0015))); }, {passive:false});
+canvas.addEventListener('keydown', e => {
+  const k = {ArrowLeft:[.12,0], ArrowRight:[-.12,0], ArrowUp:[0,.1], ArrowDown:[0,-.1]}[e.key];
+  if (!k) return; e.preventDefault();
+  cam.theta += k[0]; cam.phi = Math.min(Math.PI-.12, Math.max(.12, cam.phi + k[1]));
+});
+
+// HTML labels projected from 3D
+const labelEls = {};
+function label(key, html, cls){
+  if (!labelEls[key]){ const el = document.createElement('span'); el.className = 'lab ' + cls; labelEls[key] = el; labelsEl.appendChild(el); }
+  const el = labelEls[key]; if (el._html !== html){ el.innerHTML = html; el._html = html; } return el;
+}
+const tmpV = V(0,0,0);
+function putLabel(el, world, dx, dy, show){
+  if (!show){ el.style.display = 'none'; return; }
+  tmpV.copy(world).project(camera);
+  if (tmpV.z > 1){ el.style.display = 'none'; return; }
+  el.style.display = '';
+  const w = stageEl.clientWidth, h = stageEl.clientHeight;
+  el.style.transform = `translate(${(tmpV.x+1)/2*w + dx}px, ${(1-tmpV.y)/2*h + dy}px) translate(-50%,-50%)`;
+}
+
+function resize(){
+  if (!renderer) return;
+  const w = stageEl.clientWidth, h = stageEl.clientHeight;
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(w, h, false);
+  camera.aspect = w/h;
+  camera.fov = w/h < .9 ? 48 : 36;
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(stageEl);
+
+let last = performance.now();
+function frame(now){
+  requestAnimationFrame(frame);
+  const dt = Math.min(.05, (now - last)/1000); last = now;
+  let M = null, activeOp = null;
+  if (S.anim){
+    activeOp = S.anim.op;
+    const t = Math.min(1, (now - S.anim.t0)/S.anim.dur);
+    M = t >= 1 ? exactMatrix(activeOp) : opMatrix(activeOp, ease(t));
+    if (t >= 1) finishOp();
+  } else if (S.hold){ activeOp = S.hold.op; M = exactMatrix(activeOp); }
+  live.matrix.copy(M || new THREE.Matrix4()); live.matrixWorldNeedsUpdate = true;
+  ghost.visible = !!activeOp;
+
+  const field = S.arrows === 'field' ? FIELDS[S.fieldId] : null, fv = field && fieldVecs(field);
+  const osc = field && !activeOp;
+  if (osc && S.playing) S.phase += dt * Math.PI * 2 * .55;
+  const amp = osc ? .3 * Math.sin(S.phase) : 0;
+  const cur = ATOMS.map((at,i) => field ? at.pos.clone().addScaledVector(fv[i], amp) : at.pos.clone());
+  cur.forEach((p,i) => { atomMeshes[i].position.copy(p); ghostMeshes[i].position.copy(ATOMS[i].pos); });
+  bonds.forEach((b,k) => placeBond(b, cur[BONDS[k][0]], cur[BONDS[k][1]]));
+
+  const specs = arrowSpecs();
+  specs.forEach((s,k) => {
+    const a = poolArrow(livePool, live, k, false); a.userData.mat.color.setHex(s.color); placeArrow(a, cur[s.atom], s.vec);
+    const g = poolArrow(ghostPool, ghost, k, true); g.userData.mat.color.setHex(s.color); placeArrow(g, ATOMS[s.atom].pos, s.vec);
+  });
+  for (let k = specs.length; k < livePool.length; k++){ livePool[k].visible = false; ghostPool[k].visible = false; }
+
+  const resp = S.step === SPEC_STEP && field && !activeOp ? response(S.fieldId, S.part) : null;
+  dipArrow.visible = !!(resp && resp.ir); ellip.visible = !!resp;
+  if (resp){
+    const s = Math.sin(S.phase);   // in step with the atoms
+    if (resp.ir) placeArrow(dipArrow, V(0,0,0), resp.dmu.clone().normalize().multiplyScalar(1.6*s));
+    const k = 6.6/(resp.A0[0][0] + resp.A0[1][1] + resp.A0[2][2]), gain = resp.raman ? .35*resp.n0/resp.nd*s : 0;
+    const A = resp.A0.map((row,a)=> row.map((x,c)=> k*(x + gain*resp.dA[a][c])));
+    ellip.matrix.set(A[0][0],A[0][1],A[0][2],0, A[1][0],A[1][1],A[1][2],0, A[2][0],A[2][1],A[2][2],0, 0,0,0,1); ellip.matrixWorldNeedsUpdate = true;
+  }
+
+  axesGroup.visible = S.axes;
+  const hot = activeOp ? activeOp.elems : [];
+  ELEM_IDS.forEach(id => ELEM[id].set((S.elements && id !== 'inv') || hot.includes(id), hot.includes(id)));
+
+  if (renderer){ placeCamera(); renderer.render(scene, camera); }
+
+  // labels
+  const lm = live.matrix;
+  ATOMS.forEach((at,i) => putLabel(label('a'+i, at.html, 'atom'), cur[i].clone().applyMatrix4(lm), 14, -15, S.labels));
+  [['x',V(AX+.45,0,0)],['y',V(0,AX+.45,0)],['z',V(0,0,AX+.45)]].forEach(([n,p]) => putLabel(label('ax'+n, n, 'axis'), p, 0, 0, S.axes && S.labels));
+  // with all elements on, label only the C6 axis and σh; the others get a label while they are in use
+  Object.entries(ELEM_LABELS).forEach(([id,[html,p,cls]]) => putLabel(label('e'+id, html, cls), p, id === 'Cz' ? 22 : 0, id === 'inv' ? -16 : 0, S.labels && (hot.includes(id) || (S.elements && (id === 'Cz' || id === 'sh')))));
+}
+
+/* ---------- stage controls ---------- */
+$('opbar').insertAdjacentHTML('beforeend', CLASSES.map(c => `<button class="sop" data-op="${c.rep.id}" title="${c.rep.name}">${c.rep.html}</button>`).join('') + '<button class="sop reset" id="reset">Reset</button>');
+$('opbar').addEventListener('click', e => { const b = e.target.closest('[data-op]'); if (b) applyOp(b.dataset.op); });
+$('reset').addEventListener('click', () => { resetOp(); Object.assign(cam, DEFAULT_CAM); });
+function syncToggles(){
+  $('tg-axes').setAttribute('aria-pressed', S.axes);
+  $('tg-elem').setAttribute('aria-pressed', S.elements);
+  $('tg-labels').setAttribute('aria-pressed', S.labels);
+}
+$('tg-axes').onclick = () => { S.axes = !S.axes; syncToggles(); };
+$('tg-elem').onclick = () => { S.elements = !S.elements; syncToggles(); };
+$('tg-labels').onclick = () => { S.labels = !S.labels; syncToggles(); };
+
+function renderShowing(){
+  const el = $('showing');
+  if (S.arrows === 'cart') el.innerHTML = `<div class="legend"><span><i style="background:var(--x)"></i>x</span><span><i style="background:var(--y)"></i>y</span><span><i style="background:var(--z)"></i>z</span></div>`;
+  else if (S.arrows === 'field'){
+    const f = FIELDS[S.fieldId];
+    const partners = f.parts ? `<span class="partners" role="group" aria-label="Partner pattern">${f.partHTML.map((h,k) => `<button class="mini" data-part="${k}" aria-pressed="${S.part===k}">${k ? 'b' : 'a'}</button>`).join('')}</span>` : '';
+    const r = S.step === SPEC_STEP && response(S.fieldId, S.part);
+    const readout = r ? `<span class="rd">Δμ <b class="${r.ir?'on':''}">${r.ir ? 'oscillates' : 'zero'}</b> · Δα <b class="${r.raman?'on2':''}">${r.raman ? 'oscillates' : 'zero'}</b></span>` : '';
+    el.innerHTML = `<span><b>${f.html}</b> ${f.kind==='vib' ? f.name : ''}</span>${partners}<button class="mini" id="play">${S.playing ? 'Pause' : 'Play'}</button>${readout}`;
+    $('play').onclick = () => { S.playing = !S.playing; renderShowing(); };
+    el.querySelectorAll('[data-part]').forEach(b => b.onclick = () => { S.part = +b.dataset.part; resetOp(); renderShowing(); });
+  } else el.innerHTML = '';
+}
+function setArrows(kind, fieldId){
+  const id = kind === 'field' ? fieldId : null;
+  if (id !== S.fieldId) S.part = 0;
+  S.arrows = kind; S.fieldId = id;
+  resetOp(); renderShowing();
+}
+
+/* ---------- lesson steps ---------- */
+const repButtons = () => `<div class="btnrow">${CLASSES.map(c => `<button class="btn sm" data-op="${c.rep.id}">${c.rep.html}</button>`).join('')}</div>`;
+const classHead = (first='') => `<thead><tr><th>${first}</th>${CLASSES.map(c => `<th>${c.html}</th>`).join('')}</tr></thead>`;
+const charCells = ch => ch.map(c => `<td>${fmt(c)}</td>`).join('');
+// hl underlines translations and rotations (step 6); sel underlines the IR (x, y, z) and Raman (quadratic) functions instead (step 8)
+function charTable(hl, sel){
+  const fn = (ir) => {
+    const lin = ir.lin.map(s => hl ? `<mark class="tr">${s}</mark>` : s), rot = ir.rot.map(s => hl && !sel ? `<mark class="ro">${s}</mark>` : s);
+    return [...lin, ...rot].join(', ');
+  };
+  const quad = ir => sel && ir.quad ? `<mark class="qd">${ir.quad}</mark>` : ir.quad;
+  return `<div class="tablewrap"><table>${classHead('D<sub>6h</sub>').replace('</tr>','<th></th><th></th></tr>')}<tbody>${
+    IRREPS.map(ir => `<tr><th>${chip(ir)}</th>${charCells(ir.chi)}<td class="fn">${fn(ir)}</td><td class="fn">${quad(ir)}</td></tr>`).join('')
+  }</tbody></table></div>`;
+}
+const isTR = id => id && FIELDS[id] && FIELDS[id].kind !== 'vib';
+const isMode = id => id && FIELDS[id] && FIELDS[id].kind === 'vib';
+const matches = tests => IRREPS.filter(ir => Object.entries(tests).every(([cls,v]) => ir.chi[classIdx(cls)] === v));
+
+const STEPS = [
+  {short:'Count motions', enter(){ setArrows('none'); S.elements = false; }, html(){ return `
+    <p class="eyebrow">Step 1 of 8</p>
+    <h2>Count the ways benzene can move</h2>
+    <p>Describing where every atom of an <i>N</i>-atom molecule is takes 3<i>N</i> coordinates. Benzene, C<sub>6</sub>H<sub>6</sub>, has <i>N</i> = 12, so it has <strong>36 degrees of freedom</strong>.</p>
+    <div class="dof" role="img" aria-label="36 degrees of freedom split into 3 translations, 3 rotations and 30 vibrations">
+      <div class="s t"><b>3</b><span>translations</span></div>
+      <div class="s r"><b>3</b><span>rotations</span></div>
+      <div class="s v"><b>30</b><span>vibrations (3<i>N</i> − 6)</span></div>
+    </div>
+    <p>Benzene is nonlinear, so 3<i>N</i> − 6 = 30 of those motions are vibrations. Working out their symmetries by staring at the molecule would be hopeless. The same three-stage plan you used for water and ammonia does it mechanically:</p>
+    <ul>
+      <li>Build a reducible representation, ${G3N}, from all 36 motions.</li>
+      <li>Reduce it to a sum of irreducible representations.</li>
+      <li>Remove the parts that belong to translations and rotations. What remains is ${GV}.</li>
+    </ul>
+    <h3>Point group and axes</h3>
+    <p>Benzene is a flat regular hexagon and belongs to <strong>D<sub>6h</sub></strong>. It has 24 symmetry operations in 12 classes: rotations about the sixfold axis, three kinds of 180° flips about axes in the plane, the inversion <i>i</i>, two kinds of improper rotation (<i>S</i><sub>3</sub> and <i>S</i><sub>6</sub>), and three kinds of mirror plane. The order of the group is <i>h</i> = 24.</p>
+    <p>That sounds like a lot, but there is good news: most of these operations move every atom, so most characters will be zero.</p>
+    <p>The <i>z</i> axis runs along the <i>C</i><sub>6</sub> axis, perpendicular to the ring, and the <i>x</i> axis passes through C<sub>1</sub> and H<sub>1</sub>. Books disagree about which in-plane 180° axes are called <i>C</i><sub>2</sub>′ and which <i>C</i><sub>2</sub>″, and which vertical planes are σ<sub>v</sub> and which σ<sub>d</sub>. Here <i>C</i><sub>2</sub>′ and σ<sub>v</sub> pass through atoms. Swapping the convention swaps the labels B<sub>1</sub> and B<sub>2</sub>, just as the <i>xz</i>/<i>yz</i> choice did for water.</p>
+    <div class="callout"><strong>Try it.</strong> Drag the molecule to turn it, scroll to zoom, and turn on <em>Symmetry elements</em> above the model to see the sixfold axis, the molecular plane and the six vertical mirror planes.</div>`; }},
+
+  {short:'Operations', enter(){ setArrows('none'); S.elements = true; }, html(){
+    const rows = CLASSES.map(c => {
+      const op = c.ops.find(o => S.seenOps[o.id]), um = op && unmoved(op);
+      return `<tr><th>${c.html}</th><td class="desc">${c.desc}</td><td><button class="btn sm" data-op="${c.rep.id}">Apply ${c.rep.html}</button></td><td>${op ? `<b>${um.length}</b>` : '<span class="muted">?</span>'}</td></tr>`;
+    }).join('');
+    const allSeen = CLASSES.every(c => c.ops.some(o => S.seenOps[o.id]));
+    return `
+    <p class="eyebrow">Step 2 of 8</p>
+    <h2>Watch each kind of symmetry operation</h2>
+    <p>A symmetry operation moves the molecule into a position you cannot tell apart from where it started. Operations in the same class always behave the same way, so you only need to try one from each of the 12 classes. Note how many atoms <strong>stay exactly where they were</strong>.</p>
+    <div class="tablewrap"><table><thead><tr><th>Class</th><th>What it does</th><th></th><th>Unmoved atoms</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="hint">No atom lies on the <i>C</i><sub>6</sub> axis, so every rotation about <i>z</i> moves every atom. The only operations that leave atoms in place are those whose axis or plane passes through them.</p>
+    ${allSeen ? `<div class="callout"><strong>Only four classes leave any atom in place:</strong> <i>E</i> and σ<sub>h</sub> (all 12 atoms), and <i>C</i><sub>2</sub>′ and σ<sub>v</sub> (the 4 atoms on the axis or in the plane). Every other character of ${G3N} will be 0.</div>` : '<p class="hint">Apply one operation from every class to fill in the last column.</p>'}`; }},
+
+  {short:'Vector basis', enter(){ setArrows('cart'); S.elements = false; }, html(){
+    const id = S.cartLast, r = id && S.cart[id];
+    const cell = c => c === null ? '<td class="z" title="Atom moves to a new place">0</td>' : `<td class="${c>0?'p1':c<0?'m1':'z'}">${niceS(c)}</td>`;
+    const tally = r ? (r.unmoved.length ? `
+      <div class="tablewrap"><table>
+        <thead><tr><th>${r.op.html}</th><th><i>x</i></th><th><i>y</i></th><th><i>z</i></th><th>Atom total</th></tr></thead>
+        <tbody>${ATOMS.map((at,i) => r.unmoved.includes(i) ? `<tr><th>${at.html}</th>${r.cells[i].map(cell).join('')}<td>${nice(r.cells[i].reduce((s,c)=>s+(c||0),0))}</td></tr>` : '').join('')}
+        <tr class="sub"><th>${ATOMS.length - r.unmoved.length} other atoms (move)</th><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+        <tr class="total"><th>χ(${r.op.html})</th><td></td><td></td><td></td><td>${fmt(r.chi)}</td></tr></tbody>
+      </table></div>` : `<p class="hint">Under ${r.op.html} every atom moves, so all 36 vectors land on other atoms: χ(${r.op.html}) = 0 with no arithmetic at all.</p>`) : `<p class="hint">Apply an operation to fill in the tally.</p>`;
+    const done = CLASSES.every(c => S.cart[c.rep.id]);
+    return `
+    <p class="eyebrow">Step 3 of 8</p>
+    <h2>Attach <i>x</i>, <i>y</i>, <i>z</i> vectors to every atom</h2>
+    <p>Put three unit vectors on each atom. These 36 vectors are the basis for ${G3N}. Each operation sends them to new places, which you could write as a 36 × 36 matrix, and its character χ is the trace, the sum of the diagonal. Only vectors that stay on their own atom reach the diagonal:</p>
+    <ul>
+      <li>The atom moves to another atom's place: its three vectors add <strong>0</strong>.</li>
+      <li>A vector ends up pointing the same way: <strong>+1</strong>. Reversed: <strong>−1</strong>.</li>
+      <li>A vector ends up turned by an angle θ: <strong>cos θ</strong>.</li>
+    </ul>
+    <p class="muted">In benzene the cos θ rule never actually comes into play, because the only unmoved atoms sit on twofold axes or in mirror planes, where every angle is 0° or 180°.</p>
+    ${repButtons()}
+    ${tally}
+    <h3>Characters so far</h3>
+    <div class="tablewrap"><table>${classHead()}<tbody><tr><th>χ(${G3N})</th>${CLASSES.map(c => S.cart[c.rep.id] ? `<td>${fmt(S.cart[c.rep.id].chi)}</td>` : '<td class="q">?</td>').join('')}</tr></tbody></table></div>
+    ${done ? `<div class="callout"><strong>That row is ${G3N}.</strong> Eight of its twelve characters are zero. Next you will see a faster way to get it.</div>` : '<p class="hint">Apply one operation from each class to complete the row.</p>'}`; }},
+
+  {short:'Build Γ3N', enter(){ setArrows('none'); S.elements = false; }, html(){
+    const g = gamma3N();
+    const mats = ['C6','S3','C2p1'].map(id => OPS.find(op => op.id === id)).map(op => `<div class="mat"><span class="t">${op.html}</span><div class="grid">${op.M.flat().map((v,k)=>`<span class="${k%4===0?'d':''}">${nice(v)}</span>`).join('')}</div><span class="tr">trace = ${nice(trace(op.M))}</span></div>`).join('');
+    const c = S.check4;
+    const rows = CLASSES.map((cl,k) => `<tr><th>${cl.html}</th><td>${unmoved(cl.rep).length}</td><td>${nice(trace(cl.rep.M))}</td><td><input class="cell-in ${c ? (c[k] ? 'ok':'no') : ''}" id="g3n-${cl.id}" inputmode="numeric" autocomplete="off" aria-label="χ(Γ3N) for ${cl.id}" value="${S.inputs['g3n-'+cl.id] ?? ''}"></td></tr>`).join('');
+    const allOk = c && c.every(Boolean);
+    return `
+    <p class="eyebrow">Step 4 of 8</p>
+    <h2>Build ${G3N} with the shortcut</h2>
+    <p>Every unmoved atom contributes the same amount, the trace of the 3 × 3 matrix the operation applies to (<i>x</i>, <i>y</i>, <i>z</i>):</p>
+    <div class="formula">χ(R) = (number of unmoved atoms) × (contribution per unmoved atom)</div>
+    <div class="matrices">${mats}</div>
+    <p class="muted">General contributions per unmoved atom: <i>E</i> = 3, σ = 1, <i>i</i> = −3, <i>C<sub>n</sub></i> = 1 + 2 cos(360°/<i>n</i>), <i>S<sub>n</sub></i> = −1 + 2 cos(360°/<i>n</i>). So <i>C</i><sub>6</sub> = 2, <i>C</i><sub>3</sub> = 0, <i>C</i><sub>2</sub> = −1, <i>S</i><sub>3</sub> = −2 and <i>S</i><sub>6</sub> = 0. Those only matter if some atom stays put.</p>
+    <h3>Your turn</h3>
+    <p>Fill in the last column, then check.</p>
+    <div class="tablewrap"><table><thead><tr><th>Class</th><th>Unmoved atoms</th><th>Contribution per atom</th><th>χ(${G3N})</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="btnrow"><button class="btn primary" data-action="check4">Check</button><button class="btn" data-action="reveal4">Show answer</button></div>
+    ${c ? (allOk ? `<p class="fb ok">Correct. ${G3N} = ${g.map(fmt).join(', ')}. These match the tally from step 3.</p>` : `<p class="fb no">Some entries are off. Multiply the two numbers beside each box.</p>`) : ''}`; }},
+
+  {short:'Reduce', enter(){ setArrows('none'); S.elements = false; }, html(){
+    const g = gamma3N(), n = reduce(g), c = S.check5;
+    const nz = CLASSES.map((cl,j) => j).filter(j => g[j] !== 0);
+    const rows = IRREPS.map((ir,k) => `<tr><th>${chip(ir)}</th><td><input class="cell-in ${c ? (c[k] ? 'ok':'no') : ''}" id="n-${ir.id}" inputmode="numeric" autocomplete="off" aria-label="number of ${ir.id}" value="${S.inputs['n-'+ir.id] ?? ''}"></td></tr>`).join('');
+    const work = IRREPS.map((ir,k) => `<i>n</i>(${ir.html}) = <span class="frac"><span>1</span><span>24</span></span>[ ${nz.map(j => `(${CLASSES[j].g})(${fmt(g[j])})(${fmt(ir.chi[j])})`).join(' + ')} ] = <span class="frac"><span>${fmt(nz.reduce((s,j)=> s + CLASSES[j].g*g[j]*ir.chi[j], 0))}</span><span>24</span></span> = <b>${n[k]}</b>`).join('<br>');
+    const allOk = c && c.every(Boolean);
+    return `
+    <p class="eyebrow">Step 5 of 8</p>
+    <h2>Reduce ${G3N}</h2>
+    <p>The reduction formula tells you how many times each of the twelve irreducible representations appears in ${G3N}:</p>
+    <div class="formula"><i>n</i><sub><i>i</i></sub> = <span class="frac"><span>1</span><span><i>h</i></span></span> Σ<sub><i>R</i></sub> <i>g</i>(<i>R</i>) · χ(<i>R</i>) · χ<sub><i>i</i></sub>(<i>R</i>)</div>
+    <p>Here <i>h</i> = 24, and <i>g</i>(<i>R</i>) is the number of operations in each class (the number in front of the class label). Because ${G3N} is zero in eight classes, only four terms survive in each sum: <i>E</i>, 3<i>C</i><sub>2</sub>′, σ<sub>h</sub> and 3σ<sub>v</sub>.</p>
+    ${charTable(false)}
+    <div class="tablewrap"><table>${classHead()}<tbody><tr class="total"><th>χ(${G3N})</th>${charCells(g)}</tr></tbody></table></div>
+    <h3>Your turn</h3>
+    <div class="tablewrap"><table><thead><tr><th>Species</th><th>Times it appears</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="btnrow"><button class="btn primary" data-action="check5">Check</button><button class="btn" data-action="work5">${S.showWork ? 'Hide working' : 'Show working'}</button></div>
+    ${c ? (allOk ? `<p class="fb ok">Correct.</p>` : `<p class="fb no">Not quite. Open the working to see where your sum differs. Did you multiply by <i>g</i>?</p>`) : ''}
+    ${S.showWork ? `<div class="work">${work}</div>` : ''}
+    ${allOk || S.showWork ? `<div class="result"><span class="lhs">${G3N} =</span><span class="rep">${repHTML(n)}</span><span class="muted">Dimension check, counting each E as two: ${n.reduce((s,x,k)=> s + x*IRREPS[k].chi[0], 0)} = 3<i>N</i></span></div>` : ''}`; }},
+
+  {short:'Remove T & R', enter(){ if (isTR(S.fieldId)) setArrows('field', S.fieldId); else setArrows('none'); S.elements = false; }, html(){
+    const g = gamma3N(), gt = sumChars(['Tz','Txy']), gr = sumChars(['Rz','Rxy']);
+    const gv = g.map((x,k) => x - gt[k] - gr[k]);
+    const motion = id => { const f = FIELDS[id], ir = irrepOf(fieldChars(id)); return `<button class="motion ${S.fieldId===id?'active':''}" data-field="${id}"><span class="nm">${f.html}</span><span class="ir">${S.motionSeen[id] ? chip(ir) : 'Show me'}</span></button>`; };
+    const allSeen = Object.keys(FIELDS).filter(isTR).every(id => S.motionSeen[id]);
+    const rows = CLASSES.map((cl,k) => `<tr><th>${cl.html}</th><td>${fmt(g[k])}</td><td class="z">${fmt(gt[k])}</td><td class="z">${fmt(gr[k])}</td><td>${S.vibRevealed ? fmt(gv[k]) : '<span class="muted">?</span>'}</td></tr>`).join('');
+    return `
+    <p class="eyebrow">Step 6 of 8</p>
+    <h2>Remove translations and rotations</h2>
+    <p>${G3N} contains every motion, including the six that do not stretch or bend anything. The character table says where they live: translations transform like <i>z</i> and (<i>x</i>, <i>y</i>), and rotations like R<sub><i>z</i></sub> and (R<sub><i>x</i></sub>, R<sub><i>y</i></sub>).</p>
+    ${charTable(true)}
+    <p>As in ammonia, T<sub><i>x</i></sub> and T<sub><i>y</i></sub> form a degenerate pair, and so do R<sub><i>x</i></sub> and R<sub><i>y</i></sub>. Click a motion to animate it, then apply operations in the viewer to confirm its characters. For a pair, switch partners with the buttons above the model.</p>
+    <div class="motions">${['Tz','Txy','Rz','Rxy'].map(motion).join('')}</div>
+    ${allSeen ? `<p class="fb ok">${GT} = ${repHTML(reduce(gt))} and ${GR} = ${repHTML(reduce(gr))}.</p>` : ''}
+    <h3>Subtract</h3>
+    <div class="tablewrap"><table><thead><tr><th>Class</th><th>${G3N}</th><th>− ${GT}</th><th>− ${GR}</th><th>${GV}</th></tr></thead><tbody>${rows}</tbody></table></div>
+    ${S.vibRevealed ? `
+      <div class="result"><span class="lhs">${GV} =</span><span class="rep">${repHTML(reduce(gv))}</span></div>
+      <p>Or subtract the reduced forms directly: remove one A<sub>2u</sub> and one E<sub>1u</sub> for the translations, and one A<sub>2g</sub> and one E<sub>1g</sub> for the rotations. That leaves 30 vibrations, as 3<i>N</i> − 6 predicted, but only <strong>${SPECIES.reduce((s,sp)=> s + sp.n, 0)} distinct frequencies</strong>, because ${SPECIES.filter(sp => sp.ir.chi[0] === 2).reduce((s,sp)=> s + sp.n, 0)} of them are degenerate E pairs, each counting as two vibrations.</p>`
+      : `<div class="btnrow"><button class="btn primary" data-action="vib">Subtract and reduce</button></div>`}`; }},
+
+  {short:'Normal modes', enter(){ setArrows('field', isMode(S.fieldId) ? S.fieldId : MODES[0]); S.elements = false; }, html(){
+    const cur = isMode(S.fieldId) && FIELDS[S.fieldId].species;
+    const cards = SPECIES.map((sp, k) => {
+      const tests = S.modeTests[sp.ir.id] || {}, left = matches(tests), known = Object.keys(tests).length && left.length === 1;
+      const two = sp.ir.chi[0] === 2, inPlane = sp.ir.chi[classIdx('sh')] > 0;
+      const boxes = CLASSES.map(c => { const v = tests[c.id]; return v === undefined ? '' : `<span class="cbox">${c.html} <b class="${v>0?'p1':v<0?'m1':''}">${fmtS(v)}</b></span>`; }).join('');
+      const status = !Object.keys(tests).length ? '<span class="muted">apply operations to narrow it down</span>' : known ? chip(left[0]) : `<span class="muted">${left.length} rows of the table still match</span>`;
+      return `<article class="mode ${cur===sp.ir.id?'active':''}">
+        <div><h4>Set ${k+1}: ${sp.n} ${two ? `degenerate pair${sp.n>1?'s':''}` : `vibration${sp.n>1?'s':''}`}, ${inPlane ? 'in-plane' : 'out-of-plane'}</h4><span class="wn">≈ ${WN[sp.ir.id].join(', ')} cm<sup>−1</sup></span></div>
+        <div class="btnrow tight">${sp.ids.map((id,j) => `<button class="btn sm ${S.fieldId===id?'active':''}" data-field="${id}" title="${FIELDS[id].name}">Pattern ${j+1}</button>`).join('')}</div>
+        <div class="chars">${boxes} <span>→ ${status}</span></div>
+      </article>`; }).join('');
+    const found = SPECIES.every(sp => { const t = S.modeTests[sp.ir.id] || {}; return Object.keys(t).length && matches(t).length === 1; });
+    return `
+    <p class="eyebrow">Step 7 of 8</p>
+    <h2>Identify the vibrations by their symmetry</h2>
+    <p>${GV} = ${repHTML(vibIrreps())}: 20 distinct frequencies in 10 symmetry species. The cards below group benzene's measured fundamentals into those 10 sets, without saying which set is which. Your job is to identify them.</p>
+    <p>Pick a pattern, then apply operations in the viewer. Each result rules out every row of the character table that disagrees. Keep going until only one row is left. You rarely need all twelve classes: <i>i</i> and σ<sub>h</sub> are a good start.</p>
+    <div class="modes">${cards}</div>
+    <p class="hint">The patterns are built with projection operators from simple starting motions (a C–H stretch, a ring stretch, a bend, and so on), with translations and rotations removed. They have exactly the right symmetry, but real vibrations of the same species mix these motions, so the pairing of each pattern with a wavenumber is only approximate. Wavenumbers are approximate gas- and liquid-phase values.</p>
+    ${found ? `<div class="callout"><strong>All ten sets identified.</strong> The symmetry of every one of benzene's 30 vibrations follows from the character table alone.</div>` : ''}
+    <p>Next: which of these vibrations can you actually see in a spectrum?</p>`; }},
+
+  {short:'IR & Raman', enter(){ setArrows('field', isMode(S.fieldId) ? S.fieldId : MODES[0]); S.elements = false; }, html(){ return selectionStep(); }},
+];
+const SPEC_STEP = STEPS.length - 1;
+
+/* ---------- step 8: selection rules ---------- */
+const SPEC_NOTE = `Benzene has a centre of inversion, so mutual exclusion applies. Its IR bands (A<sub>2u</sub> and E<sub>1u</sub>, both <i>u</i>) and its Raman bands (A<sub>1g</sub>, E<sub>1g</sub> and E<sub>2g</sub>, all <i>g</i>) never belong to the same vibration, even where two numbers look almost equal, like 3062 and 3063 cm<sup>−1</sup>. And 9 of the 20 fundamentals, in A<sub>2g</sub>, B<sub>2g</sub>, B<sub>1u</sub>, B<sub>2u</sub> and E<sub>2u</sub>, are silent in both. Chemists located them from overtones and combination bands, neutron scattering and the spectra of deuterated benzenes.`;
+function spectrumSVG(){
+  const W = 600, PH = 62, GAP = 30, TOP = 20, X = wn => 34 + (4000 - wn)/3600*(W - 54);
+  const panels = [['Infrared', 'ir', irActive], ['Raman', 'ra', ramanActive]];
+  let svg = '';
+  panels.forEach(([name, cls, test], p) => {
+    const y0 = TOP + p*(PH + GAP), base = y0 + PH;
+    svg += `<text class="pl" x="0" y="${y0 - 6}">${name}</text><line class="base" x1="34" x2="${W - 20}" y1="${base}" y2="${base}"/>`;
+    const bands = MODES.flatMap(id => { const ir = irrepOf(fieldChars(id)); return test(ir) ? FIELDS[id].bands.map(wn => ({ir, wn})) : []; }).sort((a,b) => b.wn - a.wn);
+    // bands closer than a few pixels share one stick, and its tooltip lists them all
+    const sticks = bands.reduce((out, b) => { const s = out[out.length - 1]; if (s && X(b.wn) - X(s[s.length - 1].wn) < 5) s.push(b); else out.push([b]); return out; }, []);
+    let lastX = -99;
+    sticks.forEach(s => {
+      const x = X(s[0].wn), lab = x - lastX > 36; if (lab) lastX = x;   // label only where it won't collide; the tooltip carries the rest
+      svg += `<g data-tip="${s.map(b => `${b.ir.html} · ${b.wn} cm<sup>−1</sup>`).join('<br>')}"><line class="stick ${cls}" x1="${x}" x2="${x}" y1="${base}" y2="${y0 + 16}"/><circle class="${cls}" cx="${x}" cy="${y0 + 16}" r="4"/>${lab ? `<text class="lb" x="${x}" y="${y0 + 6}" text-anchor="middle">${s[0].wn}</text>` : ''}<rect class="hit" x="${x - 8}" y="${y0}" width="16" height="${PH}"/></g>`;
+    });
+    if (!bands.length) svg += `<text class="lb" x="${W/2}" y="${y0 + PH/2}" text-anchor="middle">no fundamentals</text>`;
+  });
+  const ay = TOP + 2*PH + GAP + 16;
+  for (let t = 4000; t >= 500; t -= 500) svg += `<text class="ax" x="${X(t)}" y="${ay}" text-anchor="middle">${t}</text>`;
+  svg += `<text class="ax" x="${(W + 14)/2}" y="${ay + 18}" text-anchor="middle">wavenumber / cm⁻¹</text>`;
+  return `<div class="spec"><svg viewBox="0 0 ${W} ${ay + 24}" role="img" aria-label="Predicted infrared and Raman stick spectra">${svg}</svg><div class="tip" id="tip"></div></div>`;
+}
+function selectionStep(){
+  const nv = vibIrreps();
+  const c = S.check8, done = S.reveal8 || (c && Object.values(c).every(Boolean));
+  const yn = (sp, key) => {
+    const v = (S.sel[sp.ir.id] || {})[key], st = c ? (c[sp.ir.id + key] ? 'ok' : 'no') : '';
+    return `<span class="yn ${st}" role="group" aria-label="${key === 'ir' ? 'IR' : 'Raman'} active for ${sp.ir.id}"><button data-yn="${sp.ir.id}|${key}|1" aria-pressed="${v === true}">Yes</button><button data-yn="${sp.ir.id}|${key}|0" aria-pressed="${v === false}">No</button></span>`;
+  };
+  const why = ir => done ? `<td class="fn">${irActive(ir) ? `IR: like ${ir.lin.join(', ')}` : 'IR: no <i>x</i>, <i>y</i>, <i>z</i>'}; ${ramanActive(ir) ? `Raman: like ${ir.quad}` : 'Raman: no quadratic'}</td>` : '';
+  const rows = SPECIES.map(sp => `<tr><th>${chip(sp.ir)} <span class="muted">${WN[sp.ir.id].join(', ')}</span></th><td>${yn(sp,'ir')}</td><td>${yn(sp,'ra')}</td>${why(sp.ir)}</tr>`).join('');
+  const count = test => MODES.filter(id => test(irrepOf(fieldChars(id)))).length;
+  const silent = SPECIES.filter(sp => !irActive(sp.ir) && !ramanActive(sp.ir));
+  return `
+    <p class="eyebrow">Step ${SPEC_STEP + 1} of ${STEPS.length}</p>
+    <h2>Which vibrations show up in IR and Raman spectra?</h2>
+    <p>Light can only excite a vibration if the vibration changes something the light's oscillating electric field can push on. The two common kinds of vibrational spectroscopy push on different things:</p>
+    <ul>
+      <li><strong>Infrared absorption</strong> needs the vibration to change the <strong>dipole moment</strong> μ. The dipole is a vector, and its components μ<sub><i>x</i></sub>, μ<sub><i>y</i></sub>, μ<sub><i>z</i></sub> transform like <i>x</i>, <i>y</i> and <i>z</i>.</li>
+      <li><strong>Raman scattering</strong> needs the vibration to change the <strong>polarizability</strong> α, how easily the electron cloud is distorted. α is a 3 × 3 tensor, and its components α<sub><i>xx</i></sub>, α<sub><i>xy</i></sub>, … transform like the quadratic functions <i>x</i><sup>2</sup>, <i>xy</i>, ….</li>
+    </ul>
+    <h3>Watch it happen</h3>
+    <p>Pick a vibration. The <strong>pink arrow</strong> is the change in dipole, Δμ, worked out from partial charges on the atoms. The <strong>translucent shape</strong> is the polarizability ellipsoid, from a simple model in which each bond is easier to polarize along its length. If the arrow never appears, the vibration cannot absorb IR. If the ellipsoid holds still, it cannot Raman scatter. Benzene has no permanent dipole, so for most vibrations the arrow never appears at all.</p>
+    <div class="btnrow">${MODES.map(id => `<button class="btn sm ${S.fieldId===id?'active':''}" data-field="${id}" title="${FIELDS[id].name}">${IRREPS.find(ir => ir.id === FIELDS[id].species).html} ${FIELDS[id].wn}</button>`).join('')}</div>
+    <p class="hint">These are toy models, but they respect the molecule's symmetry, so they always agree with the group theory below. For a degenerate pair, try both partners.</p>
+    <h3>The group theory shortcut</h3>
+    <p>The strength of a transition from the ground state to the first excited level of a vibration depends on the integral ⟨0|μ|1⟩. An integral over all space is zero unless its integrand is totally symmetric. The ground state is totally symmetric, and the excited level has the symmetry of the vibration, so the integral can only survive if the vibration has the same symmetry as one of μ<sub><i>x</i></sub>, μ<sub><i>y</i></sub>, μ<sub><i>z</i></sub>. The same argument with α gives the Raman rule. In practice:</p>
+    <ol>
+      <li>Find each vibration's irreducible representation. You did this in step ${SPEC_STEP}.</li>
+      <li>It is <strong>IR active</strong> if that row of the character table lists <i>x</i>, <i>y</i> or <i>z</i> (underlined in orange below).</li>
+      <li>It is <strong>Raman active</strong> if that row lists a quadratic function such as <i>x</i><sup>2</sup>, <i>z</i><sup>2</sup> or <i>xy</i> (underlined in blue).</li>
+      <li>A vibration that is neither is <strong>silent</strong>: it exists, but neither technique sees it directly.</li>
+    </ol>
+    ${charTable(true, true)}
+    <h3>Your turn</h3>
+    <p>For each symmetry species in ${GV} = ${repHTML(nv)}, decide whether it is IR active and whether it is Raman active.</p>
+    <div class="tablewrap"><table><thead><tr><th>Species</th><th>IR active?</th><th>Raman active?</th>${done ? '<th></th>' : ''}</tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="btnrow"><button class="btn primary" data-action="check8">Check</button><button class="btn" data-action="reveal8">Show answer</button></div>
+    ${c && !done ? `<p class="fb no">Not quite. Look along each species' row: is there an <i>x</i>, <i>y</i> or <i>z</i>? Is there a quadratic function?</p>` : ''}
+    ${done ? `${c && !S.reveal8 ? '<p class="fb ok">Correct.</p>' : ''}
+      <h3>The predicted spectra</h3>
+      <p>Each IR- or Raman-active fundamental gives one band. A degenerate pair gives a single band, because both partners have the same frequency. Prediction: <strong>${count(irActive)}</strong> IR bands and <strong>${count(ramanActive)}</strong> Raman bands, with the ${silent.reduce((s,sp)=> s + sp.n, 0)} fundamentals in ${silent.map(sp => sp.ir.html).join(', ')} silent.</p>
+      ${spectrumSVG()}
+      <p class="hint">Stick heights are not intensities: group theory says whether a band can appear, not how strong it is. Hover a stick for details. Real spectra also show weaker overtone and combination bands.</p>
+      <h3>Centres of inversion and mutual exclusion</h3>
+      <p>If a molecule has a centre of inversion, <i>x</i>, <i>y</i> and <i>z</i> all change sign under <i>i</i> (they are <i>u</i>), and every quadratic function keeps its sign (<i>g</i>). So a <i>u</i> vibration can only be IR active and a <i>g</i> vibration can only be Raman active. No vibration can be both: this is the <strong>rule of mutual exclusion</strong>.</p>
+      <p>${SPEC_NOTE}</p>` : ''}`;
+}
+
+function renderStepper(){
+  $('stepper').innerHTML = STEPS.map((s,i) => `<li><button data-step="${i}" ${i===S.step?'aria-current="step"':''} class="${i<S.step?'done':''}"><span class="n">${i+1}</span>${s.short.replace('Γ3N', G3N)}</button></li>`).join('');
+}
+function renderLesson(){
+  $('body').innerHTML = STEPS[S.step].html();
+  $('prev').disabled = S.step === 0; $('next').disabled = S.step === STEPS.length - 1;
+  $('next').style.visibility = S.step === STEPS.length - 1 ? 'hidden' : '';
+}
+function goStep(i, scroll){
+  S.step = Math.max(0, Math.min(STEPS.length-1, i));
+  STEPS[S.step].enter(); syncToggles(); renderStepper(); renderLesson();
+  if (scroll) $('lesson').scrollIntoView({block:'start', behavior: reduced ? 'auto' : 'smooth'});
+}
+$('stepper').addEventListener('click', e => { const b = e.target.closest('[data-step]'); if (b) goStep(+b.dataset.step, true); });
+$('prev').onclick = () => goStep(S.step - 1, true);
+$('next').onclick = () => goStep(S.step + 1, true);
+
+$('body').addEventListener('input', e => { if (e.target.id){ S.inputs[e.target.id] = e.target.value; e.target.classList.remove('ok','no'); } });
+$('body').addEventListener('click', e => {
+  const opB = e.target.closest('[data-op]'); if (opB){ applyOp(opB.dataset.op); return; }
+  const fB = e.target.closest('[data-field]');
+  if (fB){ const id = fB.dataset.field; S.motionSeen[id] = true; setArrows('field', id); renderLesson(); return; }
+  const ynB = e.target.closest('[data-yn]');
+  if (ynB){ const [ir, key, v] = ynB.dataset.yn.split('|'); (S.sel[ir] ||= {})[key] = v === '1'; S.check8 = null; renderLesson(); return; }
+  const a = e.target.closest('[data-action]'); if (!a) return;
+  const g = gamma3N(), n = reduce(g);
+  const vib = SPECIES.map(sp => sp.ir);
+  switch (a.dataset.action){
+    case 'check8': S.check8 = {}; vib.forEach(ir => { const s = S.sel[ir.id] || {}; S.check8[ir.id+'ir'] = s.ir === irActive(ir); S.check8[ir.id+'ra'] = s.ra === ramanActive(ir); }); break;
+    case 'reveal8': vib.forEach(ir => S.sel[ir.id] = {ir:irActive(ir), ra:ramanActive(ir)}); S.reveal8 = true; S.check8 = null; break;
+    case 'check4': S.check4 = CLASSES.map((c,k) => parseNum(S.inputs['g3n-'+c.id]) === g[k]); break;
+    case 'reveal4': CLASSES.forEach((c,k) => S.inputs['g3n-'+c.id] = fmt(g[k])); S.check4 = CLASSES.map(() => true); break;
+    case 'check5': S.check5 = IRREPS.map((ir,k) => parseNum(S.inputs['n-'+ir.id]) === n[k]); break;
+    case 'work5': S.showWork = !S.showWork; break;
+    case 'vib': S.vibRevealed = true; break;
+  }
+  renderLesson();
+});
+// spectrum tooltips
+$('body').addEventListener('pointermove', e => {
+  const tip = $('tip'); if (!tip) return;
+  const t = e.target.closest('[data-tip]');
+  if (!t){ tip.style.display = 'none'; return; }
+  const box = tip.parentElement.getBoundingClientRect(), r = t.getBoundingClientRect();
+  tip.innerHTML = t.dataset.tip; tip.style.display = 'block';
+  tip.style.left = (r.left + r.width/2 - box.left) + 'px'; tip.style.top = (r.top - box.top) + 'px';
+});
+
+buildModel();
+goStep(0, false);
+resize(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
