@@ -1,0 +1,857 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Water Vibrations in C₂ᵥ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Spectral:ital,wght@0,500;0,600;1,500&display=swap">
+<style>
+/* Layout: a sticky 3D "lab bench" on the left, the worked lesson on the right; on phones the bench pins to the top */
+:root{
+  --bg:#edf0f4; --surface:#ffffff; --surface-2:#f5f7fa; --ink:#16202b; --muted:#5a6775; --line:#d5dce5;
+  --accent:#1f56c9; --accent-soft:#e2eafb; --accent-ink:#ffffff;
+  --good:#1d7548; --good-soft:#dff2e7; --bad:#b4372e; --bad-soft:#fbe5e2;
+  --a1:#1d7548; --a2:#7647b5; --b1:#b8640f; --b2:#1a7aa1;
+  --stage:#0c141d; --stage-2:#142131; --stage-ink:#dbe5ee; --stage-muted:#8a9bab; --stage-line:#26384c;
+  --x:#f2a23a; --y:#45d0a0; --z:#93a6ff; --mode:#ffd35c;
+  --display:"Spectral", Georgia, "Times New Roman", serif;
+  --body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1319; --surface:#151c24; --surface-2:#1a232d; --ink:#e2e8ef; --muted:#93a1b0; --line:#28333f;
+    --accent:#7aa2ff; --accent-soft:#1d2a45; --accent-ink:#0b1220;
+    --good:#5fd09a; --good-soft:#143326; --bad:#ff8a7f; --bad-soft:#3a1c1a;
+    --a1:#5fd09a; --a2:#b993f0; --b1:#f0a85a; --b2:#5cc2ea;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1319; --surface:#151c24; --surface-2:#1a232d; --ink:#e2e8ef; --muted:#93a1b0; --line:#28333f;
+  --accent:#7aa2ff; --accent-soft:#1d2a45; --accent-ink:#0b1220;
+  --good:#5fd09a; --good-soft:#143326; --bad:#ff8a7f; --bad-soft:#3a1c1a;
+  --a1:#5fd09a; --a2:#b993f0; --b1:#f0a85a; --b2:#5cc2ea;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.6 var(--body);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+sub,sup{font-size:.72em;line-height:0}
+
+.app{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);grid-template-areas:"stage head" "stage lesson";grid-template-rows:auto 1fr;column-gap:32px;padding-inline:16px;padding-block:16px;max-width:1520px;margin:0 auto}
+
+/* ---------- header ---------- */
+.head{grid-area:head;display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 20px;padding-block:6px 18px;border-bottom:1px solid var(--line)}
+.brand .kicker{font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.brand h1{font:600 clamp(26px,3vw,34px)/1.1 var(--display);margin:6px 0 0;text-wrap:balance;letter-spacing:-.01em}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:none;padding:6px 12px;font:500 13px var(--mono);cursor:pointer;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.conv{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.conv .lbl{font:500 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+/* ---------- stage ---------- */
+.stage{grid-area:stage;position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);align-self:start;height:calc(100dvh - 32px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));min-height:480px;max-height:980px;border-radius:14px;overflow:hidden;background:var(--stage);color:var(--stage-ink);isolation:isolate}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+.stage canvas:active{cursor:grabbing}
+.labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.lab{position:absolute;left:0;top:0;font:500 13px/1 var(--mono);color:var(--stage-ink);text-shadow:0 1px 3px #000c;white-space:nowrap;will-change:transform}
+.lab.axis{font-style:italic;font-size:14px}
+.lab.atom{font:600 14px/1 var(--body)}
+.lab.elem{font:500 12px/1 var(--mono);color:#ffe28a;background:#0c141dcc;padding:3px 6px;border-radius:4px}
+.lab.elem.sxz{color:#9cc3ff}.lab.elem.syz{color:#e0b3ff}
+.st-top{position:absolute;inset:12px 12px auto 12px;display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:flex-start;pointer-events:none}
+.st-top>*{pointer-events:auto}
+.toggles{display:flex;flex-wrap:wrap;gap:6px}
+.tg{border:1px solid var(--stage-line);background:#0c141dcc;color:var(--stage-muted);border-radius:999px;padding:4px 11px;font:500 12px var(--body);cursor:pointer}
+.tg[aria-pressed="true"]{color:var(--stage-ink);border-color:#4b6380;background:var(--stage-2)}
+.showing{display:flex;align-items:center;gap:10px;background:#0c141dd9;border:1px solid var(--stage-line);border-radius:10px;padding:6px 10px;font-size:12.5px}
+.showing:empty{display:none}
+.legend{display:flex;gap:10px;font:500 12px var(--mono)}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.mini{border:1px solid var(--stage-line);background:var(--stage-2);color:var(--stage-ink);border-radius:6px;padding:2px 8px;font:500 12px var(--body);cursor:pointer}
+.st-bottom{position:absolute;inset:auto 12px 12px 12px;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.caption{align-self:flex-start;max-width:min(100%,560px);background:#0c141de6;border:1px solid var(--stage-line);border-radius:10px;padding:8px 12px;font-size:13.5px;line-height:1.45;pointer-events:auto}
+.caption b{color:#fff}
+.opbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;pointer-events:auto;background:#0c141de6;border:1px solid var(--stage-line);border-radius:12px;padding:6px}
+.opbar .lbl{font:500 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--stage-muted);padding:0 6px}
+.sop{border:1px solid #33506e;background:var(--stage-2);color:var(--stage-ink);border-radius:8px;padding:6px 12px;font:500 14px var(--body);cursor:pointer;min-width:52px}
+.sop:hover{border-color:#6f93bd;background:#1b2c41}
+.sop.active{background:#ffd35c;color:#1a1400;border-color:#ffd35c}
+.sop.reset{margin-left:auto;color:var(--stage-muted);min-width:0}
+.nogl{position:absolute;inset:0;display:grid;place-items:center;padding:24px;text-align:center;color:var(--stage-muted)}
+
+/* ---------- lesson ---------- */
+.lesson{grid-area:lesson;min-width:0;padding-block:18px 48px;scroll-margin-top:16px}
+.stepper{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:22px;list-style:none;padding:0}
+.stepper button{display:flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 11px 4px 5px;font-size:12.5px;cursor:pointer;color:var(--muted)}
+.stepper button .n{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--surface-2);font:500 11px var(--mono);color:var(--muted)}
+.stepper button[aria-current="step"]{border-color:var(--accent);color:var(--ink)}
+.stepper button[aria-current="step"] .n{background:var(--accent);color:var(--accent-ink)}
+.stepper button.done .n{background:var(--accent-soft);color:var(--accent)}
+.body{max-width:66ch}
+.eyebrow{font:500 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 4px}
+.body h2{font:600 26px/1.2 var(--display);margin:0 0 12px;text-wrap:balance}
+.body h3{font:600 18px/1.3 var(--display);margin:26px 0 8px}
+.body p{margin:0 0 12px}
+.body ul{margin:0 0 12px;padding-left:20px}
+.body li{margin-bottom:4px}
+.muted{color:var(--muted)}
+.hint{color:var(--muted);font-size:14px;font-style:italic}
+.callout{background:var(--accent-soft);border-radius:10px;padding:12px 14px;margin:14px 0;font-size:14.5px}
+.callout strong{color:var(--accent)}
+.formula{font:500 17px/1.6 var(--display);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:12px 0;text-align:center;overflow-x:auto}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.9em;margin:0 3px}
+.frac>span:first-child{border-bottom:1px solid currentColor;padding:0 3px}
+.mono{font-family:var(--mono)}
+
+.dof{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:14px 0 8px}
+.dof .s{border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.dof .s b{font:600 24px/1 var(--display)}
+.dof .s span{font-size:12.5px;color:var(--muted)}
+.dof .t{background:var(--surface);border:1px solid var(--line)}
+.dof .r{background:var(--surface);border:1px solid var(--line)}
+.dof .v{background:var(--accent-soft);border:1px solid var(--accent)}
+.dof .v b{color:var(--accent)}
+
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}
+.opcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.opcard header{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.opsym{font:600 20px/1 var(--display)}
+.opname{font-size:13px;color:var(--muted)}
+.opcard p{font-size:14px;margin:0}
+.um{font-size:13.5px;border-top:1px dashed var(--line);padding-top:6px;margin-top:auto}
+.um .lbl{font:500 10.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-right:6px}
+.um b{font:600 16px var(--mono);color:var(--good)}
+
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13.5px;font-weight:500;align-self:flex-start}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.active{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+
+.tablewrap{overflow-x:auto;margin:12px 0;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:7px 10px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+tr:last-child>th,tr:last-child>td{border-bottom:0}
+thead th{font:500 13px var(--body);color:var(--muted);background:var(--surface-2)}
+tbody th{text-align:left;font-weight:500}
+td{font-family:var(--mono);font-variant-numeric:tabular-nums}
+td.fn{font-family:var(--body);font-style:italic;color:var(--muted);text-align:left}
+td.fn mark{background:none;color:var(--ink);font-weight:600}
+td.fn mark.tr{box-shadow:inset 0 -2px 0 var(--b1)}
+td.fn mark.ro{box-shadow:inset 0 -2px 0 var(--a2)}
+tr.total th,tr.total td{background:var(--accent-soft);font-weight:600}
+tr.sub td,tr.sub th{color:var(--muted)}
+td.p1{color:var(--good);font-weight:600}
+td.m1{color:var(--bad);font-weight:600}
+td.z{color:var(--muted)}
+td.q{color:var(--muted)}
+.cell-in{width:58px;padding:5px 6px;text-align:center;font:500 14px var(--mono);border:1px solid var(--line);border-radius:6px;background:var(--surface-2);color:var(--ink)}
+.cell-in.ok{border-color:var(--good);background:var(--good-soft)}
+.cell-in.no{border-color:var(--bad);background:var(--bad-soft)}
+.fb{font-size:14px;margin:6px 0 12px}
+.fb.ok{color:var(--good)}.fb.no{color:var(--bad)}
+
+.chip{display:inline-flex;align-items:center;gap:5px;font:600 13.5px var(--body);color:var(--c);background:color-mix(in srgb,var(--c) 13%,transparent);border-radius:6px;padding:1px 7px;white-space:nowrap}
+.chip.a1{--c:var(--a1)}.chip.a2{--c:var(--a2)}.chip.b1{--c:var(--b1)}.chip.b2{--c:var(--b2)}
+.rep{font:600 18px var(--display)}
+.result{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:12px 0}
+.result .lhs{font:600 18px var(--display)}
+
+.matrices{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0}
+.mat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+.mat .t{font:600 15px var(--display)}
+.mat .grid{display:grid;grid-template-columns:repeat(3,26px);gap:2px 4px;font:500 13px var(--mono);text-align:center;border-left:1.5px solid var(--ink);border-right:1.5px solid var(--ink);padding:2px 4px;border-radius:3px}
+.mat .grid span.d{color:var(--accent);font-weight:600}
+.mat .tr{font:500 12px var(--mono);color:var(--muted)}
+
+.work{font:14px/1.9 var(--mono);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;overflow-x:auto;white-space:nowrap}
+
+.motions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+.motion{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 10px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:4px;min-width:0}
+.motion:hover{border-color:var(--accent)}
+.motion.active{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.motion .nm{font:600 15px var(--display)}
+.motion .ir{font-size:13px;color:var(--muted)}
+
+.modes{display:flex;flex-direction:column;gap:10px;margin:12px 0}
+.mode{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:start}
+.mode.active{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.mode h4{margin:0;font:600 17px var(--display)}
+.mode .wn{font:500 13px var(--mono);color:var(--muted)}
+.mode p{grid-column:1/-1;margin:0;font-size:14px}
+.mode .chars{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.cbox{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:7px;padding:3px 8px;font-size:13px;background:var(--surface-2)}
+.cbox b{font:600 13px var(--mono)}
+.cbox b.p1{color:var(--good)}.cbox b.m1{color:var(--bad)}.cbox b.q{color:var(--muted)}
+
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:28px;padding-top:16px;border-top:1px solid var(--line)}
+
+@media (max-width:900px){
+  .app{grid-template-columns:minmax(0,1fr);grid-template-areas:"head" "stage" "lesson";grid-template-rows:auto auto auto;row-gap:12px}
+  .head{padding-block:2px 12px}
+  .stage{top:env(safe-area-inset-top,0px);height:48dvh;min-height:320px;z-index:5;border-radius:12px}
+  .lesson{scroll-margin-top:calc(48dvh + 16px);padding-top:6px}
+  .lab.elem{display:none}
+  .caption{font-size:12.5px;line-height:1.4;padding:6px 10px;max-height:4.6em;overflow-y:auto}
+  .opbar{gap:4px;padding:4px}
+  .sop{padding:4px 9px;min-width:42px;font-size:13px}
+  .st-bottom{inset:auto 8px 8px 8px;gap:6px}
+  .st-top{inset:8px 8px auto 8px}
+}
+@media (max-width:560px){
+  .cards,.matrices{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .motions{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .caption{font-size:12.5px;padding:6px 10px}
+  .sop{padding:5px 9px;min-width:44px;font-size:13px}
+  .opbar .lbl{display:none}
+  .tg{font-size:11px;padding:3px 9px}
+}
+@media (max-width:400px){ .cards{grid-template-columns:minmax(0,1fr)} }
+</style>
+
+<div class="app">
+  <header class="head">
+    <div class="brand">
+      <div class="kicker">Group theory · C<sub>2v</sub> · H<sub>2</sub>O</div>
+      <h1>Water's vibrational modes</h1>
+    </div>
+    <div class="conv">
+      <span class="lbl" id="conv-lbl">Molecular plane</span>
+      <div class="seg" role="group" aria-labelledby="conv-lbl">
+        <button id="plane-xz" data-plane="xz" aria-pressed="true">xz</button>
+        <button id="plane-yz" data-plane="yz" aria-pressed="false">yz</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="stage" id="stage" aria-label="3D model of a water molecule">
+    <canvas id="gl" tabindex="0" aria-label="Drag or use arrow keys to rotate. Scroll to zoom."></canvas>
+    <div class="labels" id="labels"></div>
+    <div class="st-top">
+      <div class="toggles">
+        <button class="tg" id="tg-axes" aria-pressed="true">Axes</button>
+        <button class="tg" id="tg-elem" aria-pressed="false">Symmetry elements</button>
+        <button class="tg" id="tg-labels" aria-pressed="true">Labels</button>
+      </div>
+      <div class="showing" id="showing"></div>
+    </div>
+    <div class="st-bottom">
+      <div class="caption" id="caption"></div>
+      <div class="opbar" id="opbar"><span class="lbl">Apply</span></div>
+    </div>
+  </section>
+
+  <main class="lesson" id="lesson">
+    <ol class="stepper" id="stepper"></ol>
+    <div class="body" id="body"></div>
+    <div class="nav">
+      <button class="btn" id="prev">← Previous</button>
+      <button class="btn primary" id="next">Next →</button>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = id => document.getElementById(id);
+const V = (x,y,z) => new THREE.Vector3(x,y,z);
+const fmt = n => { n = Math.round(n*1000)/1000; if (n === 0) n = 0; return n < 0 ? '−' + (-n) : String(n); };
+const fmtS = n => n > 0 ? '+' + n : fmt(n);
+const parseNum = s => { if (s == null) return NaN; s = String(s).trim().replace(/[−–]/g,'-'); return s === '' ? NaN : Number(s); };
+
+/* ---------- point group data ---------- */
+const OPS = [
+  {id:'E',   html:'<i>E</i>',                   name:'Identity',            M:[[1,0,0],[0,1,0],[0,0,1]],   kind:'E'},
+  {id:'C2',  html:'<i>C</i><sub>2</sub>',       name:'Twofold rotation',    M:[[-1,0,0],[0,-1,0],[0,0,1]], kind:'rot',  axis:[0,0,1]},
+  {id:'sxz', html:'σ<sub>v</sub>(<i>xz</i>)',   name:'Mirror plane xz',     M:[[1,0,0],[0,-1,0],[0,0,1]],  kind:'refl', normal:[0,1,0]},
+  {id:'syz', html:'σ<sub>v</sub>′(<i>yz</i>)',  name:'Mirror plane yz',     M:[[-1,0,0],[0,1,0],[0,0,1]],  kind:'refl', normal:[1,0,0]},
+];
+const IRREPS = [
+  {id:'A1', cls:'a1', html:'A<sub>1</sub>', chi:[1, 1, 1, 1], lin:['<i>z</i>'], rot:[],              quad:'<i>x</i><sup>2</sup>, <i>y</i><sup>2</sup>, <i>z</i><sup>2</sup>'},
+  {id:'A2', cls:'a2', html:'A<sub>2</sub>', chi:[1, 1,-1,-1], lin:[],           rot:['R<sub>z</sub>'], quad:'<i>xy</i>'},
+  {id:'B1', cls:'b1', html:'B<sub>1</sub>', chi:[1,-1, 1,-1], lin:['<i>x</i>'], rot:['R<sub>y</sub>'], quad:'<i>xz</i>'},
+  {id:'B2', cls:'b2', html:'B<sub>2</sub>', chi:[1,-1,-1, 1], lin:['<i>y</i>'], rot:['R<sub>x</sub>'], quad:'<i>yz</i>'},
+];
+const G3N = 'Γ<sub>3<i>N</i></sub>', GV = 'Γ<sub>vib</sub>', GT = 'Γ<sub>trans</sub>', GR = 'Γ<sub>rot</sub>';
+const chip = ir => `<span class="chip ${ir.cls}">${ir.html}</span>`;
+
+/* ---------- state ---------- */
+const S = {
+  step:0, plane:'xz', axes:true, elements:false, labels:true,
+  arrows:'none', fieldId:null, playing:!reduced, phase:0,
+  anim:null, hold:null,
+  seenOps:{}, cart:{}, cartLast:null, modeTests:{}, motionSeen:{},
+  inputs:{}, check4:null, check5:null, showWork:false, vibRevealed:false,
+};
+
+/* ---------- molecular model (display units, centre of mass at origin) ---------- */
+const SCALE = 1.7;
+let ATOMS = [], FIELDS = {};
+function mul(M,v){ return V(M[0][0]*v.x+M[0][1]*v.y+M[0][2]*v.z, M[1][0]*v.x+M[1][1]*v.y+M[1][2]*v.z, M[2][0]*v.x+M[2][1]*v.y+M[2][2]*v.z); }
+const trace = M => M[0][0]+M[1][1]+M[2][2];
+
+function buildModel(){
+  // r(O–H) = 0.958 Å, angle 104.5°: H sits 0.7575 Å off-axis and 0.5865 Å below O
+  const u = S.plane === 'xz' ? V(1,0,0) : V(0,1,0);      // in-plane, perpendicular to C2
+  const n = S.plane === 'xz' ? V(0,1,0) : V(1,0,0);      // normal to the molecular plane
+  const zO = 0.0652, zH = zO - 0.5865, a = 0.7575;
+  ATOMS = [
+    {key:'O',  html:'O',               el:'O', pos:V(0,0,zO).multiplyScalar(SCALE)},
+    {key:'H1', html:'H<sub>1</sub>',   el:'H', pos:u.clone().multiplyScalar(a).add(V(0,0,zH)).multiplyScalar(SCALE)},
+    {key:'H2', html:'H<sub>2</sub>',   el:'H', pos:u.clone().multiplyScalar(-a).add(V(0,0,zH)).multiplyScalar(SCALE)},
+  ];
+  const [O,H1,H2] = ATOMS.map(x=>x.pos);
+  const b1 = H1.clone().sub(O).normalize(), b2 = H2.clone().sub(O).normalize();
+  const OX = 3/16; // oxygen recoil (m_H/m_O), drawn 3× larger so it is visible
+  const recoil = (d1,d2) => d1.clone().add(d2).multiplyScalar(-OX);
+  const norm = vecs => { const m = Math.max(...vecs.map(v=>v.length())); return vecs.map(v=>v.clone().multiplyScalar(0.85/m)); };
+  const p1 = n.clone().cross(b1), p2 = n.clone().cross(b2).negate();
+  const rot = ax => norm(ATOMS.map(at => ax.clone().cross(at.pos)));
+  const tr = ax => ATOMS.map(() => ax.clone().multiplyScalar(0.75));
+  FIELDS = {
+    Tx:{kind:'trans', html:'T<sub><i>x</i></sub>', name:'Translation along <i>x</i>', vecs:tr(V(1,0,0))},
+    Ty:{kind:'trans', html:'T<sub><i>y</i></sub>', name:'Translation along <i>y</i>', vecs:tr(V(0,1,0))},
+    Tz:{kind:'trans', html:'T<sub><i>z</i></sub>', name:'Translation along <i>z</i>', vecs:tr(V(0,0,1))},
+    Rx:{kind:'rot', html:'R<sub><i>x</i></sub>', name:'Rotation about <i>x</i>', vecs:rot(V(1,0,0))},
+    Ry:{kind:'rot', html:'R<sub><i>y</i></sub>', name:'Rotation about <i>y</i>', vecs:rot(V(0,1,0))},
+    Rz:{kind:'rot', html:'R<sub><i>z</i></sub>', name:'Rotation about <i>z</i>', vecs:rot(V(0,0,1))},
+    nu1:{kind:'vib', html:'ν<sub>1</sub>', name:'Symmetric stretch', wn:3657,
+         desc:'Both O–H bonds lengthen and shorten together. The H–O–H angle barely changes.',
+         vecs:norm([recoil(b1,b2), b1, b2])},
+    nu2:{kind:'vib', html:'ν<sub>2</sub>', name:'Bend', wn:1595,
+         desc:'The H–O–H angle opens and closes like scissors. Bond lengths barely change.',
+         vecs:norm([recoil(p1,p2), p1, p2])},
+    nu3:{kind:'vib', html:'ν<sub>3</sub>', name:'Antisymmetric stretch', wn:3756,
+         desc:'One O–H bond lengthens while the other shortens, so the oxygen rocks side to side.',
+         vecs:norm([recoil(b1,b2.clone().negate()), b1, b2.clone().negate()])},
+  };
+}
+
+function perm(op){ return ATOMS.map(at => { const w = mul(op.M, at.pos); return ATOMS.findIndex(b => b.pos.distanceTo(w) < 1e-3); }); }
+function unmoved(op){ return perm(op).map((j,i)=> j===i ? i : -1).filter(i=>i>=0); }
+function gamma3N(){ return OPS.map(op => unmoved(op).length * trace(op.M)); }
+function fieldChar(op, F){
+  const p = perm(op); let num = 0, den = 0;
+  F.forEach((d,i) => { num += mul(op.M,d).dot(F[p[i]]); den += d.lengthSq(); });
+  return Math.round(num/den);
+}
+const fieldChars = id => OPS.map(op => fieldChar(op, FIELDS[id].vecs));
+const sumChars = ids => OPS.map((op,k) => ids.reduce((s,id)=> s + fieldChars(id)[k], 0));
+const reduce = ch => IRREPS.map(ir => ch.reduce((s,c,k)=> s + c*ir.chi[k], 0)/4);
+const irrepOf = ch => IRREPS.find(ir => ir.chi.every((c,k)=> c === ch[k]));
+const repHTML = ns => ns.map((n,k)=> n ? `${n>1?n:''}${IRREPS[k].html}` : '').filter(Boolean).join(' + ') || '0';
+function cartCells(op){
+  const p = perm(op), E = [V(1,0,0),V(0,1,0),V(0,0,1)];
+  return ATOMS.map((at,i) => E.map(e => p[i] === i ? Math.round(mul(op.M,e).dot(e)) : null));
+}
+
+/* ---------- three.js scene ---------- */
+const stageEl = $('stage'), canvas = $('gl'), labelsEl = $('labels');
+let renderer;
+try { renderer = new THREE.WebGLRenderer({canvas, antialias:true}); }
+catch(err){ stageEl.insertAdjacentHTML('beforeend','<div class="nogl">This browser could not start WebGL, so the 3D model is unavailable. The lesson still works.</div>'); }
+
+const COL = {O:0xe2564c, H:0xe9eef3, bond:0x8e9cac, x:0xf2a23a, y:0x45d0a0, z:0x93a6ff, mode:0xffd35c, c2:0xffd35c, sxz:0x5d9cff, syz:0xc283ff, halo:0x7dffc0};
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100);
+camera.up.set(0,0,1);
+scene.add(camera);
+scene.add(new THREE.HemisphereLight(0xe4ecff, 0x1b2430, 0.85));
+const key = new THREE.DirectionalLight(0xffffff, 0.85); key.position.set(3,4,6); camera.add(key);
+
+const GEO = {shaft:new THREE.CylinderGeometry(1,1,1,14), head:new THREE.ConeGeometry(1,1,20), sphere:new THREE.SphereGeometry(1,40,28), bond:new THREE.CylinderGeometry(1,1,1,20)};
+const UP = V(0,1,0);
+function makeArrow(color, o={}){
+  const op = o.opacity ?? 1;
+  const mat = new THREE.MeshStandardMaterial({color, roughness:.45, metalness:.05, transparent:op<1, opacity:op, depthWrite:op>=1});
+  const g = new THREE.Group(), shaft = new THREE.Mesh(GEO.shaft, mat), head = new THREE.Mesh(GEO.head, mat);
+  g.add(shaft, head);
+  g.userData = {shaft, head, mat, r:o.r ?? .04, hr:o.hr ?? .1, hl:o.hl ?? .24};
+  return g;
+}
+function placeArrow(g, from, vec){
+  const L = vec.length(); if (L < 1e-3){ g.visible = false; return; }
+  g.visible = true;
+  const {shaft, head, r, hr} = g.userData, hl = Math.min(g.userData.hl, L*.5);
+  g.position.copy(from);
+  g.quaternion.setFromUnitVectors(UP, vec.clone().divideScalar(L));
+  shaft.scale.set(r, L-hl, r); shaft.position.set(0, (L-hl)/2, 0);
+  head.scale.set(hr, hl, hr);  head.position.set(0, L-hl/2, 0);
+}
+
+// axes
+const axesGroup = new THREE.Group(); scene.add(axesGroup);
+[[V(1,0,0),COL.x],[V(0,1,0),COL.y],[V(0,0,1),COL.z]].forEach(([d,c]) => {
+  const a = makeArrow(c, {opacity:.8, r:.012, hr:.05, hl:.16}); placeArrow(a, d.clone().multiplyScalar(-2.3), d.clone().multiplyScalar(4.8)); axesGroup.add(a);
+});
+
+// symmetry elements
+const ELEM = {};
+(function(){
+  const g = new THREE.BufferGeometry().setFromPoints([V(0,0,-2.6), V(0,0,2.6)]);
+  const mat = new THREE.LineDashedMaterial({color:COL.c2, dashSize:.14, gapSize:.09, transparent:true, opacity:.9});
+  const line = new THREE.Line(g, mat); line.computeLineDistances();
+  const tube = new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,5.2,10).rotateX(Math.PI/2), new THREE.MeshBasicMaterial({color:COL.c2, transparent:true, opacity:.0, depthWrite:false}));
+  const grp = new THREE.Group(); grp.add(line, tube); scene.add(grp);
+  ELEM.C2 = {grp, set(on, hot){ grp.visible = on; tube.material.opacity = hot ? .55 : 0; mat.opacity = hot ? 1 : .8; }};
+  const plane = (id, color, orient) => {
+    const geo = new THREE.PlaneGeometry(4.4, 3.8); orient(geo);
+    const fill = new THREE.MeshBasicMaterial({color, transparent:true, opacity:.1, side:THREE.DoubleSide, depthWrite:false});
+    const edge = new THREE.LineBasicMaterial({color, transparent:true, opacity:.5});
+    const grp = new THREE.Group(); grp.add(new THREE.Mesh(geo, fill), new THREE.LineSegments(new THREE.EdgesGeometry(geo), edge)); scene.add(grp);
+    ELEM[id] = {grp, set(on, hot){ grp.visible = on; fill.opacity = hot ? .26 : .09; edge.opacity = hot ? .95 : .45; }};
+  };
+  plane('sxz', COL.sxz, g => g.rotateX(Math.PI/2));
+  plane('syz', COL.syz, g => { g.rotateX(Math.PI/2); g.rotateZ(Math.PI/2); });
+})();
+
+// molecule: "live" copy is transformed by the operation, "ghost" stays at the starting position
+const live = new THREE.Group(); live.matrixAutoUpdate = false; scene.add(live);
+const ghost = new THREE.Group(); scene.add(ghost);
+const atomMeshes = [], ghostMeshes = [], bonds = [];
+['O','H','H'].forEach(el => {
+  const m = new THREE.Mesh(GEO.sphere, new THREE.MeshStandardMaterial({color:COL[el], roughness:.32, metalness:0}));
+  m.scale.setScalar(el==='O' ? .36 : .23); live.add(m); atomMeshes.push(m);
+  const g = new THREE.Mesh(GEO.sphere, new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:.12, depthWrite:false}));
+  g.scale.setScalar(el==='O' ? .54 : .38); ghost.add(g); ghostMeshes.push(g);
+});
+for (let i=0;i<2;i++){ const b = new THREE.Mesh(GEO.bond, new THREE.MeshStandardMaterial({color:COL.bond, roughness:.5})); live.add(b); bonds.push(b); }
+const livePool = [], ghostPool = [];
+function poolArrow(pool, parent, k, ghostly){
+  while (pool.length <= k){ const a = makeArrow(0xffffff, ghostly ? {opacity:.28} : {}); parent.add(a); pool.push(a); }
+  return pool[k];
+}
+function placeBond(mesh, a, b){
+  const d = b.clone().sub(a), L = d.length();
+  mesh.position.copy(a).addScaledVector(d, .5);
+  mesh.quaternion.setFromUnitVectors(UP, d.divideScalar(L));
+  mesh.scale.set(.075, L, .075);
+}
+
+function arrowSpecs(){
+  if (S.arrows === 'cart'){
+    const out = [];
+    ATOMS.forEach((at,i) => [[V(1,0,0),COL.x],[V(0,1,0),COL.y],[V(0,0,1),COL.z]].forEach(([d,c]) => out.push({atom:i, vec:d.multiplyScalar(.8), color:c})));
+    return out;
+  }
+  if (S.arrows === 'field' && FIELDS[S.fieldId]) return FIELDS[S.fieldId].vecs.map((v,i)=>({atom:i, vec:v, color:COL.mode})).filter(s => s.vec.length() > .04);
+  return [];
+}
+
+// operation animation
+const ease = t => t<.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2;
+function exactMatrix(op){ const M = op.M, m = new THREE.Matrix4(); m.set(M[0][0],M[0][1],M[0][2],0, M[1][0],M[1][1],M[1][2],0, M[2][0],M[2][1],M[2][2],0, 0,0,0,1); return m; }
+function opMatrix(op, e){
+  const m = new THREE.Matrix4();
+  if (op.kind === 'rot') m.makeRotationAxis(V(...op.axis), Math.PI*e);
+  else if (op.kind === 'refl'){
+    let s = 1 - 2*e; if (Math.abs(s) < .02) s = s < 0 ? -.02 : .02;
+    const [x,y,z] = op.normal, k = s - 1;
+    m.set(1+k*x*x, k*x*y, k*x*z, 0,  k*y*x, 1+k*y*y, k*y*z, 0,  k*z*x, k*z*y, 1+k*z*z, 0,  0,0,0,1);
+  }
+  return m;
+}
+function computeResult(op){
+  const r = {op, unmoved:unmoved(op), kind:S.arrows};
+  if (S.arrows === 'cart'){ r.cells = cartCells(op); r.chi = r.cells.flat().reduce((s,c)=> s + (c||0), 0); }
+  if (S.arrows === 'field') { r.chi = fieldChar(op, FIELDS[S.fieldId].vecs); r.fieldId = S.fieldId; }
+  return r;
+}
+function applyOp(id){
+  const op = OPS.find(o => o.id === id);
+  S.hold = null;
+  S.anim = {op, t0:performance.now(), dur: reduced ? 1 : (op.kind === 'E' ? 800 : 1600), result:computeResult(op)};
+  setCaption(`Applying ${op.html}…`);
+  markOpButtons(id);
+}
+function finishOp(){
+  const r = S.anim.result; S.hold = {op:r.op, result:r}; S.anim = null;
+  S.seenOps[r.op.id] = true;
+  if (r.kind === 'cart'){ S.cart[r.op.id] = r; S.cartLast = r.op.id; }
+  if (r.kind === 'field' && FIELDS[r.fieldId].kind === 'vib'){ (S.modeTests[r.fieldId] ||= {})[r.op.id] = r.chi; }
+  ghostMeshes.forEach((g,i) => { const um = r.unmoved.includes(i); g.material.color.setHex(um ? COL.halo : 0xffffff); g.material.opacity = um ? .3 : .1; });
+  setCaption(resultCaption(r));
+  if ([1,2,6].includes(S.step)) renderLesson();
+}
+function resetOp(){
+  S.anim = null; S.hold = null; markOpButtons(null);
+  ghostMeshes.forEach(g => { g.material.color.setHex(0xffffff); g.material.opacity = .12; });
+  setCaption(defaultCaption());
+}
+function resultCaption(r){
+  const names = r.unmoved.map(i => ATOMS[i].html).join(', ') || 'none';
+  let s = `<b>${r.op.html}</b> done. Unmoved atoms (green halo): <b>${names}</b>.`;
+  if (r.unmoved.length < 3) s += ' H<sub>1</sub> and H<sub>2</sub> have swapped places.';
+  if (r.kind === 'cart') s += ` Faint arrows show where the vectors started. Sum of +1/−1 on unmoved atoms: χ = <b>${fmt(r.chi)}</b>.`;
+  if (r.kind === 'field') s += r.chi > 0 ? ` The yellow pattern lands on itself: χ = <b>+1</b>.` : ` The yellow pattern is reversed: χ = <b>−1</b>.`;
+  return s;
+}
+function defaultCaption(){
+  if (S.arrows === 'cart') return 'Nine unit vectors: <i>x</i>, <i>y</i>, <i>z</i> on each atom. Apply an operation and watch where each one ends up.';
+  if (S.arrows === 'field') return `Showing ${FIELDS[S.fieldId].name.toLowerCase()}. Apply an operation: does the yellow pattern stay the same (+1) or reverse (−1)?`;
+  return 'Drag to rotate, scroll to zoom. Apply an operation to see what it does to the molecule.';
+}
+function setCaption(html){ $('caption').innerHTML = html; }
+function markOpButtons(id){ document.querySelectorAll('.sop[data-op]').forEach(b => b.classList.toggle('active', b.dataset.op === id)); }
+
+// camera orbit
+const cam = {theta:-1.12, phi:1.22, r:7.4};
+const defaultTheta = () => S.plane === 'xz' ? -1.12 : -1.12 + Math.PI/2;
+function placeCamera(){
+  const {theta, phi, r} = cam;
+  camera.position.set(r*Math.sin(phi)*Math.cos(theta), r*Math.sin(phi)*Math.sin(theta), r*Math.cos(phi));
+  camera.lookAt(0,0,0);
+}
+let drag = null;
+canvas.addEventListener('pointerdown', e => { drag = {x:e.clientX, y:e.clientY}; canvas.setPointerCapture(e.pointerId); });
+canvas.addEventListener('pointermove', e => {
+  if (!drag) return;
+  cam.theta -= (e.clientX - drag.x) * .008;
+  cam.phi = Math.min(Math.PI-.12, Math.max(.12, cam.phi - (e.clientY - drag.y) * .008));
+  drag = {x:e.clientX, y:e.clientY};
+});
+['pointerup','pointercancel'].forEach(t => canvas.addEventListener(t, () => drag = null));
+canvas.addEventListener('wheel', e => { e.preventDefault(); cam.r = Math.min(14, Math.max(4, cam.r * Math.exp(e.deltaY*.0015))); }, {passive:false});
+canvas.addEventListener('keydown', e => {
+  const k = {ArrowLeft:[.12,0], ArrowRight:[-.12,0], ArrowUp:[0,.1], ArrowDown:[0,-.1]}[e.key];
+  if (!k) return; e.preventDefault();
+  cam.theta += k[0]; cam.phi = Math.min(Math.PI-.12, Math.max(.12, cam.phi + k[1]));
+});
+
+// HTML labels projected from 3D
+const labelEls = {};
+function label(key, html, cls){
+  if (!labelEls[key]){ const el = document.createElement('span'); el.className = 'lab ' + cls; labelEls[key] = el; labelsEl.appendChild(el); }
+  const el = labelEls[key]; if (el._html !== html){ el.innerHTML = html; el._html = html; } return el;
+}
+const tmpV = V(0,0,0);
+function putLabel(el, world, dx, dy, show){
+  if (!show){ el.style.display = 'none'; return; }
+  tmpV.copy(world).project(camera);
+  if (tmpV.z > 1){ el.style.display = 'none'; return; }
+  el.style.display = '';
+  const w = stageEl.clientWidth, h = stageEl.clientHeight;
+  el.style.transform = `translate(${(tmpV.x+1)/2*w + dx}px, ${(1-tmpV.y)/2*h + dy}px) translate(-50%,-50%)`;
+}
+
+function resize(){
+  if (!renderer) return;
+  const w = stageEl.clientWidth, h = stageEl.clientHeight;
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(w, h, false);
+  camera.aspect = w/h;
+  camera.fov = w/h < .9 ? 48 : 36;
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(stageEl);
+
+let last = performance.now();
+function frame(now){
+  requestAnimationFrame(frame);
+  const dt = Math.min(.05, (now - last)/1000); last = now;
+  let M = null, activeOp = null;
+  if (S.anim){
+    activeOp = S.anim.op;
+    const t = Math.min(1, (now - S.anim.t0)/S.anim.dur);
+    M = t >= 1 ? exactMatrix(activeOp) : opMatrix(activeOp, ease(t));
+    if (t >= 1) finishOp();
+  } else if (S.hold){ activeOp = S.hold.op; M = exactMatrix(activeOp); }
+  live.matrix.copy(M || new THREE.Matrix4()); live.matrixWorldNeedsUpdate = true;
+  ghost.visible = !!activeOp;
+
+  const field = S.arrows === 'field' ? FIELDS[S.fieldId] : null;
+  const osc = field && !activeOp;
+  if (osc && S.playing) S.phase += dt * Math.PI * 2 * .55;
+  const amp = osc ? .3 * Math.sin(S.phase) : 0;
+  const cur = ATOMS.map((at,i) => field ? at.pos.clone().addScaledVector(field.vecs[i], amp) : at.pos.clone());
+  cur.forEach((p,i) => { atomMeshes[i].position.copy(p); ghostMeshes[i].position.copy(ATOMS[i].pos); });
+  placeBond(bonds[0], cur[0], cur[1]); placeBond(bonds[1], cur[0], cur[2]);
+
+  const specs = arrowSpecs();
+  specs.forEach((s,k) => {
+    const a = poolArrow(livePool, live, k, false); a.userData.mat.color.setHex(s.color); placeArrow(a, cur[s.atom], s.vec);
+    const g = poolArrow(ghostPool, ghost, k, true); g.userData.mat.color.setHex(s.color); placeArrow(g, ATOMS[s.atom].pos, s.vec);
+  });
+  for (let k = specs.length; k < livePool.length; k++){ livePool[k].visible = false; ghostPool[k].visible = false; }
+
+  axesGroup.visible = S.axes;
+  const hotId = activeOp && activeOp.kind !== 'E' ? activeOp.id : null;
+  ['C2','sxz','syz'].forEach(id => ELEM[id].set(S.elements || hotId === id, hotId === id));
+
+  if (renderer){ placeCamera(); renderer.render(scene, camera); }
+
+  // labels
+  const lm = live.matrix;
+  ATOMS.forEach((at,i) => putLabel(label('a'+i, at.html, 'atom'), cur[i].clone().applyMatrix4(lm), 16, -18, S.labels));
+  [['x',V(2.75,0,0)],['y',V(0,2.75,0)],['z',V(0,0,2.75)]].forEach(([n,p]) => putLabel(label('ax'+n, n, 'axis'), p, 0, 0, S.axes && S.labels));
+  putLabel(label('eC2', '<i>C</i><sub>2</sub>', 'elem'), V(0,0,2.95), 22, 0, S.labels && (S.elements || hotId==='C2'));
+  putLabel(label('esxz', 'σ<sub>v</sub>(<i>xz</i>)', 'elem sxz'), V(2.2,0,1.9), 0, 0, S.labels && (S.elements || hotId==='sxz'));
+  putLabel(label('esyz', 'σ<sub>v</sub>′(<i>yz</i>)', 'elem syz'), V(0,2.2,1.9), 0, 0, S.labels && (S.elements || hotId==='syz'));
+}
+
+/* ---------- stage controls ---------- */
+$('opbar').insertAdjacentHTML('beforeend', OPS.map(op => `<button class="sop" data-op="${op.id}" title="${op.name}">${op.html}</button>`).join('') + '<button class="sop reset" id="reset">Reset</button>');
+$('opbar').addEventListener('click', e => { const b = e.target.closest('[data-op]'); if (b) applyOp(b.dataset.op); });
+$('reset').addEventListener('click', () => { resetOp(); cam.theta = defaultTheta(); cam.phi = 1.22; cam.r = 7.4; });
+function syncToggles(){
+  $('tg-axes').setAttribute('aria-pressed', S.axes);
+  $('tg-elem').setAttribute('aria-pressed', S.elements);
+  $('tg-labels').setAttribute('aria-pressed', S.labels);
+}
+$('tg-axes').onclick = () => { S.axes = !S.axes; syncToggles(); };
+$('tg-elem').onclick = () => { S.elements = !S.elements; syncToggles(); };
+$('tg-labels').onclick = () => { S.labels = !S.labels; syncToggles(); };
+
+function renderShowing(){
+  const el = $('showing');
+  if (S.arrows === 'cart') el.innerHTML = `<div class="legend"><span><i style="background:var(--x)"></i>x</span><span><i style="background:var(--y)"></i>y</span><span><i style="background:var(--z)"></i>z</span></div>`;
+  else if (S.arrows === 'field'){
+    const f = FIELDS[S.fieldId];
+    el.innerHTML = `<span><b>${f.html}</b> ${f.kind==='vib' ? f.name : ''}</span><button class="mini" id="play">${S.playing ? 'Pause' : 'Play'}</button>`;
+    $('play').onclick = () => { S.playing = !S.playing; renderShowing(); };
+  } else el.innerHTML = '';
+}
+function setArrows(kind, fieldId){
+  S.arrows = kind; S.fieldId = kind === 'field' ? fieldId : null;
+  resetOp(); renderShowing();
+}
+
+/* ---------- lesson steps ---------- */
+const opButtons = () => `<div class="btnrow">${OPS.map(op => `<button class="btn" data-op="${op.id}">${op.html}</button>`).join('')}</div>`;
+const opHead = (first='') => `<thead><tr><th>${first}</th>${OPS.map(op => `<th>${op.html}</th>`).join('')}</tr></thead>`;
+const charCells = ch => ch.map(c => `<td>${fmt(c)}</td>`).join('');
+function charTable(hl){
+  const fn = (ir) => {
+    const lin = ir.lin.map(s => hl ? `<mark class="tr">${s}</mark>` : s), rot = ir.rot.map(s => hl ? `<mark class="ro">${s}</mark>` : s);
+    return [...lin, ...rot].join(', ');
+  };
+  return `<div class="tablewrap"><table>${opHead('C<sub>2v</sub>').replace('</tr>','<th></th><th></th></tr>')}<tbody>${
+    IRREPS.map(ir => `<tr><th>${chip(ir)}</th>${charCells(ir.chi)}<td class="fn">${fn(ir)}</td><td class="fn">${ir.quad}</td></tr>`).join('')
+  }</tbody></table></div>`;
+}
+const isTR = id => id && FIELDS[id] && FIELDS[id].kind !== 'vib';
+const isMode = id => id && FIELDS[id] && FIELDS[id].kind === 'vib';
+
+const STEPS = [
+  {short:'Count motions', enter(){ setArrows('none'); S.elements = false; }, html(){ return `
+    <p class="eyebrow">Step 1 of 7</p>
+    <h2>Count the ways water can move</h2>
+    <p>Describing where every atom of an <i>N</i>-atom molecule is takes 3<i>N</i> coordinates: an <i>x</i>, <i>y</i> and <i>z</i> for each atom. Water has <i>N</i> = 3, so it has <strong>9 degrees of freedom</strong>.</p>
+    <div class="dof" role="img" aria-label="9 degrees of freedom split into 3 translations, 3 rotations and 3 vibrations">
+      <div class="s t"><b>3</b><span>translations</span></div>
+      <div class="s r"><b>3</b><span>rotations</span></div>
+      <div class="s v"><b>3</b><span>vibrations (3<i>N</i> − 6)</span></div>
+    </div>
+    <p>Three of those motions carry the whole molecule through space and three turn it. A nonlinear molecule always has 3<i>N</i> − 6 vibrations, so water has three.</p>
+    <p>The goal of this lesson is to find the <strong>symmetry species</strong> (irreducible representation) of each vibration, without solving any equations of motion. The plan:</p>
+    <ul>
+      <li>Build a reducible representation, ${G3N}, from all 9 motions.</li>
+      <li>Reduce it to a sum of irreducible representations.</li>
+      <li>Remove the parts that belong to translations and rotations. What remains is ${GV}.</li>
+    </ul>
+    <h3>Point group and axes</h3>
+    <p>Water belongs to the point group <strong>C<sub>2v</sub></strong>. It has four symmetry operations, each in a class of its own, so the order of the group is <i>h</i> = 4.</p>
+    <p>The <i>z</i> axis always runs along the <i>C</i><sub>2</sub> axis. Textbooks disagree about where the molecule sits: many place it in the <i>xz</i> plane, while Mulliken's 1955 recommendation puts planar C<sub>2v</sub> molecules in the <i>yz</i> plane. You can switch at the top of the page. The only effect is that the labels B<sub>1</sub> and B<sub>2</sub> trade places, so use whichever your course uses.</p>
+    <div class="callout"><strong>Try it.</strong> Drag the molecule to turn it, scroll to zoom, and turn on <em>Symmetry elements</em> above the model.</div>`; }},
+
+  {short:'Operations', enter(){ setArrows('none'); S.elements = true; }, html(){
+    const cards = OPS.map(op => {
+      const um = unmoved(op), seen = S.seenOps[op.id];
+      const desc = {E:'Leave the molecule alone. Every object has this operation.', C2:'Rotate 360°/2 = 180° about the <i>z</i> axis.'}[op.id]
+        || (um.length === 3 ? 'Reflect through a plane that contains the whole molecule.' : 'Reflect through a plane perpendicular to the molecule that bisects the H–O–H angle.');
+      return `<article class="opcard">
+        <header><span class="opsym">${op.html}</span><span class="opname">${op.name}</span></header>
+        <p>${desc}</p>
+        <div class="um"><span class="lbl">Unmoved atoms</span>${seen ? `<b>${um.length}</b> <span class="muted">(${um.map(i=>ATOMS[i].html).join(', ')})</span>` : '<span class="muted">Apply it to find out</span>'}</div>
+        <button class="btn" data-op="${op.id}">Apply ${op.html}</button>
+      </article>`; }).join('');
+    const allSeen = OPS.every(op => S.seenOps[op.id]);
+    return `
+    <p class="eyebrow">Step 2 of 7</p>
+    <h2>Watch each symmetry operation</h2>
+    <p>A symmetry operation moves the molecule into a position you cannot tell apart from where it started. Apply each one and note which atoms <strong>stay exactly where they were</strong>. Those unmoved atoms are the only ones that will count in the next step.</p>
+    <div class="cards">${cards}</div>
+    <p class="hint">Under ${OPS[1].html}, H<sub>1</sub> and H<sub>2</sub> trade places. The molecule looks identical, but neither hydrogen is in its own original spot, so neither counts as unmoved.</p>
+    ${allSeen ? `<div class="tablewrap"><table>${opHead()}<tbody><tr><th>Unmoved atoms</th>${OPS.map(op => `<td>${unmoved(op).length}</td>`).join('')}</tr></tbody></table></div>` : ''}`; }},
+
+  {short:'Vector basis', enter(){ setArrows('cart'); S.elements = false; }, html(){
+    const id = S.cartLast, r = id && S.cart[id];
+    const cell = c => c === null ? '<td class="z" title="Atom moves to a new place">0</td>' : `<td class="${c>0?'p1':c<0?'m1':'z'}">${fmtS(c)}</td>`;
+    const tally = r ? `
+      <div class="tablewrap"><table>
+        <thead><tr><th>${r.op.html}</th><th><i>x</i></th><th><i>y</i></th><th><i>z</i></th><th>Atom total</th></tr></thead>
+        <tbody>${ATOMS.map((at,i) => `<tr><th>${at.html}${r.unmoved.includes(i) ? '' : ' <span class="muted">(moves)</span>'}</th>${r.cells[i].map(cell).join('')}<td>${fmt(r.cells[i].reduce((s,c)=>s+(c||0),0))}</td></tr>`).join('')}
+        <tr class="total"><th>χ(${r.op.html})</th><td></td><td></td><td></td><td>${fmt(r.chi)}</td></tr></tbody>
+      </table></div>` : `<p class="hint">Apply an operation to fill in the tally.</p>`;
+    const done = OPS.every(op => S.cart[op.id]);
+    return `
+    <p class="eyebrow">Step 3 of 7</p>
+    <h2>Attach <i>x</i>, <i>y</i>, <i>z</i> vectors to every atom</h2>
+    <p>Put three unit vectors on each atom. These 9 vectors are the basis for ${G3N}: any motion of the molecule is some combination of them.</p>
+    <p>Each operation sends the 9 vectors to new places, which you can write as a 9 × 9 matrix. The <strong>character</strong> χ of that operation is the trace of the matrix, the sum of its diagonal. A vector only lands on the diagonal if it stays on its own atom, which gives three simple rules:</p>
+    <ul>
+      <li>The atom moves to another atom's place: its three vectors add <strong>0</strong>.</li>
+      <li>A vector ends up pointing the same way: <strong>+1</strong>.</li>
+      <li>A vector ends up reversed: <strong>−1</strong>.</li>
+    </ul>
+    <p class="muted">In groups with <i>C</i><sub>3</sub>, <i>C</i><sub>4</sub>, and so on, a vector can turn by an angle θ and contributes cos θ. In C<sub>2v</sub> every angle is 0° or 180°.</p>
+    ${opButtons()}
+    ${tally}
+    <h3>Characters so far</h3>
+    <div class="tablewrap"><table>${opHead()}<tbody><tr><th>χ(${G3N})</th>${OPS.map(op => S.cart[op.id] ? `<td>${fmt(S.cart[op.id].chi)}</td>` : '<td class="q">?</td>').join('')}</tr></tbody></table></div>
+    ${done ? `<div class="callout"><strong>That row is ${G3N}.</strong> Next you will see a faster way to get the same numbers.</div>` : '<p class="hint">Apply all four operations to complete the row.</p>'}`; }},
+
+  {short:'Build Γ3N', enter(){ setArrows('none'); S.elements = false; }, html(){
+    const g = gamma3N();
+    const mats = OPS.map(op => `<div class="mat"><span class="t">${op.html}</span><div class="grid">${op.M.flat().map((v,k)=>`<span class="${k%4===0?'d':''}">${fmt(v)}</span>`).join('')}</div><span class="tr">trace = ${fmt(trace(op.M))}</span></div>`).join('');
+    const c = S.check4;
+    const inputs = OPS.map((op,k) => `<td><input class="cell-in ${c ? (c[k] ? 'ok':'no') : ''}" id="g3n-${op.id}" inputmode="numeric" autocomplete="off" aria-label="χ(Γ3N) for ${op.id}" value="${S.inputs['g3n-'+op.id] ?? ''}"></td>`).join('');
+    const allOk = c && c.every(Boolean);
+    return `
+    <p class="eyebrow">Step 4 of 7</p>
+    <h2>Build ${G3N} with the shortcut</h2>
+    <p>Every unmoved atom contributes the same amount: the trace of the 3 × 3 matrix that the operation applies to (<i>x</i>, <i>y</i>, <i>z</i>). So</p>
+    <div class="formula">χ(R) = (number of unmoved atoms) × (contribution per unmoved atom)</div>
+    <div class="matrices">${mats}</div>
+    <p class="muted">General contributions per unmoved atom: <i>E</i> = 3, σ = 1, <i>i</i> = −3, <i>C<sub>n</sub></i> = 1 + 2 cos(360°/<i>n</i>), <i>S<sub>n</sub></i> = −1 + 2 cos(360°/<i>n</i>).</p>
+    <h3>Your turn</h3>
+    <p>Fill in the last row, then check.</p>
+    <div class="tablewrap"><table>${opHead()}<tbody>
+      <tr><th>Unmoved atoms</th>${OPS.map(op => `<td>${unmoved(op).length}</td>`).join('')}</tr>
+      <tr><th>Contribution per atom</th>${OPS.map(op => `<td>${fmt(trace(op.M))}</td>`).join('')}</tr>
+      <tr class="total"><th>χ(${G3N})</th>${inputs}</tr>
+    </tbody></table></div>
+    <div class="btnrow"><button class="btn primary" data-action="check4">Check</button><button class="btn" data-action="reveal4">Show answer</button></div>
+    ${c ? (allOk ? `<p class="fb ok">Correct. ${G3N} = ${g.map(fmt).join(', ')}. These match the tally from step 3.</p>` : `<p class="fb no">Some entries are off. Multiply the two numbers above each box.</p>`) : ''}`; }},
+
+  {short:'Reduce', enter(){ setArrows('none'); S.elements = false; }, html(){
+    const g = gamma3N(), n = reduce(g), c = S.check5;
+    const inputs = IRREPS.map((ir,k) => `<td><input class="cell-in ${c ? (c[k] ? 'ok':'no') : ''}" id="n-${ir.id}" inputmode="numeric" autocomplete="off" aria-label="number of ${ir.id}" value="${S.inputs['n-'+ir.id] ?? ''}"></td>`).join('');
+    const work = IRREPS.map((ir,k) => `<i>n</i>(${ir.html}) = ¼ [ ${g.map((x,j) => `(${fmt(x)})(${fmt(ir.chi[j])})`).join(' + ')} ] = ¼ (${fmt(g.reduce((s,x,j)=>s+x*ir.chi[j],0))}) = <b>${n[k]}</b>`).join('<br>');
+    const allOk = c && c.every(Boolean);
+    return `
+    <p class="eyebrow">Step 5 of 7</p>
+    <h2>Reduce ${G3N}</h2>
+    <p>${G3N} is reducible: it is a sum of the four irreducible representations in the character table. The reduction formula tells you how many times each one appears.</p>
+    <div class="formula"><i>n</i><sub><i>i</i></sub> = <span class="frac"><span>1</span><span><i>h</i></span></span> Σ<sub><i>R</i></sub> <i>g</i>(<i>R</i>) · χ(<i>R</i>) · χ<sub><i>i</i></sub>(<i>R</i>)</div>
+    <p>Here <i>h</i> = 4, and <i>g</i>(<i>R</i>), the number of operations in each class, is 1 for every column of C<sub>2v</sub>. Multiply the ${G3N} row by an irreducible row, column by column, add the products, and divide by 4.</p>
+    ${charTable(false)}
+    <div class="tablewrap"><table>${opHead()}<tbody><tr class="total"><th>χ(${G3N})</th>${charCells(g)}</tr></tbody></table></div>
+    <h3>Your turn</h3>
+    <div class="tablewrap"><table><thead><tr><th></th>${IRREPS.map(ir => `<th>${chip(ir)}</th>`).join('')}</tr></thead><tbody><tr><th>times it appears</th>${inputs}</tr></tbody></table></div>
+    <div class="btnrow"><button class="btn primary" data-action="check5">Check</button><button class="btn" data-action="work5">${S.showWork ? 'Hide working' : 'Show working'}</button></div>
+    ${c ? (allOk ? `<p class="fb ok">Correct.</p>` : `<p class="fb no">Not quite. Open the working to see where your sum differs.</p>`) : ''}
+    ${S.showWork ? `<div class="work">${work}</div>` : ''}
+    ${allOk || S.showWork ? `<div class="result"><span class="lhs">${G3N} =</span><span class="rep">${repHTML(n)}</span><span class="muted">Dimension check: ${n.join(' + ')} = ${n.reduce((a,b)=>a+b,0)} = 3<i>N</i></span></div>` : ''}`; }},
+
+  {short:'Remove T & R', enter(){ if (isTR(S.fieldId)) setArrows('field', S.fieldId); else setArrows('none'); S.elements = false; }, html(){
+    const g = gamma3N(), gt = sumChars(['Tx','Ty','Tz']), gr = sumChars(['Rx','Ry','Rz']);
+    const gv = g.map((x,k) => x - gt[k] - gr[k]);
+    const motion = id => { const f = FIELDS[id], ir = irrepOf(fieldChars(id)); return `<button class="motion ${S.fieldId===id?'active':''}" data-field="${id}"><span class="nm">${f.html}</span><span class="ir">${S.motionSeen[id] ? chip(ir) : 'Show me'}</span></button>`; };
+    const allSeen = Object.keys(FIELDS).filter(isTR).every(id => S.motionSeen[id]);
+    return `
+    <p class="eyebrow">Step 6 of 7</p>
+    <h2>Remove translations and rotations</h2>
+    <p>${G3N} contains every motion, including those that do not stretch or bend anything. The character table tells you which irreducible representations they belong to: translations transform like <i>x</i>, <i>y</i>, <i>z</i>, and rotations like R<sub><i>x</i></sub>, R<sub><i>y</i></sub>, R<sub><i>z</i></sub>.</p>
+    ${charTable(true)}
+    <p>Click a motion to animate it. Then apply operations in the viewer to confirm its characters.</p>
+    <div class="motions">${['Tx','Ty','Tz','Rx','Ry','Rz'].map(motion).join('')}</div>
+    ${allSeen ? `<p class="fb ok">${GT} = ${repHTML(reduce(gt))} and ${GR} = ${repHTML(reduce(gr))}.</p>` : ''}
+    <h3>Subtract</h3>
+    <div class="tablewrap"><table>${opHead()}<tbody>
+      <tr><th>${G3N}</th>${charCells(g)}</tr>
+      <tr class="sub"><th>− ${GT}</th>${charCells(gt)}</tr>
+      <tr class="sub"><th>− ${GR}</th>${charCells(gr)}</tr>
+      <tr class="total"><th>${GV}</th>${S.vibRevealed ? charCells(gv) : OPS.map(()=>'<td class="q">?</td>').join('')}</tr>
+    </tbody></table></div>
+    ${S.vibRevealed ? `
+      <div class="result"><span class="lhs">${GV} =</span><span class="rep">${repHTML(reduce(gv))}</span></div>
+      <p>You can also subtract the reduced forms directly: (${repHTML(reduce(g))}) − (${repHTML(reduce(gt))}) − (${repHTML(reduce(gr))}) = ${repHTML(reduce(gv))}. Three vibrations, as 3<i>N</i> − 6 predicted.</p>`
+      : `<div class="btnrow"><button class="btn primary" data-action="vib">Subtract and reduce</button></div>`}`; }},
+
+  {short:'Normal modes', enter(){ setArrows('field', isMode(S.fieldId) ? S.fieldId : 'nu1'); S.elements = false; }, html(){
+    const modes = ['nu1','nu2','nu3'].map(id => {
+      const f = FIELDS[id], tests = S.modeTests[id] || {}, ch = fieldChars(id), ir = irrepOf(ch);
+      const known = OPS.every(op => op.id in tests);
+      const boxes = OPS.map(op => { const v = tests[op.id]; return `<span class="cbox">${op.html} <b class="${v===undefined?'q':v>0?'p1':'m1'}">${v===undefined?'?':fmtS(v)}</b></span>`; }).join('');
+      return `<article class="mode ${S.fieldId===id?'active':''}">
+        <div><h4>${f.html} · ${f.name}</h4><span class="wn">${f.wn} cm<sup>−1</sup> (gas phase)</span></div>
+        <button class="btn ${S.fieldId===id?'active':''}" data-field="${id}">${S.fieldId===id ? 'Showing' : 'Show'}</button>
+        <p>${f.desc}</p>
+        <div class="chars">${boxes} <span>→ ${known ? chip(ir) : '<span class="muted">apply all four</span>'}</span></div>
+      </article>`; }).join('');
+    const found = ['nu1','nu2','nu3'].every(id => OPS.every(op => op.id in (S.modeTests[id]||{})));
+    const sel = ['nu1','nu2','nu3'].map(id => { const f = FIELDS[id], ir = irrepOf(fieldChars(id)), k = OPS.every(op => op.id in (S.modeTests[id]||{}));
+      return `<tr><th>${f.html} ${f.name}</th><td>${k ? chip(ir) : '?'}</td><td class="fn">${k ? `yes, like ${ir.lin.join(', ')}` : '?'}</td><td class="fn">${k ? `yes, like ${ir.quad}` : '?'}</td></tr>`; }).join('');
+    const v3 = irrepOf(fieldChars('nu3'));
+    return `
+    <p class="eyebrow">Step 7 of 7</p>
+    <h2>Check the result against the real vibrations</h2>
+    <p>${GV} = ${repHTML(reduce(gamma3N().map((x,k)=> x - sumChars(['Tx','Ty','Tz'])[k] - sumChars(['Rx','Ry','Rz'])[k])))} predicts two totally symmetric vibrations and one that changes sign under ${OPS[1].html}. Test that. Pick a mode, then apply each operation in the viewer. If the yellow displacement pattern maps onto itself, the character is +1. If every arrow reverses, it is −1.</p>
+    <div class="modes">${modes}</div>
+    <p class="hint">The oxygen arrows are drawn 3× longer than true scale so you can see them. Oxygen is 16 times heavier than hydrogen, so it moves much less.</p>
+    ${found ? `<div class="callout"><strong>All three found.</strong> Two A<sub>1</sub> modes and one ${v3.html} mode, exactly as the reduction predicted.</div>` : ''}
+    <h3>Selection rules</h3>
+    <p>A fundamental is <strong>IR active</strong> if its irreducible representation matches <i>x</i>, <i>y</i> or <i>z</i> (the dipole moment changes). It is <strong>Raman active</strong> if it matches a quadratic function (the polarizability changes).</p>
+    <div class="tablewrap"><table><thead><tr><th>Mode</th><th>Symmetry</th><th>IR</th><th>Raman</th></tr></thead><tbody>${sel}</tbody></table></div>
+    <p>All three fundamentals of water are both IR and Raman active. C<sub>2v</sub> has no inversion centre, so the rule of mutual exclusion does not apply. The A<sub>1</sub> modes change the dipole along <i>z</i>; ν<sub>3</sub> changes it along ${v3.lin[0]}.</p>
+    <p class="muted">Why is the highest-frequency band called ν<sub>3</sub>? Modes are numbered by symmetry species first (A<sub>1</sub> before B), then by decreasing wavenumber within each species.</p>`; }},
+];
+
+function renderStepper(){
+  $('stepper').innerHTML = STEPS.map((s,i) => `<li><button data-step="${i}" ${i===S.step?'aria-current="step"':''} class="${i<S.step?'done':''}"><span class="n">${i+1}</span>${s.short.replace('Γ3N', G3N)}</button></li>`).join('');
+}
+function renderLesson(){
+  $('body').innerHTML = STEPS[S.step].html();
+  $('prev').disabled = S.step === 0; $('next').disabled = S.step === STEPS.length - 1;
+  $('next').style.visibility = S.step === STEPS.length - 1 ? 'hidden' : '';
+}
+function goStep(i, scroll){
+  S.step = Math.max(0, Math.min(STEPS.length-1, i));
+  STEPS[S.step].enter(); syncToggles(); renderStepper(); renderLesson();
+  if (scroll) $('lesson').scrollIntoView({block:'start', behavior: reduced ? 'auto' : 'smooth'});
+}
+$('stepper').addEventListener('click', e => { const b = e.target.closest('[data-step]'); if (b) goStep(+b.dataset.step, true); });
+$('prev').onclick = () => goStep(S.step - 1, true);
+$('next').onclick = () => goStep(S.step + 1, true);
+
+$('body').addEventListener('input', e => { if (e.target.id){ S.inputs[e.target.id] = e.target.value; e.target.classList.remove('ok','no'); } });
+$('body').addEventListener('click', e => {
+  const opB = e.target.closest('[data-op]'); if (opB){ applyOp(opB.dataset.op); return; }
+  const fB = e.target.closest('[data-field]');
+  if (fB){ const id = fB.dataset.field; S.motionSeen[id] = true; setArrows('field', id); renderLesson(); return; }
+  const a = e.target.closest('[data-action]'); if (!a) return;
+  const g = gamma3N(), n = reduce(g);
+  switch (a.dataset.action){
+    case 'check4': S.check4 = OPS.map((op,k) => parseNum(S.inputs['g3n-'+op.id]) === g[k]); break;
+    case 'reveal4': OPS.forEach((op,k) => S.inputs['g3n-'+op.id] = fmt(g[k])); S.check4 = OPS.map(() => true); break;
+    case 'check5': S.check5 = IRREPS.map((ir,k) => parseNum(S.inputs['n-'+ir.id]) === n[k]); break;
+    case 'work5': S.showWork = !S.showWork; break;
+    case 'vib': S.vibRevealed = true; break;
+  }
+  renderLesson();
+});
+
+document.querySelectorAll('[data-plane]').forEach(b => b.addEventListener('click', () => {
+  if (S.plane === b.dataset.plane) return;
+  S.plane = b.dataset.plane;
+  document.querySelectorAll('[data-plane]').forEach(x => x.setAttribute('aria-pressed', x.dataset.plane === S.plane));
+  Object.assign(S, {seenOps:{}, cart:{}, cartLast:null, modeTests:{}, check4:null, check5:null, inputs:{}});
+  buildModel(); cam.theta = defaultTheta(); resetOp(); renderShowing(); renderLesson();
+}));
+
+function start(data){
+  if (data && data.plane === 'yz'){ S.plane = 'yz'; document.querySelectorAll('[data-plane]').forEach(x => x.setAttribute('aria-pressed', x.dataset.plane === 'yz')); }
+  buildModel(); cam.theta = defaultTheta();
+  goStep(data && Number.isInteger(data.step) ? data.step : 0, false);
+  resize(); requestAnimationFrame(frame);
+}
+window.claude?.hot?.snapshot?.(() => ({step:S.step, plane:S.plane}));
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+})();
+</script>
