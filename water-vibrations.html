@@ -99,7 +99,7 @@ sub,sup{font-size:.72em;line-height:0}
 .body h2{font:600 26px/1.2 var(--display);margin:0 0 12px;text-wrap:balance}
 .body h3{font:600 18px/1.3 var(--display);margin:26px 0 8px}
 .body p{margin:0 0 12px}
-.body ul{margin:0 0 12px;padding-left:20px}
+.body ul,.body ol{margin:0 0 12px;padding-left:20px}
 .body li{margin-bottom:4px}
 .muted{color:var(--muted)}
 .hint{color:var(--muted);font-size:14px;font-style:italic}
@@ -283,6 +283,7 @@ td.q{color:var(--muted)}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>window.THREE || document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"><\/script>')</script>
 <script>
 (function(){
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -301,9 +302,9 @@ const OPS = [
 ];
 const IRREPS = [
   {id:'A1', cls:'a1', html:'A<sub>1</sub>', chi:[1, 1, 1, 1], lin:['<i>z</i>'], rot:[],              quad:'<i>x</i><sup>2</sup>, <i>y</i><sup>2</sup>, <i>z</i><sup>2</sup>'},
-  {id:'A2', cls:'a2', html:'A<sub>2</sub>', chi:[1, 1,-1,-1], lin:[],           rot:['R<sub>z</sub>'], quad:'<i>xy</i>'},
-  {id:'B1', cls:'b1', html:'B<sub>1</sub>', chi:[1,-1, 1,-1], lin:['<i>x</i>'], rot:['R<sub>y</sub>'], quad:'<i>xz</i>'},
-  {id:'B2', cls:'b2', html:'B<sub>2</sub>', chi:[1,-1,-1, 1], lin:['<i>y</i>'], rot:['R<sub>x</sub>'], quad:'<i>yz</i>'},
+  {id:'A2', cls:'a2', html:'A<sub>2</sub>', chi:[1, 1,-1,-1], lin:[],           rot:['R<sub><i>z</i></sub>'], quad:'<i>xy</i>'},
+  {id:'B1', cls:'b1', html:'B<sub>1</sub>', chi:[1,-1, 1,-1], lin:['<i>x</i>'], rot:['R<sub><i>y</i></sub>'], quad:'<i>xz</i>'},
+  {id:'B2', cls:'b2', html:'B<sub>2</sub>', chi:[1,-1,-1, 1], lin:['<i>y</i>'], rot:['R<sub><i>x</i></sub>'], quad:'<i>yz</i>'},
 ];
 const G3N = 'Γ<sub>3<i>N</i></sub>', GV = 'Γ<sub>vib</sub>', GT = 'Γ<sub>trans</sub>', GR = 'Γ<sub>rot</sub>';
 const chip = ir => `<span class="chip ${ir.cls}">${ir.html}</span>`;
@@ -786,7 +787,7 @@ const STEPS = [
     const g = gamma3N();
     const mats = OPS.map(op => `<div class="mat"><span class="t">${op.html}</span><div class="grid">${op.M.flat().map((v,k)=>`<span class="${k%4===0?'d':''}">${fmt(v)}</span>`).join('')}</div><span class="tr">trace = ${fmt(trace(op.M))}</span></div>`).join('');
     const c = S.check4;
-    const inputs = OPS.map((op,k) => `<td><input class="cell-in ${c ? (c[k] ? 'ok':'no') : ''}" id="g3n-${op.id}" inputmode="numeric" autocomplete="off" aria-label="χ(Γ3N) for ${op.id}" value="${S.inputs['g3n-'+op.id] ?? ''}"></td>`).join('');
+    const inputs = OPS.map((op,k) => `<td><input class="cell-in ${c ? (c[k] ? 'ok':'no') : ''}" id="g3n-${op.id}" autocomplete="off" aria-label="χ(Γ3N) for ${op.id}" value="${S.inputs['g3n-'+op.id] ?? ''}"></td>`).join('');
     const allOk = c && c.every(Boolean);
     return `
     <p class="eyebrow">Step 4 of 8</p>
