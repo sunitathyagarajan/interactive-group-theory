@@ -799,7 +799,7 @@ const STEPS = [
   {short:'Operations', enter(){ setArrows('none'); S.elements = true; }, html(){
     const DESC = {
       E:'Leave the molecule alone. Every object has this operation.',
-      C3:'Rotate 120° (<i>C</i><sub>3</sub>) or 240° (<i>C</i><sub>3</sub><sup>2</sup>) about the <i>z</i> axis. Turning 240° one way is the same as 120° the other way, which is why the two share a class.',
+      C3:'Rotate 120° (<i>C</i><sub>3</sub>) or 240° (<i>C</i><sub>3</sub><sup>2</sup>) about the <i>z</i> axis. Turning 240° one way is the same as 120° the other way, and a reflection through any σ<sub>v</sub> reverses the sense of a turn, so σ<sub>v</sub><i>C</i><sub>3</sub>σ<sub>v</sub> = <i>C</i><sub>3</sub><sup>2</sup>. That is why the two share a class. Without the mirrors, in the group <i>C</i><sub>3</sub>, they would be separate classes.',
       sv:'Reflect through a vertical plane that contains the <i>z</i> axis and one N–H bond. There is one plane per hydrogen, and a <i>C</i><sub>3</sub> rotation carries each plane onto the next.',
     };
     const cards = CLASSES.map(c => {
@@ -977,7 +977,7 @@ function spectrumSVG(kinds){
   const ay = TOP + panels.length*PH + (panels.length - 1)*GAP + 16;
   for (let t = 4000; t >= 500; t -= 500) svg += `<text class="ax" x="${X(t)}" y="${ay}" text-anchor="middle">${t}</text>`;
   svg += `<text class="ax" x="${(W + 14)/2}" y="${ay + 18}" text-anchor="middle">wavenumber / cm⁻¹</text>`;
-  return `<div class="spec"><svg viewBox="0 0 ${W} ${ay + 24}" role="img" aria-label="Predicted ${kinds.map(k => KIND[k].long).join(' and ')} stick ${kinds.length > 1 ? 'spectra' : 'spectrum'}">${svg}</svg><div class="tip" id="tip"></div></div>`;
+  return `<div class="spec"><svg viewBox="0 0 ${W} ${ay + 24}" role="img" aria-label="Predicted ${kinds.map(k => KIND[k].long).join(' and ')} stick ${kinds.length > 1 ? 'spectra' : 'spectrum'}">${svg}</svg><div class="tip"></div></div>`;
 }
 function selectionStep(kind){
   const K = KIND[kind], nv = vibIrreps();
@@ -1023,7 +1023,7 @@ function selectionStep(kind){
     ${c && !done ? `<p class="fb no">Not quite. Look along each species' row: ${kind === 'ir' ? 'is there an <i>x</i>, <i>y</i> or <i>z</i>?' : 'is there a quadratic function?'}</p>` : ''}
     ${done ? `${c && !S.rev[kind] ? '<p class="fb ok">Correct.</p>' : ''}
       <h3>The predicted ${K.long} spectrum</h3>
-      <p>Each ${K.name}-active fundamental gives one band. A degenerate pair gives a single band, because both partners have the same frequency. Prediction: <strong>${n}</strong> ${K.name} band${n === 1 ? '' : 's'}.</p>
+      <p>Each ${K.name}-active fundamental gives one band. A degenerate pair gives a single band, because both partners have the same frequency. Prediction: <strong>${n}</strong> ${K.name} band${n === 1 ? '' : 's'}. The plot shows one extra stick, because tunnelling splits the umbrella band ν<sub>2</sub> into a close doublet at 932 and 968 cm<sup>−1</sup> (step 7).</p>
       ${spectrumSVG([kind])}
       <p class="hint">Stick heights are not intensities: group theory says whether a band can appear, not how strong it is. Hover a stick for details. Real spectra also show weaker overtone and combination bands.</p>
       ${kind === 'ra' ? `
@@ -1058,7 +1058,7 @@ $('body').addEventListener('click', e => {
   const fB = e.target.closest('[data-field]');
   if (fB){ const id = fB.dataset.field; S.motionSeen[id] = true; setArrows('field', id); renderLesson(); return; }
   const ynB = e.target.closest('[data-yn]');
-  if (ynB){ const [ir, key, v] = ynB.dataset.yn.split('|'); (S.sel[ir] ||= {})[key] = v === '1'; S.chk[key] = null; renderLesson(); return; }
+  if (ynB){ const [ir, key, v] = ynB.dataset.yn.split('|'); (S.sel[ir] ||= {})[key] = v === '1'; S.chk[key] = null; S.rev[key] = false; renderLesson(); return; }
   const a = e.target.closest('[data-action]'); if (!a) return;
   const kind = a.dataset.kind;
   const g = gamma3N(), n = reduce(g), nv = vibIrreps();
@@ -1076,7 +1076,7 @@ $('body').addEventListener('click', e => {
 });
 // spectrum tooltips
 $('body').addEventListener('pointermove', e => {
-  const tip = $('tip'); if (!tip) return;
+  if (!document.querySelector('.spec .tip')) return;
   const t = e.target.closest('[data-tip]');
   document.querySelectorAll('.tip').forEach(x => { if (!t || !x.parentElement.contains(t)) x.style.display = 'none'; });
   if (!t) return;

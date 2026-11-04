@@ -869,7 +869,7 @@ function spectrumSVG(kinds){
   const ay = TOP + panels.length*PH + (panels.length - 1)*GAP + 16;
   for (let t = MAXW; t >= 0; t -= 500) svg += `<text class="ax" x="${X(t)}" y="${ay}" text-anchor="middle">${t}</text>`;
   svg += `<text class="ax" x="${(W + 14)/2}" y="${ay + 18}" text-anchor="middle">wavenumber / cm⁻¹</text>`;
-  return `<div class="spec"><svg viewBox="0 0 ${W} ${ay + 24}" role="img" aria-label="Predicted ${kinds.map(k => KIND[k].long).join(' and ')} stick spectra">${svg}</svg><div class="tip" id="tip"></div></div>`;
+  return `<div class="spec"><svg viewBox="0 0 ${W} ${ay + 24}" role="img" aria-label="Predicted ${kinds.map(k => KIND[k].long).join(' and ')} stick ${kinds.length > 1 ? 'spectra' : 'spectrum'}">${svg}</svg><div class="tip"></div></div>`;
 }
 function selectionStep(kind){
   const K = KIND[kind], nv = vibIrreps(), c = S.chk[kind], done = S.rev[kind] || (c && Object.values(c).every(Boolean));
@@ -947,7 +947,7 @@ $('body').addEventListener('click', e => {
   const fB = e.target.closest('[data-field]');
   if (fB){ const id = fB.dataset.field; S.motionSeen[id] = true; setArrows('field', id); renderLesson(); return; }
   const ynB = e.target.closest('[data-yn]');
-  if (ynB){ const [ir, key, v] = ynB.dataset.yn.split('|'); (S.sel[ir] ||= {})[key] = v === '1'; S.chk[key] = null; renderLesson(); return; }
+  if (ynB){ const [ir, key, v] = ynB.dataset.yn.split('|'); (S.sel[ir] ||= {})[key] = v === '1'; S.chk[key] = null; S.rev[key] = false; renderLesson(); return; }
   const a = e.target.closest('[data-action]'); if (!a) return;
   const g = gamma3N(), n = reduce(g), kind = a.dataset.kind;
   switch (a.dataset.action){
@@ -962,7 +962,7 @@ $('body').addEventListener('click', e => {
   renderLesson();
 });
 $('body').addEventListener('pointermove', e => {
-  const tip = $('tip'); if (!tip) return;
+  if (!document.querySelector('.spec .tip')) return;
   const t = e.target.closest('[data-tip]');
   document.querySelectorAll('.tip').forEach(x => { if (!t || !x.parentElement.contains(t)) x.style.display = 'none'; });
   if (!t) return;

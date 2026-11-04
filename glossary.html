@@ -403,7 +403,7 @@ td{font-family:var(--mono);font-variant-numeric:tabular-nums}
         <article class="term" id="abelian-group" data-keys="abelian commutative commute">
           <h4>Abelian group</h4>
           <a class="pl" href="#abelian-group" aria-label="Link to Abelian group">#</a>
-          <p>A group in which every pair of operations commutes: <i>AB</i> = <i>BA</i>. Then every operation is a <a href="#class">class</a> of its own, every <i>g</i> = 1, and there are <i>h</i> irreducible representations, all one-dimensional. Molecules in abelian groups have no degenerate vibrations.</p>
+          <p>A group in which every pair of operations commutes: <i>AB</i> = <i>BA</i>. Then every operation is a <a href="#class">class</a> of its own, every <i>g</i> = 1, and there are <i>h</i> irreducible representations, all one-dimensional. When all the characters are real, as in C<sub>s</sub>, C<sub>i</sub>, C<sub>2</sub>, C<sub>2v</sub>, C<sub>2h</sub>, D<sub>2</sub> and D<sub>2h</sub>, the molecule has no degenerate vibrations. Cyclic groups such as C<sub>3</sub>, C<sub>3h</sub> and S<sub>4</sub> are abelian too, but their complex-conjugate representations pair up into E, and those vibrations are degenerate.</p>
           <p class="ex"><span class="lbl">Example</span>C<sub>s</sub>, C<sub>2v</sub>, C<sub>2h</sub>, D<sub>2</sub> and D<sub>2h</sub> are abelian. C<sub>3v</sub> is not: <i>C</i><sub>3</sub> followed by σ<sub>v</sub> is a different reflection from σ<sub>v</sub> followed by <i>C</i><sub>3</sub>.</p>
           <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a><a href="co2-vibrations.html">Carbon dioxide</a><a href="biphenyl-vibrations.html">Biphenyl</a></p>
         </article>
@@ -903,7 +903,7 @@ function region(key){
     case 'dim': {
       const d = ir.chi[0];
       const tail = G.name === 'C2v'
-        ? `<p>Every C<sub>2v</sub> representation is one-dimensional, as in every ${glo('abelian-group','abelian group')}, so C<sub>2v</sub> molecules have no degenerate vibrations.</p>`
+        ? `<p>C<sub>2v</sub> is an ${glo('abelian-group','abelian group')} with only real characters, so every representation is one-dimensional and C<sub>2v</sub> molecules have no degenerate vibrations.</p>`
         : d === 2
           ? `<p>E is two-dimensional: its functions come in pairs, like (<i>x</i>, <i>y</i>) or (R<sub><i>x</i></sub>, R<sub><i>y</i></sub>), that <i>C</i><sub>3</sub> mixes, so they must be treated as one unit. An E vibration is a ${glo('dimension','degenerate pair')}: two modes with the same frequency that give one band. Ammonia has two of them. In the degrees-of-freedom check, each E counts as 2.</p>`
           : `<p>A and B representations are one-dimensional: one function, and one non-degenerate vibration.</p>`;

@@ -419,9 +419,11 @@ function buildModel(){
     Rxy:{kind:'rot', html:'(R<sub><i>x</i></sub>, R<sub><i>y</i></sub>)', name:'Rotation about <i>x</i> or <i>y</i>',
          parts:[rot(V(1,0,0)), rot(V(0,1,0))], partHTML:['R<sub><i>x</i></sub>','R<sub><i>y</i></sub>']},
   };
-  // orthonormal basis for the six translations and rotations, to strip them out of the vibration patterns
+  // orthonormal basis for the six translations and rotations, to strip them out of the vibration patterns.
+  // Mass-weighted, so every pattern keeps the centre of mass fixed (Σ m v = 0) and carries no angular momentum (Σ m r × v = 0).
+  const mass = at => at.el === 'C' ? 12.011 : 1.008;
   const TR = [];
-  [V(1,0,0),V(0,1,0),V(0,0,1)].forEach(ax => { TR.push(ATOMS.map(() => ax.clone())); TR.push(ATOMS.map(at => ax.clone().cross(at.pos))); });
+  [V(1,0,0),V(0,1,0),V(0,0,1)].forEach(ax => { TR.push(ATOMS.map(at => ax.clone().multiplyScalar(mass(at)))); TR.push(ATOMS.map(at => ax.clone().cross(at.pos).multiplyScalar(mass(at)))); });
   const TRB = TR.reduce((B,q) => { const r = orthoQ(q, B); return dotQ(r,r) > 1e-9 ? [...B, unitQ(r)] : B; }, []);
   // For each vibrational species, project the starting motions in turn and keep the first independent results.
   // For a 2-D species, partner a is σv-symmetric and partner b σv-antisymmetric. Whichever part a starting motion gives,
@@ -918,7 +920,7 @@ const STEPS = [
       <div class="tablewrap"><table>
         <thead><tr><th>${r.op.html}</th><th><i>x</i></th><th><i>y</i></th><th><i>z</i></th><th>Atom total</th></tr></thead>
         <tbody>${ATOMS.map((at,i) => r.unmoved.includes(i) ? `<tr><th>${at.html}</th>${r.cells[i].map(cell).join('')}<td>${nice(r.cells[i].reduce((s,c)=>s+(c||0),0))}</td></tr>` : '').join('')}
-        <tr class="sub"><th>${ATOMS.length - r.unmoved.length} other atoms (move)</th><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+        ${ATOMS.length > r.unmoved.length ? `<tr class="sub"><th>${ATOMS.length - r.unmoved.length} other atoms (move)</th><td>0</td><td>0</td><td>0</td><td>0</td></tr>` : ''}
         <tr class="total"><th>χ(${r.op.html})</th><td></td><td></td><td></td><td>${fmt(r.chi)}</td></tr></tbody>
       </table></div>` : `<p class="hint">Under ${r.op.html} every atom moves, so all 36 vectors land on other atoms: χ(${r.op.html}) = 0 with no arithmetic at all.</p>`) : `<p class="hint">Apply an operation to fill in the tally.</p>`;
     const done = CLASSES.every(c => S.cart[c.rep.id]);
@@ -1053,7 +1055,7 @@ function spectrumSVG(kinds){
   const ay = TOP + panels.length*PH + (panels.length - 1)*GAP + 16;
   for (let t = 4000; t >= 500; t -= 500) svg += `<text class="ax" x="${X(t)}" y="${ay}" text-anchor="middle">${t}</text>`;
   svg += `<text class="ax" x="${(W + 14)/2}" y="${ay + 18}" text-anchor="middle">wavenumber / cm⁻¹</text>`;
-  return `<div class="spec"><svg viewBox="0 0 ${W} ${ay + 24}" role="img" aria-label="Predicted ${kinds.map(k => KIND[k].long).join(' and ')} stick ${kinds.length > 1 ? 'spectra' : 'spectrum'}">${svg}</svg><div class="tip" id="tip"></div></div>`;
+  return `<div class="spec"><svg viewBox="0 0 ${W} ${ay + 24}" role="img" aria-label="Predicted ${kinds.map(k => KIND[k].long).join(' and ')} stick ${kinds.length > 1 ? 'spectra' : 'spectrum'}">${svg}</svg><div class="tip"></div></div>`;
 }
 function selectionStep(kind){
   const K = KIND[kind], nv = vibIrreps();
@@ -1133,7 +1135,7 @@ $('body').addEventListener('click', e => {
   const fB = e.target.closest('[data-field]');
   if (fB){ const id = fB.dataset.field; S.motionSeen[id] = true; setArrows('field', id); renderLesson(); return; }
   const ynB = e.target.closest('[data-yn]');
-  if (ynB){ const [ir, key, v] = ynB.dataset.yn.split('|'); (S.sel[ir] ||= {})[key] = v === '1'; S.chk[key] = null; renderLesson(); return; }
+  if (ynB){ const [ir, key, v] = ynB.dataset.yn.split('|'); (S.sel[ir] ||= {})[key] = v === '1'; S.chk[key] = null; S.rev[key] = false; renderLesson(); return; }
   const a = e.target.closest('[data-action]'); if (!a) return;
   const kind = a.dataset.kind;
   const g = gamma3N(), n = reduce(g);
@@ -1151,7 +1153,7 @@ $('body').addEventListener('click', e => {
 });
 // spectrum tooltips
 $('body').addEventListener('pointermove', e => {
-  const tip = $('tip'); if (!tip) return;
+  if (!document.querySelector('.spec .tip')) return;
   const t = e.target.closest('[data-tip]');
   document.querySelectorAll('.tip').forEach(x => { if (!t || !x.parentElement.contains(t)) x.style.display = 'none'; });
   if (!t) return;
