@@ -642,7 +642,10 @@ function renderShowing(){
     const f = FIELDS[S.fieldId];
     const partners = f.parts ? `<span class="partners" role="group" aria-label="Partner pattern">${f.partHTML.map((h,k) => `<button class="mini" data-part="${k}" aria-pressed="${S.part===k}">${k ? 'b' : 'a'}</button>`).join('')}</span>` : '';
     const r = (S.step === IR_STEP || S.step === RA_STEP) && response(S.fieldId, S.part);
-    const readout = !r ? '' : S.step === IR_STEP ? `<span class="rd">Δμ <b class="${r.ir?'on':''}">${r.ir ? 'oscillates' : 'zero'}</b></span>` : `<span class="rd">Δα <b class="${r.raman?'on2':''}">${r.raman ? 'oscillates' : 'zero'}</b></span>`;
+    // symmetry can allow a change that this simple model makes vanishingly small: say so rather than "zero"
+    const sp = f.kind === 'vib' && IRREPS.find(ir => ir.id === f.species);
+    const word = (on, allowed) => on ? 'oscillates' : allowed ? 'allowed by symmetry, ≈ 0 in this model' : 'zero';
+    const readout = !r ? '' : S.step === IR_STEP ? `<span class="rd">Δμ <b class="${r.ir?'on':''}">${word(r.ir, sp && irActive(sp))}</b></span>` : `<span class="rd">Δα <b class="${r.raman?'on2':''}">${word(r.raman, sp && ramanActive(sp))}</b></span>`;
     el.innerHTML = `<span><b>${f.html}</b> ${f.kind==='vib' ? f.name : ''}</span>${partners}<button class="mini" id="play">${S.playing ? 'Pause' : 'Play'}</button>${readout}`;
     $('play').onclick = () => { S.playing = !S.playing; renderShowing(); };
     el.querySelectorAll('[data-part]').forEach(b => b.onclick = () => { S.part = +b.dataset.part; resetOp(); renderShowing(); });
@@ -885,7 +888,7 @@ function selectionStep(kind){
     <h3>Watch it happen</h3>
     <p>Pick a vibration. The <strong>pink arrow</strong> is the change in dipole, Δμ, worked out from partial charges on the atoms. If the arrow never appears, the vibration cannot absorb IR.</p>
     ${btns}
-    <p class="hint">This is a toy model, but it respects the molecule's symmetry, so it always agrees with the group theory below. For a degenerate pair, try both partners.</p>
+    <p class="hint">This is a toy model, but it respects the molecule's symmetry, so it never shows a change that the group theory below forbids. Now and then it shows almost no change for a vibration that symmetry allows: a real band that is simply weak. For a degenerate pair, try both partners.</p>
     <h3>The group theory shortcut</h3>
     <p>The strength of a transition from the ground state to the first excited level of a vibration depends on the integral ⟨0|μ|1⟩. An integral over all space is zero unless its integrand is totally symmetric. The ground state is totally symmetric and the excited level has the symmetry of the vibration, so the integral can only survive if the vibration has the same symmetry as one of μ<sub><i>x</i></sub>, μ<sub><i>y</i></sub>, μ<sub><i>z</i></sub>.</p>
     <div class="callout"><strong>Rule:</strong> a vibration is <strong>IR active</strong> if its row of the character table lists <i>x</i>, <i>y</i> or <i>z</i> (underlined in orange below).</div>` : `
@@ -894,7 +897,7 @@ function selectionStep(kind){
     <h3>Watch it happen</h3>
     <p>Pick a vibration. The <strong>translucent shape</strong> is the polarizability ellipsoid, from a simple model in which each bond is easier to polarize along its length. If the ellipsoid holds still (to first order), the vibration cannot Raman scatter.</p>
     ${btns}
-    <p class="hint">This is a toy model, but it respects the molecule's symmetry, so it always agrees with the group theory below. For a degenerate pair, try both partners.</p>
+    <p class="hint">This is a toy model, but it respects the molecule's symmetry, so it never shows a change that the group theory below forbids. Now and then it shows almost no change for a vibration that symmetry allows: a real band that is simply weak. For a degenerate pair, try both partners.</p>
     <h3>The group theory shortcut</h3>
     <p>The same argument as for IR, with α in place of μ: ⟨0|α|1⟩ survives only if the vibration has the same symmetry as one of the components of α.</p>
     <div class="callout"><strong>Rule:</strong> a vibration is <strong>Raman active</strong> if its row of the character table lists a quadratic function such as <i>x</i><sup>2</sup>, <i>z</i><sup>2</sup> or <i>xy</i> (underlined in blue below).</div>`;

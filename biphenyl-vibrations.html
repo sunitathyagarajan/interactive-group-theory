@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script>try{var t=localStorage.getItem('igt-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
-<title>Biphenyl Vibrations in D₂h</title>
-<meta name="description" content="An interactive lesson on the vibrational modes of planar biphenyl using the D2h point group, ending with IR and Raman selection rules.">
+<title>Biphenyl Vibrations in D₂</title>
+<meta name="description" content="An interactive lesson on the vibrational modes of biphenyl, whose rings are twisted about 44° apart, using the D2 point group, ending with IR and Raman selection rules.">
 <meta name="color-scheme" content="light dark">
 <link rel="stylesheet" href="assets/lesson.css">
 <link rel="stylesheet" href="assets/site.css">
@@ -15,7 +15,7 @@
 <div class="app">
   <header class="head">
     <div class="brand">
-      <div class="kicker">Group theory · D<sub>2h</sub> · C<sub>12</sub>H<sub>10</sub></div>
+      <div class="kicker">Group theory · D<sub>2</sub> · C<sub>12</sub>H<sub>10</sub></div>
       <h1>Biphenyl's vibrational modes</h1>
     </div>
     <nav class="site-tools"><a class="back" href="index.html">← All lessons</a><a href="glossary.html">Glossary</a><button class="theme-toggle" data-theme-toggle></button></nav>
@@ -51,23 +51,24 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>window.THREE || document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"><\/script>')</script>
 <script>
-// Planar biphenyl. Mulliken's convention for a planar D2h molecule: x is perpendicular to the molecular plane and
-// z is the long axis through C1, C4, C1′ and C4′, so the molecule lies in the yz plane.
+// Biphenyl in the gas phase: the rings are twisted 44° apart about the C1–C1′ bond (electron diffraction, about 44.4°).
+// z is the long axis through C1, C4, C1′ and C4′. Each ring is turned 22° from the yz plane, in opposite senses,
+// so the x and y axes bisect the angles between the two ring planes and are the two perpendicular C2 axes.
 // r(C–C) ring = 1.397 Å, r(C1–C1′) = 1.49 Å, r(C–H) = 1.084 Å.
 (function(){
-const rC = 1.397, d = 1.49, rH = 1.084, s60 = Math.sqrt(3)/2;
+const rC = 1.397, d = 1.49, rH = 1.084, TWIST = 44, tau = TWIST/2*Math.PI/180;
 const sq = v => `<i>${v}</i><sup>2</sup>`;
-const D = (x,y,z) => [[x,0,0],[0,y,0],[0,0,z]];
 window.LESSON = {
-  id:'biphenyl', nameText:'biphenyl', formulaHTML:'Biphenyl, C<sub>12</sub>H<sub>10</sub>,', groupHTML:'D<sub>2h</sub>',
-  scale:0.8, cam:{theta:0.55, phi:1.05, r:13}, hideHLabels:true,
+  id:'biphenyl', nameText:'biphenyl', formulaHTML:'Biphenyl, C<sub>12</sub>H<sub>10</sub>,', groupHTML:'D<sub>2</sub>',
+  scale:0.8, cam:{theta:0.38, phi:1.2, r:13}, hideHLabels:true,
   geometry(){
     const atoms = [], bonds = [];
-    // ring around centre zc: angle 0 points back at the other ring
+    // ring around centre zc, lying in the plane spanned by z and u = (−sgn·sin τ, cos τ, 0); angle 0 points back at the other ring
     const ring = (sgn, p) => {
-      const zc = sgn*(d/2 + rC), base = atoms.length;
-      [0,1,2,3,4,5].forEach(k => { const a = k*Math.PI/3; atoms.push({el:'C', html:`C<sub>${k+1}</sub>${p}`, pos:[0, rC*Math.sin(a), zc - sgn*rC*Math.cos(a)]}); });
-      [1,2,3,4,5].forEach(k => { const a = k*Math.PI/3; atoms.push({el:'H', html:`H<sub>${k+1}</sub>${p}`, pos:[0, (rC+rH)*Math.sin(a), zc - sgn*(rC+rH)*Math.cos(a)]}); });
+      const zc = sgn*(d/2 + rC), base = atoms.length, ux = -sgn*Math.sin(tau), uy = Math.cos(tau);
+      const at = (r, a) => [ux*r*Math.sin(a), uy*r*Math.sin(a), zc - sgn*r*Math.cos(a)];
+      [0,1,2,3,4,5].forEach(k => atoms.push({el:'C', html:`C<sub>${k+1}</sub>${p}`, pos:at(rC, k*Math.PI/3)}));
+      [1,2,3,4,5].forEach(k => atoms.push({el:'H', html:`H<sub>${k+1}</sub>${p}`, pos:at(rC + rH, k*Math.PI/3)}));
       [0,1,2,3,4,5].forEach(k => bonds.push({i:base+k, j:base+(k+1)%6, k:5.2, order:1.5, tag:'ring C–C stretch', torsTag:'ring pucker'}));
       [1,2,3,4,5].forEach(k => bonds.push({i:base+k, j:base+5+k, k:5.1}));
       return base;
@@ -78,52 +79,40 @@ window.LESSON = {
   },
   ff:{bend:1.05, bendH:0.47, oop:0.32, tors:0.14},
   skelTag:'ring deformation',
-  charges:(at,i,A) => at.el === 'H' ? 0.1 : ([0,11].includes(i) ? 0 : -0.1),
+  charges:(at,i) => at.el === 'H' ? 0.1 : ([0,11].includes(i) ? 0 : -0.1),
   ops:[
     {id:'E',   cls:'E',   type:'E', html:'<i>E</i>', name:'Identity'},
     {id:'C2z', cls:'C2z', type:'C', axis:[0,0,1], n:2, html:'<i>C</i><sub>2</sub>(<i>z</i>)', name:'Rotation by 180° about the long axis'},
-    {id:'C2y', cls:'C2y', type:'C', axis:[0,1,0], n:2, html:'<i>C</i><sub>2</sub>(<i>y</i>)', name:'Rotation by 180° about the in-plane short axis'},
-    {id:'C2x', cls:'C2x', type:'C', axis:[1,0,0], n:2, html:'<i>C</i><sub>2</sub>(<i>x</i>)', name:'Rotation by 180° about the axis perpendicular to the plane'},
-    {id:'i',   cls:'i',   type:'i', html:'<i>i</i>', name:'Inversion through the midpoint of C1–C1′'},
-    {id:'sxy', cls:'sxy', type:'s', normal:[0,0,1], html:'σ(<i>xy</i>)', name:'Reflection through the plane that swaps the rings'},
-    {id:'sxz', cls:'sxz', type:'s', normal:[0,1,0], html:'σ(<i>xz</i>)', name:'Reflection through the plane perpendicular to the molecule, along the long axis'},
-    {id:'syz', cls:'syz', type:'s', normal:[1,0,0], html:'σ(<i>yz</i>)', name:'Reflection through the molecular plane'},
+    {id:'C2y', cls:'C2y', type:'C', axis:[0,1,0], n:2, html:'<i>C</i><sub>2</sub>(<i>y</i>)', name:'Rotation by 180° about the y axis, which swaps the rings'},
+    {id:'C2x', cls:'C2x', type:'C', axis:[1,0,0], n:2, html:'<i>C</i><sub>2</sub>(<i>x</i>)', name:'Rotation by 180° about the x axis, which swaps the rings'},
   ],
   classes:[
     {id:'E',   html:'<i>E</i>',                       desc:'Do nothing.'},
-    {id:'C2z', html:'<i>C</i><sub>2</sub>(<i>z</i>)', desc:'Rotate 180° about the long axis through C<sub>1</sub>, C<sub>4</sub>, C<sub>1</sub>′ and C<sub>4</sub>′.'},
-    {id:'C2y', html:'<i>C</i><sub>2</sub>(<i>y</i>)', desc:'Rotate 180° about the in-plane axis through the middle of the C<sub>1</sub>–C<sub>1</sub>′ bond. The rings swap.'},
-    {id:'C2x', html:'<i>C</i><sub>2</sub>(<i>x</i>)', desc:'Rotate 180° about the axis perpendicular to the molecule through the middle of C<sub>1</sub>–C<sub>1</sub>′. The rings swap.'},
-    {id:'i',   html:'<i>i</i>',                       desc:'Send every atom through the midpoint of C<sub>1</sub>–C<sub>1</sub>′ to the opposite side.'},
-    {id:'sxy', html:'σ(<i>xy</i>)',                    desc:'Reflect through the plane perpendicular to the long axis, between the rings. The rings swap.'},
-    {id:'sxz', html:'σ(<i>xz</i>)',                    desc:'Reflect through the plane perpendicular to the molecule that contains the long axis.'},
-    {id:'syz', html:'σ(<i>yz</i>)',                    desc:'Reflect through the molecular plane.'},
+    {id:'C2z', html:'<i>C</i><sub>2</sub>(<i>z</i>)', desc:'Rotate 180° about the long axis through C<sub>1</sub>, C<sub>4</sub>, C<sub>1</sub>′ and C<sub>4</sub>′. Each ring turns over onto itself.'},
+    {id:'C2y', html:'<i>C</i><sub>2</sub>(<i>y</i>)', desc:'Rotate 180° about an axis through the middle of the C<sub>1</sub>–C<sub>1</sub>′ bond, bisecting the narrow (44°) angle between the ring planes. The rings swap.'},
+    {id:'C2x', html:'<i>C</i><sub>2</sub>(<i>x</i>)', desc:'Rotate 180° about the axis through the middle of C<sub>1</sub>–C<sub>1</sub>′ that bisects the wide (136°) angle between the ring planes. The rings swap.'},
   ],
   irreps:[
-    {id:'Ag',  cls:'a1', html:'A<sub>g</sub>',  chi:[1, 1, 1, 1, 1, 1, 1, 1], quad:`${sq('x')}, ${sq('y')}, ${sq('z')}`},
-    {id:'B1g', cls:'a2', html:'B<sub>1g</sub>', chi:[1, 1,-1,-1, 1, 1,-1,-1], rot:['R<sub><i>z</i></sub>'], quad:'<i>xy</i>'},
-    {id:'B2g', cls:'b1', html:'B<sub>2g</sub>', chi:[1,-1, 1,-1, 1,-1, 1,-1], rot:['R<sub><i>y</i></sub>'], quad:'<i>xz</i>'},
-    {id:'B3g', cls:'b2', html:'B<sub>3g</sub>', chi:[1,-1,-1, 1, 1,-1,-1, 1], rot:['R<sub><i>x</i></sub>'], quad:'<i>yz</i>'},
-    {id:'Au',  cls:'a1', html:'A<sub>u</sub>',  chi:[1, 1, 1, 1,-1,-1,-1,-1]},
-    {id:'B1u', cls:'a2', html:'B<sub>1u</sub>', chi:[1, 1,-1,-1,-1,-1, 1, 1], lin:['<i>z</i>']},
-    {id:'B2u', cls:'b1', html:'B<sub>2u</sub>', chi:[1,-1, 1,-1,-1, 1,-1, 1], lin:['<i>y</i>']},
-    {id:'B3u', cls:'b2', html:'B<sub>3u</sub>', chi:[1,-1,-1, 1,-1, 1, 1,-1], lin:['<i>x</i>']},
+    {id:'A',  cls:'a1', html:'A',             chi:[1, 1, 1, 1], quad:`${sq('x')}, ${sq('y')}, ${sq('z')}`},
+    {id:'B1', cls:'a2', html:'B<sub>1</sub>', chi:[1, 1,-1,-1], lin:['<i>z</i>'], rot:['R<sub><i>z</i></sub>'], quad:'<i>xy</i>'},
+    {id:'B2', cls:'b1', html:'B<sub>2</sub>', chi:[1,-1, 1,-1], lin:['<i>y</i>'], rot:['R<sub><i>y</i></sub>'], quad:'<i>xz</i>'},
+    {id:'B3', cls:'b2', html:'B<sub>3</sub>', chi:[1,-1,-1, 1], lin:['<i>x</i>'], rot:['R<sub><i>x</i></sub>'], quad:'<i>yz</i>'},
   ],
   tr:['x','y','z'].map((a,k) => ({id:'T'+a, parts:[[0,1,2].map(j => +(j === k))]})).concat(['x','y','z'].map((a,k) => ({id:'R'+a, R:true, parts:[[0,1,2].map(j => +(j === k))]}))),
-  molPlaneClass:'syz',
-  matOps:['C2z','i','syz'],
+  matOps:['C2z','C2y','C2x'],
   text:{
-    group:`<p>Biphenyl is two benzene rings joined by a single C–C bond. If the two rings lie in one plane, the molecule has three perpendicular twofold axes, three mirror planes and a centre of inversion at the middle of the central bond: the point group <strong>D<sub>2h</sub></strong>, with 8 operations, each in a class of its own, <i>h</i> = 8.</p>
-      <p>Is biphenyl really flat? Not in the gas phase: the hydrogens next to the central bond (H<sub>2</sub>, H<sub>6</sub>, H<sub>2</sub>′, H<sub>6</sub>′) bump into each other, and the rings twist about 44° apart. That conformer keeps only the three <i>C</i><sub>2</sub> axes and belongs to <strong>D<sub>2</sub></strong>. Twist all the way to 90° and it becomes <strong>D<sub>2d</sub></strong>, like allene. In the crystal at room temperature biphenyl is planar on average, and that is the D<sub>2h</sub> form this lesson treats.</p>
-      <p>Axes follow Mulliken's convention for planar D<sub>2h</sub> molecules: <i>x</i> is perpendicular to the molecular plane and <i>z</i> is the long axis, which passes through the most atoms. Other choices permute the labels B<sub>1</sub>, B<sub>2</sub> and B<sub>3</sub>.</p>`,
-    opsHint:`<p class="hint">σ(<i>yz</i>), the molecular plane, leaves all 22 atoms in place. The long-axis operations, <i>C</i><sub>2</sub>(<i>z</i>) and σ(<i>xz</i>), leave the six atoms on that axis. Everything that swaps the two rings moves every atom.</p>`,
-    vecNote:`<p class="muted">Every D<sub>2h</sub> operation turns a vector by 0° or 180°, so all the contributions here are +1, −1 or 0, just as in CO<sub>2</sub>.</p>`,
-    contribNote:`D<sub>2h</sub> needs only <i>E</i> = 3, <i>C</i><sub>2</sub> = −1, <i>i</i> = −3 and σ = 1.`,
-    vibNote:`<p class="muted">D<sub>2h</sub> species are all one-dimensional, so nothing in biphenyl is degenerate: 60 vibrations, 60 frequencies (though many C–H stretches lie within a few wavenumbers of each other). In-plane vibrations are the species with χ = +1 under σ(<i>yz</i>): A<sub>g</sub>, B<sub>3g</sub>, B<sub>1u</sub> and B<sub>2u</sub>.</p>`,
-    modesHint:`<i>i</i> sorts <i>g</i> from <i>u</i>, and σ(<i>yz</i>) tells in-plane from out-of-plane motion.`,
-    irNote:`<p>Only the <i>u</i> species with <i>x</i>, <i>y</i> or <i>z</i> absorb: B<sub>1u</sub> (dipole change along the long axis), B<sub>2u</sub> (in-plane, across the molecule) and B<sub>3u</sub> (out of the plane).</p>`,
-    ramanNote:`<p>Planar biphenyl has a centre of inversion, so no vibration appears in both spectra, and the A<sub>u</sub> vibrations, including the twist of one ring against the other about the central bond, are silent.</p>
-      <p>In twisted D<sub>2</sub> biphenyl the <i>g</i>/<i>u</i> pairs merge (A<sub>g</sub> and A<sub>u</sub> both become A, B<sub>1g</sub> and B<sub>1u</sub> become B<sub>1</sub>, and so on), and in D<sub>2</sub> every B species carries both a linear and a quadratic function. Bands that coincide in the IR and Raman spectra are therefore evidence that the rings are not coplanar.</p>`,
+    group:`<p>Biphenyl is two benzene rings joined by a single C–C bond. Drawn on paper it looks flat, but it is not. The hydrogens next to the central bond (H<sub>2</sub> and H<sub>6</sub> on one ring, H<sub>2</sub>′ and H<sub>6</sub>′ on the other) would be only about 1.8 Å apart if the rings were coplanar, so the rings twist about the central bond until the two ring planes are about <strong>44° apart</strong> (gas-phase electron diffraction). Conjugation between the rings favours flatness and steric repulsion favours 90°; 44° is the compromise.</p>
+      <p>Twisting removes every mirror plane and the centre of inversion a flat biphenyl would have. What survives are three perpendicular twofold rotation axes: one along the central bond and two perpendicular to it, bisecting the angles between the ring planes. That is the point group <strong>D<sub>2</sub></strong>: 4 operations, each in a class of its own, <i>h</i> = 4. It has only proper rotations, so twisted biphenyl is <strong>chiral</strong>: the left- and right-handed twists are mirror images (they interconvert quickly at room temperature).</p>
+      <p>For comparison: a flat biphenyl would be D<sub>2h</sub>, and rings at exactly 90° would be D<sub>2d</sub>, like allene. In the crystal, packing forces flatten the molecule on average.</p>
+      <p>The <i>z</i> axis runs along the C<sub>1</sub>–C<sub>1</sub>′ bond. The <i>y</i> axis bisects the narrow angle between the ring planes and <i>x</i> the wide one. Swapping <i>x</i> and <i>y</i> swaps the labels B<sub>2</sub> and B<sub>3</sub>.</p>`,
+    opsHint:`<p class="hint">Only the six atoms on the long axis (C<sub>1</sub>, C<sub>4</sub>, H<sub>4</sub> and their primed partners) stay put under <i>C</i><sub>2</sub>(<i>z</i>). The two perpendicular axes pass through the middle of the central bond, where there is no atom, so they move every atom. Turn on <em>Symmetry elements</em>: there are no mirror planes to show.</p>`,
+    vecNote:`<p class="muted">Every D<sub>2</sub> operation is a 180° rotation, so the contributions here are only +1, −1 or 0.</p>`,
+    contribNote:`D<sub>2</sub> needs only <i>E</i> = 3 and <i>C</i><sub>2</sub> = −1.`,
+    vibNote:`<p class="muted">D<sub>2</sub> species are all one-dimensional, so nothing in biphenyl is degenerate: 60 vibrations and 60 frequencies, though many lie within a few wavenumbers of each other. With no mirror plane there is no clean split into in-plane and out-of-plane vibrations, either.</p>`,
+    modesHint:`With only three operations to try, apply them all.`,
+    irNote:`<p>Every B species carries one of <i>x</i>, <i>y</i> or <i>z</i>, so all B<sub>1</sub>, B<sub>2</sub> and B<sub>3</sub> vibrations can absorb: B<sub>1</sub> changes the dipole along the central bond, B<sub>2</sub> and B<sub>3</sub> across it. Only the totally symmetric A vibrations are IR inactive.</p>`,
+    ramanNote:`<p>D<sub>2</sub> has no centre of inversion, so mutual exclusion does not apply: every B vibration appears in both spectra, the A vibrations only in the Raman, and nothing is silent. That includes the twist of one ring against the other about the central bond, which is an A vibration here.</p>
+      <p>Compare a flat, D<sub>2h</sub> biphenyl. It would have a centre of inversion, so no vibration could appear in both spectra, and the A<sub>u</sub> vibrations, including that ring twist, would be silent. Bands that coincide in the IR and Raman spectra are therefore evidence that the rings are not coplanar.</p>`,
   },
 };
 })();

@@ -11,7 +11,7 @@ Interactive lessons on molecular symmetry and group theory, published with GitHu
 - [Carbon dioxide's vibrational modes](https://sunitathyagarajan.github.io/interactive-group-theory/co2-vibrations.html): handle a linear molecule and the infinite group D∞h by working in D₂h and correlating back.
 - [Benzene's vibrational modes](https://sunitathyagarajan.github.io/interactive-group-theory/benzene-vibrations.html): D₆h, with 24 operations, 30 vibrations and 20 distinct fundamentals.
 - [Allene's vibrational modes](https://sunitathyagarajan.github.io/interactive-group-theory/allene-vibrations.html): D₂d and the improper rotation S₄.
-- [Biphenyl's vibrational modes](https://sunitathyagarajan.github.io/interactive-group-theory/biphenyl-vibrations.html): planar D₂h with 60 vibrations, and what twisting the rings (D₂, D₂d) does.
+- [Biphenyl's vibrational modes](https://sunitathyagarajan.github.io/interactive-group-theory/biphenyl-vibrations.html): rings twisted 44° apart, so D₂ (chiral, no mirror planes), with 60 vibrations; compared with flat D₂h and perpendicular D₂d.
 - [1,2-Bromochloroethene's vibrational modes](https://sunitathyagarajan.github.io/interactive-group-theory/bromochloroethene-vibrations.html): Cₛ, with a cis/trans switch; compare 1,2-dichloroethene (C₂ᵥ / C₂h).
 - [Ferrocene's vibrational modes](https://sunitathyagarajan.github.io/interactive-group-theory/ferrocene-vibrations.html): eclipsed D₅h, with fivefold characters such as 2 cos 72°.
 
