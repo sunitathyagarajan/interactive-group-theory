@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>try{var t=localStorage.getItem('igt-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<title>1,2-Bromochloroethene Vibrations in Cₛ</title>
+<meta name="description" content="An interactive lesson on the vibrational modes of cis- and trans-1,2-bromochloroethene using the Cs point group, ending with IR and Raman selection rules.">
+<meta name="color-scheme" content="light dark">
+<link rel="stylesheet" href="assets/lesson.css">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+
+<div class="app">
+  <header class="head">
+    <div class="brand">
+      <div class="kicker">Group theory · C<sub>s</sub> · <span class="f">BrHC=CHCl</span></div>
+      <h1>1,2-Bromochloroethene's vibrational modes</h1>
+    </div>
+    <div class="conv" data-isomers></div>
+    <nav class="site-tools"><a class="back" href="index.html">← All lessons</a><a href="glossary.html">Glossary</a><button class="theme-toggle" data-theme-toggle></button></nav>
+  </header>
+
+  <section class="stage" id="stage" aria-label="3D model of a 1,2-bromochloroethene molecule">
+    <canvas id="gl" tabindex="0" aria-label="Drag or use arrow keys to rotate. Scroll or pinch to zoom."></canvas>
+    <div class="labels" id="labels"></div>
+    <div class="st-top">
+      <div class="toggles">
+        <button class="tg" id="tg-axes" aria-pressed="true">Axes</button>
+        <button class="tg" id="tg-elem" aria-pressed="false">Symmetry elements</button>
+        <button class="tg" id="tg-labels" aria-pressed="true">Labels</button>
+      </div>
+      <div class="showing" id="showing"></div>
+    </div>
+    <div class="st-bottom">
+      <div class="caption" id="caption"></div>
+      <div class="opbar" id="opbar"><span class="lbl">Apply</span></div>
+    </div>
+  </section>
+
+  <main class="lesson" id="lesson">
+    <ol class="stepper" id="stepper"></ol>
+    <div class="body" id="body"></div>
+    <div class="nav">
+      <button class="btn" id="prev">← Previous</button>
+      <button class="btn primary" id="next">Next →</button>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>window.THREE || document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"><\/script>')</script>
+<script>
+// 1,2-Bromochloroethene, BrHC=CHCl. The molecule lies in the xy plane with C=C along x; z is perpendicular to it.
+// r(C=C) = 1.33 Å, r(C–H) = 1.08 Å, r(C–Br) = 1.88 Å, r(C–Cl) = 1.72 Å, C=C–X = 123°, C=C–H = 121°.
+(function(){
+const R = Math.PI/180, rCC = 1.33, sq = v => `<i>${v}</i><sup>2</sup>`;
+const sub = (from, len, deg, sgnX) => [from[0] + sgnX*len*Math.cos((180 - deg)*R), len*Math.sin((180 - deg)*R), 0];
+window.LESSON = {
+  id:'bromochloroethene', nameText:'1,2-bromochloroethene', formulaHTML:'1,2-Bromochloroethene, BrHC=CHCl,', groupHTML:'C<sub>s</sub>',
+  pgKey:'bromochloroethene-cis',
+  scale:1.05, cam:{theta:-1.25, phi:0.8, r:9.5},
+  isomers:{label:'Isomer', default:'cis', options:[{id:'cis', html:'cis'}, {id:'trans', html:'trans'}]},
+  geometry(iso){
+    const C1 = [-rCC/2, 0, 0], C2 = [rCC/2, 0, 0], flip = p => [p[0], -p[1], p[2]];
+    const Br = sub(C1, 1.88, 123, -1), H1 = flip(sub(C1, 1.08, 121, -1));
+    let Cl = sub(C2, 1.72, 123, 1), H2 = flip(sub(C2, 1.08, 121, 1));
+    if (iso === 'trans'){ Cl = flip(Cl); H2 = flip(H2); }
+    return {
+      atoms:[{el:'C', html:'C<sub>1</sub>', pos:C1}, {el:'C', html:'C<sub>2</sub>', pos:C2}, {el:'Br', html:'Br', pos:Br}, {el:'Cl', html:'Cl', pos:Cl}, {el:'H', html:'H<sub>1</sub>', pos:H1}, {el:'H', html:'H<sub>2</sub>', pos:H2}],
+      bonds:[{i:0,j:1,k:8.6,order:2}, {i:0,j:2,k:2.7}, {i:1,j:3,k:3.4}, {i:0,j:4,k:5.0}, {i:1,j:5,k:5.0}],
+    };
+  },
+  ff:{bend:1.0, bendH:0.42, oop:0.3, torsDouble:0.45},
+  charges:(at,i) => ({Br:-0.12, Cl:-0.15, H:0.12})[at.el] ?? (i === 0 ? 0 : 0.03),
+  ops:[
+    {id:'E',  cls:'E',  type:'E', html:'<i>E</i>', name:'Identity'},
+    {id:'sh', cls:'sh', type:'s', normal:[0,0,1], html:'σ<sub>h</sub>', name:'Reflection through the molecular plane'},
+  ],
+  classes:[
+    {id:'E',  html:'<i>E</i>',         desc:'Do nothing.'},
+    {id:'sh', html:'σ<sub>h</sub>',    desc:'Reflect through the plane of the molecule. Every atom lies in that plane, so nothing moves.'},
+  ],
+  irreps:[
+    {id:"A'",  cls:'a1', html:'A′', chi:[1, 1],  lin:['<i>x</i>', '<i>y</i>'], rot:['R<sub><i>z</i></sub>'], quad:`${sq('x')}, ${sq('y')}, ${sq('z')}, <i>xy</i>`},
+    {id:"A''", cls:'b2', html:'A″', chi:[1,-1],  lin:['<i>z</i>'], rot:['R<sub><i>x</i></sub>', 'R<sub><i>y</i></sub>'], quad:'<i>xz</i>, <i>yz</i>'},
+  ],
+  tr:['x','y','z'].map((a,k) => ({id:'T'+a, parts:[[0,1,2].map(j => +(j === k))]})).concat(['x','y','z'].map((a,k) => ({id:'R'+a, R:true, parts:[[0,1,2].map(j => +(j === k))]}))),
+  molPlaneClass:'sh',
+  matOps:['sh'],
+  text:{
+    group:`<p>1,2-Bromochloroethene, BrHC=CHCl, is ethene with one hydrogen on each carbon replaced, one by Br and one by Cl. It is flat, and because Br and Cl are different, the only symmetry it has besides the identity is the molecular plane itself. The point group is <strong>C<sub>s</sub></strong>: two operations, <i>h</i> = 2.</p>
+      <p>It comes as two isomers, <em>cis</em> (Br and Cl on the same side of the double bond) and <em>trans</em>; switch between them at the top of the page. Compare 1,2-<em>dichloro</em>ethene, where cis is C<sub>2v</sub> and trans is C<sub>2h</sub>. Swapping one Cl for Br destroys the twofold axis, the second mirror plane and, in the trans isomer, the centre of inversion, so <strong>both</strong> isomers fall to C<sub>s</sub>.</p>
+      <p>For C<sub>s</sub> the mirror plane is called σ<sub>h</sub> and is usually taken as the <i>xy</i> plane, so <i>z</i> is perpendicular to the molecule.</p>`,
+    opsHint:`<p class="hint">With only two operations this table is short. The interesting part is what C<sub>s</sub> does <em>not</em> have, compared with the dichloroethenes: nothing swaps the two carbons, so no atom is ever moved.</p>`,
+    vecNote:`<p class="muted">Under σ<sub>h</sub> the in-plane vectors <i>x</i> and <i>y</i> keep their direction (+1 each) and <i>z</i> reverses (−1), so every atom contributes +1.</p>`,
+    contribNote:`C<sub>s</sub> needs only <i>E</i> = 3 and σ = 1.`,
+    vibNote:`<p class="muted">The 9 A′ vibrations move atoms within the molecular plane. The 3 A″ vibrations move atoms perpendicular to it: two C–H wags out of the plane and a twist about the C=C bond. This 9 + 3 split is the same for every planar six-atom molecule with no symmetry besides its plane.</p>`,
+    modesHint:`One operation, σ<sub>h</sub>, settles every case here.`,
+    irNote:`<p>Both species carry a linear function, so <strong>all 12</strong> vibrations are IR active. In-plane (A′) vibrations change the dipole within the plane, and out-of-plane (A″) vibrations change it along <i>z</i>.</p>`,
+    ramanNote:`<p>Both species also carry quadratic functions, so every vibration is Raman active too: 12 IR bands and 12 Raman bands, at the same positions. Counting bands cannot tell the cis and trans isomers of bromochloroethene apart, because both are 9A′ + 3A″, although their frequencies differ (compare them with the isomer switch). That is the opposite of 1,2-dichloroethene, where trans (C<sub>2h</sub>) obeys mutual exclusion and cis (C<sub>2v</sub>) does not, so the two spectra look very different.</p>`,
+  },
+};
+})();
+</script>
+<script src="assets/lesson.js"></script>
+<script src="assets/site.js"></script>
+</body>
+</html>

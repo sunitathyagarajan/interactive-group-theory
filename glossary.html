@@ -1,0 +1,1120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>try{var t=localStorage.getItem('igt-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<title>Glossary & Character Tables</title>
+<meta name="description" content="A quick-review glossary of group theory terms for molecular symmetry and vibrational spectroscopy, with an interactive, annotated character table.">
+<meta name="color-scheme" content="light dark">
+<style>
+:root{
+  --bg:#edf0f4; --surface:#ffffff; --surface-2:#f5f7fa; --ink:#16202b; --muted:#5a6775; --line:#d5dce5;
+  --accent:#1f56c9; --accent-soft:#e2eafb; --accent-ink:#ffffff;
+  --good:#1d7548; --good-soft:#dff2e7; --bad:#b4372e; --bad-soft:#fbe5e2;
+  --a1:#1d7548; --a2:#7647b5; --b1:#b8640f; --b2:#1a7aa1; --e:#b8640f;
+  --display:"Segoe UI", Calibri, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --body:"Segoe UI", Calibri, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --mono:Consolas, "Cascadia Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1319; --surface:#151c24; --surface-2:#1a232d; --ink:#e2e8ef; --muted:#93a1b0; --line:#28333f;
+    --accent:#7aa2ff; --accent-soft:#1d2a45; --accent-ink:#0b1220;
+    --good:#5fd09a; --good-soft:#143326; --bad:#ff8a7f; --bad-soft:#3a1c1a;
+    --a1:#5fd09a; --a2:#b993f0; --b1:#f0a85a; --b2:#5cc2ea; --e:#f0a85a;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1319; --surface:#151c24; --surface-2:#1a232d; --ink:#e2e8ef; --muted:#93a1b0; --line:#28333f;
+  --accent:#7aa2ff; --accent-soft:#1d2a45; --accent-ink:#0b1220;
+  --good:#5fd09a; --good-soft:#143326; --bad:#ff8a7f; --bad-soft:#3a1c1a;
+  --a1:#5fd09a; --a2:#b993f0; --b1:#f0a85a; --b2:#5cc2ea; --e:#f0a85a;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15.5px/1.6 var(--body);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+sub,sup{font-size:.72em;line-height:0}
+a{color:var(--accent)}
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.muted{color:var(--muted)}
+.hint{color:var(--muted);font-size:14px;font-style:italic}
+
+.page{max-width:1120px;margin:0 auto;padding:16px 16px 72px}
+
+/* ---------- header ---------- */
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 20px;padding-block:6px 18px;border-bottom:1px solid var(--line)}
+.brand .kicker{font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.brand h1{font:600 clamp(26px,3vw,34px)/1.1 var(--display);margin:6px 0 0;text-wrap:balance;letter-spacing:-.01em}
+.lede{color:var(--muted);max-width:72ch;margin:18px 0 10px}
+.jump{display:flex;flex-wrap:wrap;gap:6px 8px;margin:0 0 8px;padding:0;list-style:none;font-size:14px}
+.jump a{display:inline-flex;align-items:center;min-height:36px;padding:4px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);text-decoration:none}
+.jump a:hover{border-color:var(--accent)}
+
+section>h2{font:600 26px/1.2 var(--display);margin:40px 0 8px;text-wrap:balance}
+.eyebrow{font:500 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin:0 0 4px}
+.intro{max-width:72ch;margin:0 0 12px}
+h3{font:600 19px/1.3 var(--display);margin:0 0 8px}
+
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:none;min-height:36px;padding:6px 14px;font:500 14px var(--body);cursor:pointer;color:var(--muted)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.ctl{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:6px 0 12px}
+.ctl .lbl{font:500 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;min-height:36px;padding:6px 14px;cursor:pointer;font-size:14px;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:default;border-color:var(--line)}
+
+.chip{display:inline-flex;align-items:center;gap:5px;font:600 13.5px var(--body);color:var(--c);background:color-mix(in srgb,var(--c) 13%,transparent);border-radius:6px;padding:1px 7px;white-space:nowrap}
+.chip.a1{--c:var(--a1)}.chip.a2{--c:var(--a2)}.chip.b1{--c:var(--b1)}.chip.b2{--c:var(--b2)}.chip.e{--c:var(--e)}
+.chip.g{--c:var(--accent)}
+
+.callout{background:var(--accent-soft);border-radius:10px;padding:12px 14px;margin:14px 0;font-size:14.5px}
+.callout strong{color:var(--accent)}
+.formula{font:500 17px/1.6 var(--display);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:10px 0;text-align:center;overflow-x:auto}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.9em;margin:0 3px}
+.frac>span:first-child{border-bottom:1px solid currentColor;padding:0 3px}
+
+/* ---------- tables ---------- */
+.tablewrap{overflow-x:auto;overscroll-behavior-x:contain;margin:0;border:1px solid var(--line);border-radius:10px;background:var(--surface);max-width:100%}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:7px 10px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+tr:last-child>th,tr:last-child>td{border-bottom:0}
+thead th{font:500 13px var(--body);color:var(--muted);background:var(--surface-2)}
+tbody th{text-align:left;font-weight:500}
+td{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* ---------- anatomy: the annotated character table ---------- */
+.anat{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:16px 22px;align-items:start}
+.anat .left{min-width:0}
+.ct{font-size:15px}
+.ct th,.ct td{padding:0;transition:background-color .12s}
+.ct thead th{color:var(--ink);font:500 15px var(--display)}
+.ct tfoot td{border-top:1px solid var(--line);border-bottom:0;background:var(--surface-2);text-align:left}
+.rg{display:flex;align-items:center;justify-content:center;gap:4px;width:100%;min-height:42px;padding:6px 10px;border:0;background:transparent;cursor:pointer;border-radius:6px;font:inherit;color:inherit;line-height:1.35}
+.rg:hover{background:color-mix(in srgb,var(--accent) 9%,transparent)}
+.rg.pg{font:600 17px var(--display);justify-content:flex-start}
+.rg.ml{justify-content:flex-start}
+.pair{display:flex;justify-content:center}
+.rg.coef{width:auto;min-width:36px;justify-content:flex-end;padding-right:1px;color:var(--accent);font-weight:600}
+.rg.op{width:auto;min-width:36px;justify-content:flex-start;padding-left:0}
+.rg.op.solo{width:100%;justify-content:center;padding-left:10px}
+.rg.fh{font:500 12px/1.25 var(--body);color:var(--muted);text-align:left;justify-content:flex-start}
+.rg.fx{font:italic 14px/1.45 var(--body);color:var(--ink);justify-content:flex-start;flex-wrap:wrap;column-gap:8px;row-gap:0;text-align:left;min-width:78px}
+.rg.fx>span{white-space:nowrap}
+.rg.ord{justify-content:flex-start;font:500 14px var(--body);color:var(--muted);padding-inline:12px}
+.rg.ord b{color:var(--ink);font-weight:600}
+.ct .hl{background:color-mix(in srgb,var(--accent) 17%,var(--surface))}
+.ct .hl2{background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+.rg.src{box-shadow:inset 0 0 0 2px var(--accent)}
+
+.explain{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px 12px;min-height:240px;display:flex;flex-direction:column}
+.explain .ex-kind{font:500 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:0 0 4px}
+.explain h3{font-size:20px;margin-bottom:8px}
+.explain p{margin:0 0 10px;font-size:14.5px}
+.explain ul{margin:0 0 10px;padding-left:18px;font-size:14px}
+.explain li{margin-bottom:3px}
+.explain .more{font-size:13.5px;color:var(--muted)}
+.explain #ex{flex:1}
+.key{list-style:none;padding:10px 12px !important;background:var(--surface-2);border-radius:8px;font-size:13.5px !important}
+.key li{margin-bottom:4px}
+.key b{display:inline-block;min-width:44px;font-family:var(--display)}
+.mat2{display:inline-grid;grid-template-columns:repeat(2,auto);gap:0 10px;font:500 13px var(--mono);border-left:1.5px solid var(--ink);border-right:1.5px solid var(--ink);padding:1px 6px;border-radius:3px;vertical-align:middle;margin:0 4px}
+.tour{display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px dashed var(--line);margin-top:6px;padding-top:10px}
+.tour .pos{font:500 12px var(--mono);color:var(--muted);text-align:center}
+
+/* ---------- orthogonality ---------- */
+.ortho{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:18px}
+.ortho p{margin:0 0 10px;font-size:14.5px;max-width:72ch}
+.pick{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:8px 0}
+.pick .lbl{font:500 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);min-width:46px}
+.pick .lbl i{text-transform:none}
+.pick .opts{display:flex;flex-wrap:wrap;gap:6px}
+.pk{display:inline-flex;align-items:center;justify-content:center;min-height:38px;min-width:44px;padding:4px 10px;border:1px solid var(--line);background:var(--surface-2);border-radius:8px;cursor:pointer}
+.pk:hover{border-color:var(--accent)}
+.pk[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--accent-soft)}
+.pk .chip{background:none;padding:0}
+.ortho .tablewrap{margin:10px 0}
+.ortho tr.total th,.ortho tr.total td{background:var(--accent-soft);font-weight:600}
+.verdict{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;font-size:15px;margin:6px 0 4px}
+.verdict .big{font:600 22px var(--display)}
+.verdict.ok .big{color:var(--good)}
+.verdict.h .big{color:var(--accent)}
+.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.fact{background:var(--surface-2);border-radius:8px;padding:8px 12px;font-size:14px}
+.fact b{font-family:var(--display)}
+
+/* ---------- glossary ---------- */
+.gl-tools{position:sticky;top:0;z-index:4;background:var(--bg);padding:10px 0 8px;margin:0 0 4px;border-bottom:1px solid var(--line)}
+.search{display:flex;gap:8px;align-items:center}
+.search input{flex:1;min-width:0;min-height:42px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:16px}
+.search input:focus-visible{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
+.topics{display:flex;gap:6px;margin-top:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.topics::-webkit-scrollbar{display:none}
+.topics button{flex:none;min-height:36px;padding:4px 12px;border:1px solid var(--line);background:var(--surface);border-radius:999px;cursor:pointer;font-size:13.5px;color:var(--muted);white-space:nowrap}
+.topics button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent-ink);background:var(--accent)}
+.gl-count{font-size:13px;color:var(--muted);margin:6px 0 0}
+.topic{margin-top:22px}
+.topic>h3{font-size:18px;margin-bottom:10px;display:flex;align-items:baseline;gap:8px}
+.topic>h3 .n{font:500 12px var(--mono);color:var(--muted)}
+.terms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}
+.term{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px 10px;scroll-margin-top:150px;min-width:0}
+.term:target,.term:has(.alias:target){border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.alias{position:absolute;top:0;scroll-margin-top:150px}
+.term h4{margin:0 0 6px;font:600 17px/1.3 var(--display);padding-right:30px}
+.term h4 .sym{font-weight:500;color:var(--muted);margin-left:4px}
+.term .pl{position:absolute;top:6px;right:6px;display:grid;place-items:center;width:36px;height:36px;border-radius:8px;color:var(--muted);text-decoration:none;font:500 15px var(--mono)}
+.term .pl:hover{color:var(--accent);background:var(--surface-2)}
+.term p{margin:0 0 8px;font-size:14.5px}
+.term ul{margin:0 0 8px;padding-left:18px;font-size:14px}
+.term li{margin-bottom:2px}
+.term .ex{color:var(--muted);font-size:14px}
+.term .lbl{font:500 10px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-right:6px}
+.term .see{font-size:13.5px;margin:0;display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px}
+.term .see a{display:inline-flex;align-items:center;min-height:36px;padding:2px 9px;border:1px solid var(--line);border-radius:999px;text-decoration:none;background:var(--surface-2)}
+.term .see a:hover{border-color:var(--accent)}
+.term .formula{font-size:15.5px;margin:6px 0 8px;padding:8px 10px}
+.contrib{font-size:13.5px;margin:4px 0 8px}
+.contrib th,.contrib td{padding:4px 8px}
+.term[hidden],.topic[hidden]{display:none}
+.empty{color:var(--muted);font-style:italic;margin:18px 0}
+.head .site-tools a{display:inline-flex;align-items:center;min-height:36px}
+.head .theme-toggle{min-height:36px}
+.foot{color:var(--muted);font-size:14px;margin:44px 0 0;border-top:1px solid var(--line);padding-top:14px}
+
+@media (max-width:900px){
+  .anat{grid-template-columns:minmax(0,1fr)}
+  .explain{min-height:0}
+}
+@media (max-width:760px){
+  .terms{grid-template-columns:minmax(0,1fr)}
+  .facts{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:560px){
+  section>h2{font-size:23px;margin-top:32px}
+  .ct{font-size:14px}
+  .rg{padding:5px 5px}
+  .rg.op.solo{padding-left:5px}
+  .rg.coef,.rg.op{min-width:36px}
+  .rg.fx{font-size:13px;min-width:0;column-gap:6px}
+  .rg.fh{font-size:11px}
+  .rg.pg{font-size:16px}
+  .formula{font-size:15px}
+  .ct th,.ct td{padding:0}
+}
+@media (prefers-reduced-motion: reduce){ .ct th,.ct td{transition:none} }
+</style>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<div class="page">
+  <header class="head">
+    <div class="brand">
+      <div class="kicker">Group theory · Quick review</div>
+      <h1>Glossary &amp; character tables</h1>
+    </div>
+    <nav class="site-tools"><a href="index.html">← All lessons</a><a href="point-groups.html">Find the point group</a><button class="theme-toggle" data-theme-toggle></button></nav>
+  </header>
+
+  <p class="lede">A refresher for the vocabulary used in the lessons. Start with the annotated character table, then search the glossary for any term you want to look up. Every entry has its own link, such as <a href="#character">glossary.html#character</a>.</p>
+  <ul class="jump">
+    <li><a href="#anatomy">Anatomy of a character table</a></li>
+    <li><a href="#orthogonality-check">Orthogonality check</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+  </ul>
+
+  <!-- ================= anatomy ================= -->
+  <section id="anatomy" aria-labelledby="anatomy-h">
+    <h2 id="anatomy-h">Anatomy of a character table</h2>
+    <p class="intro">Hover over or tap any part of the table to see what it means, or use the tour to step through each part. C<sub>3v</sub> (ammonia) shows classes with more than one operation and a two-dimensional representation. C<sub>2v</sub> (water) is the simplest table in the lessons.</p>
+    <div class="ctl">
+      <span class="lbl" id="grp-lbl">Point group</span>
+      <div class="seg" role="group" aria-labelledby="grp-lbl" id="grp">
+        <button data-g="C3v" aria-pressed="true">C<sub>3v</sub> · NH<sub>3</sub></button>
+        <button data-g="C2v" aria-pressed="false">C<sub>2v</sub> · H<sub>2</sub>O</button>
+      </div>
+    </div>
+    <div class="anat">
+      <div class="left">
+        <div class="tablewrap" id="ct-wrap"></div>
+        <p class="hint" style="margin-top:8px">Cells with a highlight belong to the part being explained. The outlined cell is the one you picked.</p>
+      </div>
+      <aside class="explain" aria-label="Explanation">
+        <div id="ex" aria-live="polite"></div>
+        <div class="tour">
+          <button class="btn" id="tour-prev" type="button">← Previous</button>
+          <span class="pos" id="tour-pos"></span>
+          <button class="btn primary" id="tour-next" type="button">Start the tour →</button>
+        </div>
+      </aside>
+    </div>
+
+    <div class="ortho" id="orthogonality-check">
+      <p class="eyebrow">Try it</p>
+      <h3>Orthogonality check</h3>
+      <p>Treat each row of the table as a list of numbers. Multiply two rows column by column, weight each column by its class size <i>g</i>, and add. Different irreducible representations always give <b>0</b>: they are <a href="#orthogonality">orthogonal</a>. A row with itself gives the order <i>h</i>. Pick <span id="g3n-name">Γ<sub>3<i>N</i></sub></span> as the second row to see that the <a href="#reduction-formula">reduction formula</a> is the same sum divided by <i>h</i>.</p>
+      <div class="formula">Σ<sub><i>R</i></sub> <i>g</i>(<i>R</i>) · χ<sub><i>i</i></sub>(<i>R</i>) · χ<sub><i>j</i></sub>(<i>R</i>) = <i>h</i> if <i>i</i> = <i>j</i>, 0 if <i>i</i> ≠ <i>j</i></div>
+      <div class="pick"><span class="lbl" id="pi-lbl">Row <i>i</i></span><div class="opts" role="group" aria-labelledby="pi-lbl" id="pick-i"></div></div>
+      <div class="pick"><span class="lbl" id="pj-lbl">Row <i>j</i></span><div class="opts" role="group" aria-labelledby="pj-lbl" id="pick-j"></div></div>
+      <div id="ortho-out" aria-live="polite"></div>
+      <div class="facts" id="facts"></div>
+    </div>
+  </section>
+
+  <!-- ================= glossary ================= -->
+  <section id="glossary" aria-labelledby="glossary-h">
+    <h2 id="glossary-h">Glossary</h2>
+    <p class="intro">Definitions use the same notation as the lessons. Underlined terms inside a definition jump to their own entry.</p>
+    <div class="gl-tools">
+      <div class="search">
+        <label class="sr" for="q">Search the glossary</label>
+        <input id="q" type="search" placeholder="Search terms, e.g. class, Raman, σd, degenerate" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="topics" role="group" aria-label="Filter by topic" id="topics">
+        <button data-t="all" aria-pressed="true">All</button>
+        <button data-t="sym" aria-pressed="false">Symmetry &amp; point groups</button>
+        <button data-t="rep" aria-pressed="false">Representations &amp; tables</button>
+        <button data-t="vib" aria-pressed="false">Vibrations</button>
+        <button data-t="spec" aria-pressed="false">Spectroscopy</button>
+      </div>
+      <p class="gl-count" id="gl-count" role="status"></p>
+    </div>
+
+    <!-- ----- Symmetry & point groups ----- -->
+    <div class="topic" data-topic="sym">
+      <h3>Symmetry &amp; point groups <span class="n"></span></h3>
+      <div class="terms">
+
+        <article class="term" id="symmetry-element" data-keys="element axis plane point">
+          <h4>Symmetry element</h4>
+          <a class="pl" href="#symmetry-element" aria-label="Link to Symmetry element">#</a>
+          <p>A point, line or plane that a <a href="#symmetry-operation">symmetry operation</a> is carried out about: a rotation axis, a <a href="#mirror-plane">mirror plane</a>, an <a href="#inversion-centre">inversion centre</a> or an <a href="#improper-rotation">improper-rotation</a> axis. One element can generate several operations. The <i>C</i><sub>3</sub> axis of ammonia gives both <i>C</i><sub>3</sub> and <i>C</i><sub>3</sub><sup>2</sup>.</p>
+          <p class="ex"><span class="lbl">Example</span>Besides the identity, water has three elements: a <i>C</i><sub>2</sub> axis and two mirror planes.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a><a href="point-groups.html">Find the point group</a></p>
+        </article>
+
+        <article class="term" id="symmetry-operation" data-keys="operation move">
+          <h4>Symmetry operation</h4>
+          <a class="pl" href="#symmetry-operation" aria-label="Link to Symmetry operation">#</a>
+          <p>A rotation, reflection, inversion, or rotation followed by reflection, after which the molecule cannot be told apart from where it started. Each atom lands on its own position or on the position of an identical atom. Together, a molecule's operations form its <a href="#point-group">point group</a>.</p>
+          <p class="ex"><span class="lbl">Example</span>Water has four operations: <i>E</i>, <i>C</i><sub>2</sub>, σ<sub>v</sub>(<i>xz</i>) and σ<sub>v</sub>′(<i>yz</i>).</p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a><a href="ammonia-vibrations.html">Ammonia</a></p>
+        </article>
+
+        <article class="term" id="identity" data-keys="identity E do nothing">
+          <h4>Identity <span class="sym"><i>E</i></span></h4>
+          <a class="pl" href="#identity" aria-label="Link to Identity">#</a>
+          <p>The operation "do nothing". Every molecule has it, and every group must contain it (see <a href="#group-multiplication">group multiplication</a>). All atoms are unmoved and each contributes 3, so χ<sub>3<i>N</i></sub>(<i>E</i>) = 3<i>N</i>. In any representation, χ(<i>E</i>) is the <a href="#dimension">dimension</a>.</p>
+          <p class="ex"><span class="lbl">Careful</span>The italic operation <i>E</i> is not the same thing as the Mulliken label E for a two-dimensional representation.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a></p>
+        </article>
+
+        <article class="term" id="proper-rotation" data-keys="Cn rotation axis C2 C3 C4 C6 proper">
+          <h4>Proper rotation <span class="sym"><i>C<sub>n</sub></i></span></h4>
+          <a class="pl" href="#proper-rotation" aria-label="Link to Proper rotation">#</a>
+          <p>Rotation by 360°/<i>n</i> about an axis. <i>C<sub>n</sub><sup>k</sup></i> means <i>k</i> turns in a row, and <i>C<sub>n</sub><sup>n</sup></i> = <i>E</i>. An unmoved atom contributes 1 + 2 cos(360°/<i>n</i>) to χ(<a href="#gamma-3n">Γ<sub>3<i>N</i></sub></a>).</p>
+          <p class="ex"><span class="lbl">Example</span>Water has a <i>C</i><sub>2</sub> (180°) axis and ammonia a <i>C</i><sub>3</sub> (120°). Benzene has a <i>C</i><sub>6</sub> axis perpendicular to the ring and six <i>C</i><sub>2</sub> axes in the ring plane.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a><a href="ammonia-vibrations.html">Ammonia</a><a href="benzene-vibrations.html">Benzene</a></p>
+        </article>
+
+        <article class="term" id="principal-axis" data-keys="principal axis z highest order">
+          <h4>Principal axis</h4>
+          <a class="pl" href="#principal-axis" aria-label="Link to Principal axis">#</a>
+          <p>The <a href="#proper-rotation">rotation axis</a> with the highest <i>n</i>. By convention it is the <i>z</i> axis. It decides whether a mirror plane is σ<sub>h</sub> or σ<sub>v</sub>, and whether a representation is labelled A or B (see <a href="#mulliken-symbols">Mulliken symbols</a>). If several <i>C</i><sub>2</sub> axes tie, as in D<sub>2h</sub>, which one is <i>z</i> is a convention you have to state.</p>
+          <p class="ex"><span class="lbl">Example</span><i>C</i><sub>6</sub> in benzene, <i>C</i><sub>3</sub> in ammonia, <i>C</i><sub>5</sub> through the two rings of ferrocene.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="benzene-vibrations.html">Benzene</a><a href="ferrocene-vibrations.html">Ferrocene</a></p>
+        </article>
+
+        <article class="term" id="mirror-plane" data-keys="sigma reflection plane sigma h sigma v sigma d σh σv σd horizontal vertical dihedral">
+          <h4>Mirror plane <span class="sym">σ (σ<sub>h</sub>, σ<sub>v</sub>, σ<sub>d</sub>)</span></h4>
+          <a class="pl" href="#mirror-plane" aria-label="Link to Mirror plane">#</a>
+          <p>Reflection through a plane. Reflecting twice gives <i>E</i>, and an unmoved atom contributes 1. The subscript says how the plane sits relative to the <a href="#principal-axis">principal axis</a>:</p>
+          <ul>
+            <li><b>σ<sub>h</sub></b>, horizontal: perpendicular to the principal axis.</li>
+            <li><b>σ<sub>v</sub></b>, vertical: contains the principal axis.</li>
+            <li><b>σ<sub>d</sub></b>, dihedral: contains the principal axis and bisects the angle between two <i>C</i><sub>2</sub> axes perpendicular to it.</li>
+          </ul>
+          <p class="ex"><span class="lbl">Example</span>Benzene's molecular plane is a σ<sub>h</sub>. Allene's two mirror planes are σ<sub>d</sub>. A planar molecule with no other symmetry, such as bromochloroethene, has only <i>E</i> and its molecular plane (point group C<sub>s</sub>).</p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a><a href="allene-vibrations.html">Allene</a><a href="bromochloroethene-vibrations.html">Bromochloroethene</a></p>
+        </article>
+
+        <article class="term" id="inversion-centre" data-keys="inversion center centre of symmetry i point">
+          <span class="alias" id="inversion-center"></span>
+          <h4>Inversion centre <span class="sym"><i>i</i></span></h4>
+          <a class="pl" href="#inversion-centre" aria-label="Link to Inversion centre">#</a>
+          <p>Inversion through a point sends every point (<i>x</i>, <i>y</i>, <i>z</i>) to (−<i>x</i>, −<i>y</i>, −<i>z</i>). Only an atom at the centre can be unmoved, and it contributes −3. A molecule with an inversion centre has g/u labels (see <a href="#mulliken-symbols">Mulliken symbols</a>) and obeys the <a href="#mutual-exclusion">rule of mutual exclusion</a>.</p>
+          <p class="ex"><span class="lbl">Example</span>CO<sub>2</sub> and benzene have an inversion centre. Water and ammonia do not.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="co2-vibrations.html">Carbon dioxide</a><a href="benzene-vibrations.html">Benzene</a></p>
+        </article>
+
+        <article class="term" id="improper-rotation" data-keys="Sn rotoreflection rotation reflection S4 S6 S3 improper">
+          <h4>Improper rotation <span class="sym"><i>S<sub>n</sub></i></span></h4>
+          <a class="pl" href="#improper-rotation" aria-label="Link to Improper rotation">#</a>
+          <p>Rotation by 360°/<i>n</i> followed by reflection through the plane perpendicular to that axis. <i>S</i><sub>1</sub> is the same as σ and <i>S</i><sub>2</sub> is the same as <i>i</i>. A molecule can have an <i>S<sub>n</sub></i> axis without having <i>C<sub>n</sub></i> or σ<sub>h</sub> on their own. An unmoved atom contributes −1 + 2 cos(360°/<i>n</i>).</p>
+          <p class="ex"><span class="lbl">Example</span>Allene has an <i>S</i><sub>4</sub> axis along C=C=C but no <i>C</i><sub>4</sub>. Benzene has <i>S</i><sub>6</sub> and <i>S</i><sub>3</sub> along its <i>C</i><sub>6</sub> axis.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="allene-vibrations.html">Allene</a><a href="ferrocene-vibrations.html">Ferrocene</a><a href="benzene-vibrations.html">Benzene</a></p>
+        </article>
+
+        <article class="term" id="point-group" data-keys="point group schoenflies symmetry group C2v C3v D6h Td Oh">
+          <h4>Point group</h4>
+          <a class="pl" href="#point-group" aria-label="Link to Point group">#</a>
+          <p>The complete set of <a href="#symmetry-operation">symmetry operations</a> of a molecule. They form a mathematical group (see <a href="#group-multiplication">group multiplication</a>). It is called a <em>point</em> group because one point, the centre of mass, stays fixed under every operation. Point groups are named with Schoenflies symbols such as C<sub>2v</sub>, C<sub>3v</sub>, D<sub>6h</sub>, D<sub>∞h</sub>, T<sub>d</sub> and O<sub>h</sub>.</p>
+          <p class="ex"><span class="lbl">Example</span>Water is C<sub>2v</sub>, ammonia C<sub>3v</sub>, benzene D<sub>6h</sub>, CO<sub>2</sub> D<sub>∞h</sub>.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="point-groups.html">Find the point group</a><a href="water-vibrations.html">Water</a></p>
+        </article>
+
+        <article class="term" id="order" data-keys="order h number of operations">
+          <h4>Order <span class="sym"><i>h</i></span></h4>
+          <a class="pl" href="#order" aria-label="Link to Order">#</a>
+          <p>The number of symmetry operations in a group. In a character table, add up the <a href="#class">class</a> coefficients along the top row. <i>h</i> is the 1/<i>h</i> in the <a href="#reduction-formula">reduction formula</a>, and it equals the sum of the squares of the <a href="#dimension">dimensions</a> of the irreducible representations.</p>
+          <p class="ex"><span class="lbl">Example</span>C<sub>2v</sub>: <i>h</i> = 4. C<sub>3v</sub>: 1 + 2 + 3 = 6. D<sub>6h</sub>: 24. The linear groups C<sub>∞v</sub> and D<sub>∞h</sub> have infinite order.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="#anatomy">Anatomy above</a><a href="ammonia-vibrations.html">Ammonia</a></p>
+        </article>
+
+        <article class="term" id="class" data-keys="class conjugate class size g coefficient">
+          <h4>Class</h4>
+          <a class="pl" href="#class" aria-label="Link to Class">#</a>
+          <p>A set of operations that the other operations of the group carry into one another. Formally, <i>A</i> and <i>B</i> are in the same class if <i>B</i> = <i>X</i><sup>−1</sup><i>AX</i> for some operation <i>X</i> in the group. Operations in a class always have the same <a href="#character">character</a>, so a character table has one column per class, with the class size <i>g</i> written in front. The number of classes equals the number of <a href="#irreducible-representation">irreducible representations</a>.</p>
+          <p class="ex"><span class="lbl">Example</span>In ammonia, a <i>C</i><sub>3</sub> turn carries each σ<sub>v</sub> plane into the next, so the three planes form one class, written 3σ<sub>v</sub>. <i>C</i><sub>3</sub> and <i>C</i><sub>3</sub><sup>2</sup> form another, written 2<i>C</i><sub>3</sub>.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="#anatomy">Anatomy above</a><a href="ammonia-vibrations.html">Ammonia</a></p>
+        </article>
+
+        <article class="term" id="group-multiplication" data-keys="closure multiplication table group axioms product inverse associative">
+          <span class="alias" id="closure"></span>
+          <h4>Group multiplication &amp; closure</h4>
+          <a class="pl" href="#group-multiplication" aria-label="Link to Group multiplication">#</a>
+          <p>"Multiplying" two operations means doing one after the other. <i>AB</i> means do <i>B</i> first, then <i>A</i>. A set of operations is a group if:</p>
+          <ul>
+            <li><b>Closure:</b> the product of any two members is also a member.</li>
+            <li>It contains the <a href="#identity">identity</a> <i>E</i>.</li>
+            <li>Every operation has an inverse in the set, which undoes it.</li>
+            <li>Multiplication is associative: (<i>AB</i>)<i>C</i> = <i>A</i>(<i>BC</i>).</li>
+          </ul>
+          <p class="ex"><span class="lbl">Example</span>In C<sub>2v</sub>, doing <i>C</i><sub>2</sub> and then σ<sub>v</sub>(<i>xz</i>) has the same effect as σ<sub>v</sub>′(<i>yz</i>): (<i>x</i>, <i>y</i>, <i>z</i>) → (−<i>x</i>, −<i>y</i>, <i>z</i>) → (−<i>x</i>, <i>y</i>, <i>z</i>).</p>
+        </article>
+
+        <article class="term" id="abelian-group" data-keys="abelian commutative commute">
+          <h4>Abelian group</h4>
+          <a class="pl" href="#abelian-group" aria-label="Link to Abelian group">#</a>
+          <p>A group in which every pair of operations commutes: <i>AB</i> = <i>BA</i>. Then every operation is a <a href="#class">class</a> of its own, every <i>g</i> = 1, and there are <i>h</i> irreducible representations, all one-dimensional. Molecules in abelian groups have no degenerate vibrations.</p>
+          <p class="ex"><span class="lbl">Example</span>C<sub>s</sub>, C<sub>2v</sub>, C<sub>2h</sub>, D<sub>2</sub> and D<sub>2h</sub> are abelian. C<sub>3v</sub> is not: <i>C</i><sub>3</sub> followed by σ<sub>v</sub> is a different reflection from σ<sub>v</sub> followed by <i>C</i><sub>3</sub>.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a><a href="co2-vibrations.html">Carbon dioxide</a><a href="biphenyl-vibrations.html">Biphenyl</a></p>
+        </article>
+
+        <article class="term" id="subgroup" data-keys="subgroup lower symmetry descent">
+          <h4>Subgroup</h4>
+          <a class="pl" href="#subgroup" aria-label="Link to Subgroup">#</a>
+          <p>A subset of a group's operations that is a group by itself. Its order divides the order of the parent group. Substituting an atom or distorting a molecule lowers its symmetry to a subgroup, and a <a href="#correlation-table">correlation table</a> shows how the labels change.</p>
+          <p class="ex"><span class="lbl">Example</span>{<i>E</i>, <i>C</i><sub>3</sub>, <i>C</i><sub>3</sub><sup>2</sup>} is the subgroup C<sub>3</sub> of C<sub>3v</sub>. The CO<sub>2</sub> lesson does its bookkeeping in D<sub>2h</sub>, a subgroup of D<sub>∞h</sub>.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="co2-vibrations.html">Carbon dioxide</a></p>
+        </article>
+
+        <article class="term" id="linear-molecule" data-keys="linear infinite group C∞v D∞h Cinfv Dinfh sigma pi delta Σ Π Δ">
+          <span class="alias" id="infinite-groups"></span>
+          <h4>Linear molecules &amp; infinite groups <span class="sym">C<sub>∞v</sub>, D<sub>∞h</sub></span></h4>
+          <a class="pl" href="#linear-molecule" aria-label="Link to Linear molecules">#</a>
+          <p>The axis of a linear molecule is a <i>C</i><sub>∞</sub> axis: rotation by any angle φ is a symmetry operation, and infinitely many σ<sub>v</sub> planes contain the axis. Without an <a href="#inversion-centre">inversion centre</a> the group is C<sub>∞v</sub> (HCl, HCN, OCS). With one it is D<sub>∞h</sub> (CO<sub>2</sub>, N<sub>2</sub>, HC≡CH), which also has infinitely many <i>C</i><sub>2</sub> axes perpendicular to the molecule.</p>
+          <p>The <a href="#order">order</a> is infinite, so you cannot use the reduction formula directly. Instead, work in a finite <a href="#subgroup">subgroup</a> (C<sub>2v</sub> or D<sub>2h</sub>) and <a href="#correlation-table">correlate</a> back. Irreducible representations get Greek labels, Σ<sup>+</sup>, Σ<sup>−</sup>, Π, Δ, with g/u added in D<sub>∞h</sub>. A linear molecule has 3<i>N</i> − 5 vibrations.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="co2-vibrations.html">Carbon dioxide</a></p>
+        </article>
+
+      </div>
+    </div>
+
+    <!-- ----- Representations & character tables ----- -->
+    <div class="topic" data-topic="rep">
+      <h3>Representations &amp; character tables <span class="n"></span></h3>
+      <div class="terms">
+
+        <article class="term" id="character-table" data-keys="character table">
+          <h4>Character table</h4>
+          <a class="pl" href="#character-table" aria-label="Link to Character table">#</a>
+          <p>A summary of a point group. It has one column per <a href="#class">class</a> of operations and one row per <a href="#irreducible-representation">irreducible representation</a>, with the <a href="#character">characters</a> in the body. Two columns on the right list the linear functions and rotations, and the quadratic functions, that transform like each row.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="#anatomy">Anatomy above</a><a href="water-vibrations.html">Water</a></p>
+        </article>
+
+        <article class="term" id="representation" data-keys="representation gamma Γ matrices">
+          <h4>Representation <span class="sym">Γ</span></h4>
+          <a class="pl" href="#representation" aria-label="Link to Representation">#</a>
+          <p>A set of matrices, one per symmetry operation, that multiply together in the same way as the operations do. You build one by choosing a <a href="#basis">basis</a> and writing down what each operation does to it. For most chemistry only the <a href="#character">characters</a> (the traces of the matrices) are needed. Representations are written Γ, capital gamma.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a></p>
+        </article>
+
+        <article class="term" id="basis" data-keys="basis set basis functions vectors">
+          <h4>Basis</h4>
+          <a class="pl" href="#basis" aria-label="Link to Basis">#</a>
+          <p>The objects (vectors, functions, orbitals, bond stretches) whose behaviour under the symmetry operations generates a <a href="#representation">representation</a>. Different bases give different representations of the same group.</p>
+          <p class="ex"><span class="lbl">Example</span>Water's 9 <i>x</i>, <i>y</i>, <i>z</i> displacement vectors are the basis for <a href="#gamma-3n">Γ<sub>3<i>N</i></sub></a>. Its two O–H bond stretches are the basis for a two-dimensional representation that reduces to A<sub>1</sub> + B<sub>1</sub> (molecule in the <i>xz</i> plane).</p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a></p>
+        </article>
+
+        <article class="term" id="reducible-representation" data-keys="reducible representation">
+          <h4>Reducible representation</h4>
+          <a class="pl" href="#reducible-representation" aria-label="Link to Reducible representation">#</a>
+          <p>A representation that a change of basis can break into smaller ones. Its characters are a sum of rows of the character table, and the <a href="#reduction-formula">reduction formula</a> finds which rows and how many of each. Γ<sub>3<i>N</i></sub> is reducible.</p>
+          <p class="ex"><span class="lbl">Example</span>For water in the <i>xz</i> plane, Γ<sub>3<i>N</i></sub> has characters 9, −1, 3, 1 and reduces to 3A<sub>1</sub> + A<sub>2</sub> + 3B<sub>1</sub> + 2B<sub>2</sub>.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a></p>
+        </article>
+
+        <article class="term" id="irreducible-representation" data-keys="irreducible representation irrep row">
+          <span class="alias" id="irrep"></span>
+          <h4>Irreducible representation <span class="sym">(irrep)</span></h4>
+          <a class="pl" href="#irreducible-representation" aria-label="Link to Irreducible representation">#</a>
+          <p>A representation that cannot be reduced any further. Each one is a row of the character table. Every vibration, orbital and electronic state of a molecule belongs to one of them. A group has as many irreducible representations as it has <a href="#class">classes</a>.</p>
+          <p class="ex"><span class="lbl">Example</span>C<sub>3v</sub> has three: A<sub>1</sub> and A<sub>2</sub> (one-dimensional) and E (two-dimensional).</p>
+          <p class="see"><span class="lbl">See it in</span><a href="ammonia-vibrations.html">Ammonia</a></p>
+        </article>
+
+        <article class="term" id="character" data-keys="character chi χ trace">
+          <h4>Character <span class="sym">χ</span></h4>
+          <a class="pl" href="#character" aria-label="Link to Character">#</a>
+          <p>The trace (sum of the diagonal elements) of the matrix that represents a symmetry operation. Characters do not change if you switch to an equivalent basis, and they are the same for every operation in a <a href="#class">class</a>. In a one-dimensional representation, χ = +1 means the basis function is unchanged by the operation and χ = −1 means it changes sign.</p>
+          <p class="ex"><span class="lbl">Example</span>For Γ<sub>3<i>N</i></sub>, χ(<i>R</i>) = (number of <a href="#unmoved-atoms">unmoved atoms</a>) × (contribution per unmoved atom).</p>
+          <p class="see"><span class="lbl">See it in</span><a href="#anatomy">Anatomy above</a><a href="water-vibrations.html">Water</a></p>
+        </article>
+
+        <article class="term" id="dimension" data-keys="dimension degeneracy degenerate pair doubly triply E T chi(E)">
+          <span class="alias" id="degeneracy"></span><span class="alias" id="degenerate-pair"></span>
+          <h4>Dimension &amp; degeneracy</h4>
+          <a class="pl" href="#dimension" aria-label="Link to Dimension and degeneracy">#</a>
+          <p>The size of the matrices in a representation, read off as χ(<i>E</i>). One-dimensional irreducible representations are A or B, two-dimensional ones E, and three-dimensional ones T. Functions or vibrations in an E or T representation are degenerate. An E vibration is a <strong>degenerate pair</strong>: two modes with the same frequency that give one band. In the <a href="#degrees-of-freedom">degrees-of-freedom check</a>, each E counts as 2 and each T as 3.</p>
+          <p class="ex"><span class="lbl">Example</span>Ammonia's Γ<sub>vib</sub> = 2A<sub>1</sub> + 2E has six vibrations but only four different frequencies.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="ammonia-vibrations.html">Ammonia</a><a href="benzene-vibrations.html">Benzene</a><a href="allene-vibrations.html">Allene</a></p>
+        </article>
+
+        <article class="term" id="totally-symmetric" data-keys="totally symmetric representation A1 A1g Ag A' Sigma g plus first row">
+          <h4>Totally symmetric representation</h4>
+          <a class="pl" href="#totally-symmetric" aria-label="Link to Totally symmetric representation">#</a>
+          <p>The irreducible representation with χ = +1 under every operation. It is always the first row of the table: A<sub>1</sub>, A<sub>1g</sub>, A′, A<sub>g</sub>, A, Σ<sup>+</sup> or Σ<sub>g</sub><sup>+</sup>, depending on the group. An integral over all space can be non-zero only if its integrand contains it, which is where <a href="#selection-rule">selection rules</a> come from. Totally symmetric vibrations are always <a href="#raman-active">Raman active</a>, because <i>x</i><sup>2</sup> + <i>y</i><sup>2</sup> + <i>z</i><sup>2</sup> is totally symmetric in every group.</p>
+          <p class="ex"><span class="lbl">Example</span>Water's symmetric stretch and bend are both A<sub>1</sub>.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a></p>
+        </article>
+
+        <article class="term" id="mulliken-symbols" data-keys="mulliken symbols labels A B E T g u gerade ungerade prime double prime subscript 1 2">
+          <h4>Mulliken symbols</h4>
+          <a class="pl" href="#mulliken-symbols" aria-label="Link to Mulliken symbols">#</a>
+          <p>The labels for irreducible representations:</p>
+          <ul>
+            <li><b>A / B</b>: one-dimensional; symmetric (χ = +1) / antisymmetric (χ = −1) under rotation about the <a href="#principal-axis">principal axis</a>.</li>
+            <li><b>E</b>: two-dimensional. <b>T</b> (sometimes F): three-dimensional.</li>
+            <li><b>Subscript 1 / 2</b>: symmetric / antisymmetric under a <i>C</i><sub>2</sub> perpendicular to the principal axis or, if there is none, under a σ<sub>v</sub>.</li>
+            <li><b>g / u</b> (German <i>gerade</i>, even / <i>ungerade</i>, odd): symmetric / antisymmetric under <a href="#inversion-centre">inversion</a>.</li>
+            <li><b>′ / ″</b>: symmetric / antisymmetric under σ<sub>h</sub>.</li>
+          </ul>
+          <p>Lower-case letters (a<sub>1</sub>, e, t<sub>2</sub>) are often used for orbitals.</p>
+          <p class="ex"><span class="lbl">Example</span>Which C<sub>2v</sub> plane is called <i>xz</i> is a convention, so water's antisymmetric stretch is B<sub>1</sub> in some books and B<sub>2</sub> in others.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a><a href="benzene-vibrations.html">Benzene</a><a href="bromochloroethene-vibrations.html">Bromochloroethene</a></p>
+        </article>
+
+        <article class="term" id="orthogonality" data-keys="orthogonal orthogonality great orthogonality theorem normalized normalised">
+          <span class="alias" id="orthogonal"></span><span class="alias" id="great-orthogonality-theorem"></span>
+          <h4>Orthogonality &amp; the great orthogonality theorem</h4>
+          <a class="pl" href="#orthogonality" aria-label="Link to Orthogonality">#</a>
+          <p>Treat each row of the character table as a list of numbers and weight each column by its class size <i>g</i>. Two different irreducible representations are <strong>orthogonal</strong>: Σ <i>g</i>(<i>R</i>) χ<sub><i>i</i></sub>(<i>R</i>) χ<sub><i>j</i></sub>(<i>R</i>) = 0. A row paired with itself gives <i>h</i>. These results come from the great orthogonality theorem. The same theorem shows that the number of irreducible representations equals the number of classes, and that the squares of their dimensions add up to <i>h</i>. Orthogonality is why the <a href="#reduction-formula">reduction formula</a> works.</p>
+          <p class="ex"><span class="lbl">Example</span>In C<sub>3v</sub>, A<sub>1</sub> with E gives (1)(1)(2) + (2)(1)(−1) + (3)(1)(0) = 0.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="#orthogonality-check">Orthogonality check above</a></p>
+        </article>
+
+        <article class="term" id="reduction-formula" data-keys="reduction formula reduce n_i number of times">
+          <h4>Reduction formula</h4>
+          <a class="pl" href="#reduction-formula" aria-label="Link to Reduction formula">#</a>
+          <div class="formula"><i>n</i><sub><i>i</i></sub> = <span class="frac"><span>1</span><span><i>h</i></span></span> Σ<sub><i>R</i></sub> <i>g</i>(<i>R</i>) · χ(<i>R</i>) · χ<sub><i>i</i></sub>(<i>R</i>)</div>
+          <p>This gives how many times irreducible representation <i>i</i> appears in a <a href="#reducible-representation">reducible representation</a> Γ. Multiply Γ's characters by row <i>i</i>'s characters column by column, weight each column by its class size <i>g</i>, add, and divide by the <a href="#order">order</a> <i>h</i>. The answer must be a whole number, zero or more. A fraction means an arithmetic slip.</p>
+          <p class="ex"><span class="lbl">Example</span>Ammonia's Γ<sub>3<i>N</i></sub> is 12, 0, 2, so <i>n</i>(A<sub>1</sub>) = (1/6)[(1)(12)(1) + (2)(0)(1) + (3)(2)(1)] = 18/6 = 3.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a><a href="ammonia-vibrations.html">Ammonia</a></p>
+        </article>
+
+        <article class="term" id="direct-sum" data-keys="direct sum ⊕ decomposition">
+          <h4>Direct sum</h4>
+          <a class="pl" href="#direct-sum" aria-label="Link to Direct sum">#</a>
+          <p>A reducible representation written as a sum of irreducible ones, such as Γ<sub>3<i>N</i></sub> = 3A<sub>1</sub> + A<sub>2</sub> + 3B<sub>1</sub> + 2B<sub>2</sub> (some books write ⊕). The coefficients are the <i>n<sub>i</sub></i> from the <a href="#reduction-formula">reduction formula</a>, and the characters add column by column. Do not confuse it with the <a href="#direct-product">direct product</a>.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a></p>
+        </article>
+
+        <article class="term" id="direct-product" data-keys="direct product multiply representations ⊗ times">
+          <h4>Direct product</h4>
+          <a class="pl" href="#direct-product" aria-label="Link to Direct product">#</a>
+          <p>The representation of a product of two functions. Its characters are the products of the two sets of characters, column by column, and you reduce it if it is reducible. Direct products are used in <a href="#selection-rule">selection rules</a> and to find the symmetry of <a href="#overtone-combination">overtone and combination bands</a>.</p>
+          <p class="ex"><span class="lbl">Example</span>In C<sub>2v</sub>, B<sub>1</sub> × B<sub>2</sub> = A<sub>2</sub>. In C<sub>3v</sub>, E × E has characters 4, 1, 0, which reduce to A<sub>1</sub> + A<sub>2</sub> + E. Any representation times the totally symmetric one is unchanged, and any one-dimensional representation times itself is totally symmetric.</p>
+        </article>
+
+        <article class="term" id="correlation-table" data-keys="correlation table descent in symmetry splitting subgroup">
+          <span class="alias" id="correlation"></span>
+          <h4>Correlation table</h4>
+          <a class="pl" href="#correlation-table" aria-label="Link to Correlation table">#</a>
+          <p>A table showing what each irreducible representation of a group becomes (correlates with) in one of its <a href="#subgroup">subgroups</a>. A degenerate representation can split into several one-dimensional ones. Correlation tables are used to handle the <a href="#linear-molecule">infinite groups</a> and to predict how bands split when a molecule is substituted or distorted.</p>
+          <p class="ex"><span class="lbl">Example</span>CO<sub>2</sub>, from D<sub>∞h</sub> to D<sub>2h</sub> with <i>z</i> along the molecule: Σ<sub>g</sub><sup>+</sup> → A<sub>g</sub>, Σ<sub>u</sub><sup>+</sup> → B<sub>1u</sub>, Π<sub>u</sub> → B<sub>2u</sub> + B<sub>3u</sub>.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="co2-vibrations.html">Carbon dioxide</a></p>
+        </article>
+
+        <article class="term" id="projection-operator" data-keys="projection operator SALC symmetry adapted linear combination">
+          <h4>Projection operator</h4>
+          <a class="pl" href="#projection-operator" aria-label="Link to Projection operator">#</a>
+          <div class="formula"><i>P</i><sup>(<i>i</i>)</sup><i>f</i> ∝ Σ<sub><i>R</i></sub> χ<sub><i>i</i></sub>(<i>R</i>) · <i>R f</i></div>
+          <p>A recipe that takes any starting function <i>f</i> (one bond stretch, one atom's displacement, one atomic orbital) and keeps only the part that belongs to irreducible representation <i>i</i>. Apply every operation <i>R</i> to <i>f</i> (all of them, not one per class), multiply by χ<sub><i>i</i></sub>(<i>R</i>), and add. The result, if it is not zero, is a symmetry-adapted linear combination (SALC). The full prefactor (<i>d<sub>i</sub></i>/<i>h</i>) only sets the scale and is often dropped.</p>
+          <p class="ex"><span class="lbl">Example</span>Start from one O–H stretch <i>r</i><sub>1</sub> of water. Projecting onto A<sub>1</sub> gives <i>r</i><sub>1</sub> + <i>r</i><sub>2</sub>, the symmetric stretch. Projecting onto B<sub>1</sub> (molecule in <i>xz</i>) gives <i>r</i><sub>1</sub> − <i>r</i><sub>2</sub>, the antisymmetric stretch.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="benzene-vibrations.html">Benzene</a></p>
+        </article>
+
+      </div>
+    </div>
+
+    <!-- ----- Vibrations ----- -->
+    <div class="topic" data-topic="vib">
+      <h3>Vibrations <span class="n"></span></h3>
+      <div class="terms">
+
+        <article class="term" id="degrees-of-freedom" data-keys="degrees of freedom 3N 3N-6 3N-5 count check">
+          <h4>Degrees of freedom <span class="sym">3<i>N</i>, 3<i>N</i> − 6, 3<i>N</i> − 5</span></h4>
+          <a class="pl" href="#degrees-of-freedom" aria-label="Link to Degrees of freedom">#</a>
+          <p>Locating <i>N</i> atoms takes 3<i>N</i> coordinates, so a molecule has 3<i>N</i> degrees of freedom. Three are translations and three are rotations (two for a linear molecule). That leaves 3<i>N</i> − 6 vibrations for a nonlinear molecule and 3<i>N</i> − 5 for a linear one.</p>
+          <p><strong>Degrees-of-freedom check:</strong> after reducing <a href="#gamma-3n">Γ<sub>3<i>N</i></sub></a>, add up (number of times each irreducible representation appears) × (its <a href="#dimension">dimension</a>). The total must equal 3<i>N</i>.</p>
+          <p class="ex"><span class="lbl">Example</span>Water: 3(3) − 6 = 3. CO<sub>2</sub>: 3(3) − 5 = 4. Ammonia: 6. Benzene: 30. For ammonia, 3A<sub>1</sub> + A<sub>2</sub> + 4E gives 3 + 1 + 4 × 2 = 12 = 3<i>N</i>.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a><a href="co2-vibrations.html">Carbon dioxide</a></p>
+        </article>
+
+        <article class="term" id="gamma-3n" data-keys="gamma 3N Γ3N total representation cartesian displacement vectors">
+          <h4>Γ<sub>3<i>N</i></sub></h4>
+          <a class="pl" href="#gamma-3n" aria-label="Link to Gamma 3N">#</a>
+          <p>The <a href="#reducible-representation">reducible representation</a> whose <a href="#basis">basis</a> is the 3<i>N</i> Cartesian displacement vectors: an <i>x</i>, <i>y</i> and <i>z</i> arrow on every atom. It contains every motion of the molecule, including translations, rotations and vibrations. Shortcut: χ(<i>R</i>) = (number of <a href="#unmoved-atoms">unmoved atoms</a>) × (contribution per unmoved atom).</p>
+          <p class="ex"><span class="lbl">Example</span>Water (molecule in <i>xz</i>): 9, −1, 3, 1. Ammonia: 12, 0, 2.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a><a href="ammonia-vibrations.html">Ammonia</a></p>
+        </article>
+
+        <article class="term" id="unmoved-atoms" data-keys="unmoved atoms contribution per atom stationary unshifted">
+          <span class="alias" id="contribution-per-atom"></span>
+          <h4>Unmoved atoms &amp; contribution per atom</h4>
+          <a class="pl" href="#unmoved-atoms" aria-label="Link to Unmoved atoms">#</a>
+          <p>An atom is <strong>unmoved</strong> by an operation if it stays in its own place, not just swapped with an identical atom. Only unmoved atoms add to χ(Γ<sub>3<i>N</i></sub>), because the vectors of an atom that moves land off the diagonal of the matrix. Each unmoved atom adds the trace of the 3 × 3 matrix that the operation applies to (<i>x</i>, <i>y</i>, <i>z</i>):</p>
+          <div class="tablewrap contrib"><table>
+            <thead><tr><th>Operation</th><th>Contribution per unmoved atom</th></tr></thead>
+            <tbody>
+              <tr><th><i>E</i></th><td>3</td></tr>
+              <tr><th><i>C<sub>n</sub></i></th><td>1 + 2 cos(360°/<i>n</i>)<br><span class="muted"><i>C</i><sub>2</sub> −1 · <i>C</i><sub>3</sub> 0 · <i>C</i><sub>4</sub> 1 · <i>C</i><sub>6</sub> 2</span></td></tr>
+              <tr><th>σ</th><td>1</td></tr>
+              <tr><th><i>i</i></th><td>−3</td></tr>
+              <tr><th><i>S<sub>n</sub></i></th><td>−1 + 2 cos(360°/<i>n</i>)<br><span class="muted"><i>S</i><sub>3</sub> −2 · <i>S</i><sub>4</sub> −1 · <i>S</i><sub>6</sub> 0</span></td></tr>
+            </tbody>
+          </table></div>
+          <p class="ex"><span class="lbl">Example</span>Under <i>C</i><sub>2</sub> in water only O is unmoved, so χ = 1 × (−1) = −1.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a><a href="ammonia-vibrations.html">Ammonia</a></p>
+        </article>
+
+        <article class="term" id="translations-rotations" data-keys="translations rotations Γtrans Γrot gamma trans rot Rx Ry Rz Tx Ty Tz">
+          <h4>Translations &amp; rotations <span class="sym">Γ<sub>trans</sub>, Γ<sub>rot</sub></span></h4>
+          <a class="pl" href="#translations-rotations" aria-label="Link to Translations and rotations">#</a>
+          <p>Motions of the whole molecule that do not change its shape. Translations transform like <i>x</i>, <i>y</i>, <i>z</i> and rotations like R<sub><i>x</i></sub>, R<sub><i>y</i></sub>, R<sub><i>z</i></sub>, so you can read their irreducible representations straight off the character table. Subtract them from Γ<sub>3<i>N</i></sub> to get <a href="#gamma-vib">Γ<sub>vib</sub></a>. A linear molecule has only two rotations, because turning about its own axis moves no nuclei.</p>
+          <p class="ex"><span class="lbl">Example</span>Water (molecule in <i>xz</i>): Γ<sub>trans</sub> = A<sub>1</sub> + B<sub>1</sub> + B<sub>2</sub> and Γ<sub>rot</sub> = A<sub>2</sub> + B<sub>1</sub> + B<sub>2</sub>.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a><a href="co2-vibrations.html">Carbon dioxide</a></p>
+        </article>
+
+        <article class="term" id="gamma-vib" data-keys="gamma vib Γvib vibrational representation">
+          <h4>Γ<sub>vib</sub></h4>
+          <a class="pl" href="#gamma-vib" aria-label="Link to Gamma vib">#</a>
+          <p>Γ<sub>vib</sub> = Γ<sub>3<i>N</i></sub> − Γ<sub>trans</sub> − Γ<sub>rot</sub>: the representation of the vibrations alone. Each one-dimensional irreducible representation in it is one <a href="#normal-mode">normal mode</a>, each E is a degenerate pair, and each T a degenerate set of three.</p>
+          <p class="ex"><span class="lbl">Example</span>Water: 2A<sub>1</sub> + B<sub>1</sub> (molecule in <i>xz</i>; 2A<sub>1</sub> + B<sub>2</sub> in <i>yz</i>). Ammonia: 2A<sub>1</sub> + 2E. CO<sub>2</sub>: Σ<sub>g</sub><sup>+</sup> + Σ<sub>u</sub><sup>+</sup> + Π<sub>u</sub>.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a><a href="ammonia-vibrations.html">Ammonia</a><a href="co2-vibrations.html">Carbon dioxide</a></p>
+        </article>
+
+        <article class="term" id="normal-mode" data-keys="normal mode vibration nu ν stretch bend">
+          <h4>Normal mode</h4>
+          <a class="pl" href="#normal-mode" aria-label="Link to Normal mode">#</a>
+          <p>A collective vibration in which every atom moves at the same frequency and in phase, so all atoms pass through equilibrium together. In the harmonic approximation the normal modes are independent, and any vibration of the molecule is a combination of them. Each normal mode, or degenerate set, belongs to one irreducible representation. Modes are numbered ν<sub>1</sub>, ν<sub>2</sub>, … by <a href="#symmetry-species">symmetry species</a> first, then by decreasing wavenumber.</p>
+          <p class="ex"><span class="lbl">Example</span>Water, gas phase: ν<sub>1</sub> symmetric stretch, 3657 cm<sup>−1</sup>; ν<sub>2</sub> bend, 1595 cm<sup>−1</sup>; ν<sub>3</sub> antisymmetric stretch, 3756 cm<sup>−1</sup>.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a><a href="benzene-vibrations.html">Benzene</a></p>
+        </article>
+
+        <article class="term" id="symmetry-species" data-keys="symmetry species label mode irrep">
+          <h4>Symmetry species</h4>
+          <a class="pl" href="#symmetry-species" aria-label="Link to Symmetry species">#</a>
+          <p>The irreducible representation that a normal mode (or orbital, or state) belongs to, written as its <a href="#mulliken-symbols">Mulliken symbol</a>. To test a mode, apply each operation to its displacement arrows. χ = +1 if the pattern maps onto itself and −1 if every arrow reverses.</p>
+          <p class="ex"><span class="lbl">Example</span>Water's antisymmetric stretch changes sign under <i>C</i><sub>2</sub>, so it is a B species.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a></p>
+        </article>
+
+        <article class="term" id="fundamental" data-keys="fundamental transition v=0 to v=1 band">
+          <h4>Fundamental</h4>
+          <a class="pl" href="#fundamental" aria-label="Link to Fundamental">#</a>
+          <p>A transition from the vibrational ground state (<i>v</i> = 0 in every mode) to <i>v</i> = 1 in one normal mode. Fundamentals give the strongest vibrational bands, and the IR and Raman rules read from the character table apply to them. The excited state has the symmetry species of the mode.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a></p>
+        </article>
+
+        <article class="term" id="overtone-combination" data-keys="overtone combination band anharmonic 2ν hot">
+          <span class="alias" id="overtone"></span><span class="alias" id="combination-band"></span>
+          <h4>Overtone &amp; combination bands</h4>
+          <a class="pl" href="#overtone-combination" aria-label="Link to Overtone and combination bands">#</a>
+          <p>An <strong>overtone</strong> excites one mode by two or more quanta (<i>v</i> = 0 → 2 appears near twice the fundamental wavenumber, a little lower because of anharmonicity). A <strong>combination band</strong> excites two different modes at once and appears near ν<sub><i>a</i></sub> + ν<sub><i>b</i></sub>. Both are weak, because only anharmonicity allows them. Their symmetry is the <a href="#direct-product">direct product</a> of the species involved, so the first overtone of a non-degenerate mode is always totally symmetric. They can reveal <a href="#silent-mode">silent modes</a>.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="benzene-vibrations.html">Benzene</a></p>
+        </article>
+
+        <article class="term" id="fermi-resonance" data-keys="fermi resonance mixing dyad">
+          <h4>Fermi resonance</h4>
+          <a class="pl" href="#fermi-resonance" aria-label="Link to Fermi resonance">#</a>
+          <p>When an <a href="#overtone-combination">overtone or combination</a> level has nearly the same energy as a fundamental <em>and</em> the same symmetry species, the two states mix. They push apart and share intensity, so two bands of similar strength appear where one fundamental was expected.</p>
+          <p class="ex"><span class="lbl">Example</span>In the Raman spectrum of CO<sub>2</sub>, the symmetric stretch ν<sub>1</sub> (Σ<sub>g</sub><sup>+</sup>) mixes with 2ν<sub>2</sub>, the overtone of the 667 cm<sup>−1</sup> bend, which has a Σ<sub>g</sub><sup>+</sup> component. The result is a pair of bands at 1285 and 1388 cm<sup>−1</sup>.</p>
+        </article>
+
+      </div>
+    </div>
+
+    <!-- ----- Spectroscopy ----- -->
+    <div class="topic" data-topic="spec">
+      <h3>Spectroscopy <span class="n"></span></h3>
+      <div class="terms">
+
+        <article class="term" id="selection-rule" data-keys="selection rule transition integral transition moment allowed forbidden">
+          <span class="alias" id="transition-integral"></span>
+          <h4>Selection rule &amp; transition integral</h4>
+          <a class="pl" href="#selection-rule" aria-label="Link to Selection rule">#</a>
+          <p>The intensity of a transition from state ψ<sub>i</sub> to ψ<sub>f</sub> caused by an operator <i>Ô</i> (the dipole moment μ for IR, the <a href="#polarizability">polarizability</a> α for Raman) is proportional to |⟨ψ<sub>f</sub>|<i>Ô</i>|ψ<sub>i</sub>⟩|<sup>2</sup>. The integral can be non-zero only if the <a href="#direct-product">direct product</a> Γ<sub>f</sub> × Γ<sub><i>Ô</i></sub> × Γ<sub>i</sub> contains the <a href="#totally-symmetric">totally symmetric representation</a>. For a <a href="#fundamental">fundamental</a> the ground state is totally symmetric, so the mode must have the same species as a component of <i>Ô</i>. Symmetry tells you whether a band is allowed, not how strong it is.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a></p>
+        </article>
+
+        <article class="term" id="ir-active" data-keys="IR infrared active absorption dipole moment x y z">
+          <span class="alias" id="ir"></span>
+          <h4>IR active</h4>
+          <a class="pl" href="#ir-active" aria-label="Link to IR active">#</a>
+          <p>A vibration absorbs infrared light only if it changes the molecule's dipole moment μ. The components μ<sub><i>x</i></sub>, μ<sub><i>y</i></sub>, μ<sub><i>z</i></sub> transform like <i>x</i>, <i>y</i>, <i>z</i>, so a fundamental is IR active if its row of the character table lists <i>x</i>, <i>y</i> or <i>z</i>. The function listed tells you the direction in which the dipole oscillates.</p>
+          <p class="ex"><span class="lbl">Example</span>All three water fundamentals are IR active. The symmetric stretch of CO<sub>2</sub> (Σ<sub>g</sub><sup>+</sup>) is not.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a><a href="co2-vibrations.html">Carbon dioxide</a></p>
+        </article>
+
+        <article class="term" id="polarizability" data-keys="polarizability polarisability alpha α tensor induced dipole">
+          <h4>Polarizability <span class="sym">α</span></h4>
+          <a class="pl" href="#polarizability" aria-label="Link to Polarizability">#</a>
+          <p>How easily an electric field distorts the electron cloud. The induced dipole is μ<sub>ind</sub> = α<b>E</b>. α is a symmetric 3 × 3 tensor whose components α<sub><i>xx</i></sub>, α<sub><i>xy</i></sub>, … transform like the quadratic functions <i>x</i><sup>2</sup>, <i>xy</i>, …. A vibration that makes α oscillate can <a href="#raman-active">Raman scatter</a>.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a></p>
+        </article>
+
+        <article class="term" id="raman-active" data-keys="Raman active scattering quadratic polarized">
+          <span class="alias" id="raman"></span>
+          <h4>Raman active</h4>
+          <a class="pl" href="#raman-active" aria-label="Link to Raman active">#</a>
+          <p>In Raman scattering, light is scattered with its frequency shifted by a vibrational frequency. A vibration is Raman active if it changes the <a href="#polarizability">polarizability</a>, which means its row of the character table lists a quadratic function (<i>x</i><sup>2</sup>, <i>xy</i>, <i>x</i><sup>2</sup> − <i>y</i><sup>2</sup>, …). <a href="#totally-symmetric">Totally symmetric</a> modes are always Raman active and give polarized bands.</p>
+          <p class="ex"><span class="lbl">Example</span>The symmetric stretch of CO<sub>2</sub> is Raman active but IR inactive.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a><a href="co2-vibrations.html">Carbon dioxide</a><a href="benzene-vibrations.html">Benzene</a></p>
+        </article>
+
+        <article class="term" id="mutual-exclusion" data-keys="mutual exclusion rule centrosymmetric inversion g u">
+          <h4>Rule of mutual exclusion</h4>
+          <a class="pl" href="#mutual-exclusion" aria-label="Link to Rule of mutual exclusion">#</a>
+          <p>In a molecule with an <a href="#inversion-centre">inversion centre</a>, no vibration is both IR and Raman active. <i>x</i>, <i>y</i> and <i>z</i> change sign under <i>i</i> (they are u), while quadratic functions do not (they are g). So IR-active modes are u and Raman-active modes are g. A mode can still be neither (<a href="#silent-mode">silent</a>). If many bands appear at the same wavenumber in both spectra, the molecule probably has no inversion centre.</p>
+          <p class="ex"><span class="lbl">Example</span>CO<sub>2</sub>: the symmetric stretch is Raman only, while the antisymmetric stretch and the bend are IR only.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="co2-vibrations.html">Carbon dioxide</a><a href="benzene-vibrations.html">Benzene</a></p>
+        </article>
+
+        <article class="term" id="silent-mode" data-keys="silent mode inactive neither IR nor Raman">
+          <h4>Silent mode</h4>
+          <a class="pl" href="#silent-mode" aria-label="Link to Silent mode">#</a>
+          <p>A normal mode whose fundamental is neither IR nor Raman active, because its row lists neither <i>x</i>, <i>y</i>, <i>z</i> nor a quadratic function. Silent modes still exist. They can be found through <a href="#overtone-combination">combination bands</a>, inelastic neutron scattering, or by lowering the symmetry (for example, by isotopic substitution).</p>
+          <p class="ex"><span class="lbl">Example</span>An A<sub>2</sub> vibration in C<sub>3v</sub> would be silent. Benzene has 20 distinct fundamental frequencies: 4 IR active, 7 Raman active and 9 silent.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="benzene-vibrations.html">Benzene</a></p>
+        </article>
+
+      </div>
+    </div>
+    <p class="empty" id="gl-empty" hidden>No terms match. Try a shorter word, or clear the search.</p>
+  </section>
+
+  <p class="foot">Part of <a href="index.html">Interactive Group Theory</a>. Spotted a mistake or want a term added? Open an issue in the <a href="https://github.com/sunitathyagarajan/interactive-group-theory">GitHub repository</a>.</p>
+</div>
+
+<script>
+(function(){
+'use strict';
+const $ = id => document.getElementById(id);
+const fmt = x => x < 0 ? '−' + Math.abs(x) : String(x);
+const glo = (id, text) => `<a href="#${id}">${text}</a>`;
+
+/* ================= character-table data ================= */
+const X = '<i>x</i>', Y = '<i>y</i>', Z = '<i>z</i>';
+const sq = v => `${v}<sup>2</sup>`;
+const GROUPS = {
+  C3v: {
+    name:'C3v', sym:'C<sub>3v</sub>', h:6, mol:'NH<sub>3</sub>',
+    cls:[
+      {g:1, op:'<i>E</i>', txt:'E'},
+      {g:2, op:'<i>C</i><sub>3</sub>', txt:'C3'},
+      {g:3, op:'σ<sub>v</sub>', txt:'σv'},
+    ],
+    ir:[
+      {id:'A1', html:'A<sub>1</sub>', c:'a1', chi:[1,1,1], lin:[Z], quad:[`${sq(X)} + ${sq(Y)}`, sq(Z)], f:Z},
+      {id:'A2', html:'A<sub>2</sub>', c:'a2', chi:[1,1,-1], lin:['R<sub><i>z</i></sub>'], quad:[], f:'R<sub><i>z</i></sub>'},
+      {id:'E',  html:'E', c:'e', chi:[2,-1,0], lin:[`(${X}, ${Y})`, '(R<sub><i>x</i></sub>, R<sub><i>y</i></sub>)'], quad:[`(${sq(X)} − ${sq(Y)}, ${X}${Y})`, `(${X}${Z}, ${Y}${Z})`]},
+    ],
+    g3n:[12,0,2], g3nLabel:'Γ<sub>3<i>N</i></sub>(NH<sub>3</sub>)',
+    tour:['pg','order','class:1','op:1','mull:2','ts','chi:1:2','dim:2','lin:2','quad:0'],
+  },
+  C2v: {
+    name:'C2v', sym:'C<sub>2v</sub>', h:4, mol:'H<sub>2</sub>O',
+    cls:[
+      {g:1, op:'<i>E</i>', txt:'E'},
+      {g:1, op:'<i>C</i><sub>2</sub>', txt:'C2'},
+      {g:1, op:'σ<sub>v</sub>(<i>xz</i>)', txt:'σv(xz)'},
+      {g:1, op:'σ<sub>v</sub>′(<i>yz</i>)', txt:'σv′(yz)'},
+    ],
+    ir:[
+      {id:'A1', html:'A<sub>1</sub>', c:'a1', chi:[1,1,1,1],   lin:[Z], quad:[sq(X), sq(Y), sq(Z)], f:Z},
+      {id:'A2', html:'A<sub>2</sub>', c:'a2', chi:[1,1,-1,-1], lin:['R<sub><i>z</i></sub>'], quad:[`${X}${Y}`], f:'R<sub><i>z</i></sub>'},
+      {id:'B1', html:'B<sub>1</sub>', c:'b1', chi:[1,-1,1,-1], lin:[X, 'R<sub><i>y</i></sub>'], quad:[`${X}${Z}`], f:X},
+      {id:'B2', html:'B<sub>2</sub>', c:'b2', chi:[1,-1,-1,1], lin:[Y, 'R<sub><i>x</i></sub>'], quad:[`${Y}${Z}`], f:Y},
+    ],
+    g3n:[9,-1,3,1], g3nLabel:'Γ<sub>3<i>N</i></sub>(H<sub>2</sub>O)',
+    tour:['pg','order','class:1','op:1','mull:2','ts','chi:2:1','dim:2','lin:2','quad:1'],
+  },
+};
+let G = GROUPS.C3v;
+const chip = ir => `<span class="chip ${ir.c}"><span>${ir.html}</span></span>`;
+const fnList = arr => arr.map((s,i) => `<span>${s}${i < arr.length - 1 && !s.startsWith("(") ? "," : ""}</span>`).join(" ");
+const sumStr = () => G.cls.map(c => c.g).join(' + ');
+
+/* ================= explanations ================= */
+const MULL_KEY = `<ul class="key">
+  <li><b>A / B</b> one-dimensional; symmetric / antisymmetric under the principal rotation</li>
+  <li><b>E, T</b> two-, three-dimensional</li>
+  <li><b>1 / 2</b> symmetric / antisymmetric under a perpendicular <i>C</i><sub>2</sub> or, if none, a σ<sub>v</sub></li>
+  <li><b>g / u</b> symmetric / antisymmetric under inversion <i>i</i></li>
+  <li><b>′ / ″</b> symmetric / antisymmetric under σ<sub>h</sub></li>
+</ul>`;
+
+const TEXT = {
+  C3v: {
+    pg: `<p>The top-left corner names the group in Schoenflies notation. C<sub>3v</sub> means a threefold principal axis (<i>C</i><sub>3</sub>, taken as <i>z</i>) plus <b>v</b>ertical mirror planes that contain it.</p>
+         <p>Ammonia (NH<sub>3</sub>) and chloroform (CHCl<sub>3</sub>) are C<sub>3v</sub>. Everything else in the table belongs to the group, not to one molecule, so the same table serves every C<sub>3v</sub> molecule.</p>`,
+    orderExtra: `<p>The six operations are <i>E</i>; <i>C</i><sub>3</sub> and <i>C</i><sub>3</sub><sup>2</sup>; and three reflections σ<sub>v</sub>, σ<sub>v</sub>′, σ<sub>v</sub>″.</p>`,
+    cls: [
+      `<p>The identity is always a class on its own. A coefficient of 1 is never written.</p>`,
+      `<p>The coefficient <b>2</b> is the class size <i>g</i>: this one column stands for two operations, <i>C</i><sub>3</sub> (turn 120°) and <i>C</i><sub>3</sub><sup>2</sup> (turn 240°). A σ<sub>v</sub> reflection turns a 120° turn one way into a 120° turn the other way, which is why the two rotations are in the same class.</p>`,
+      `<p>The coefficient <b>3</b> is the class size <i>g</i>: the three vertical mirror planes. In ammonia each contains the <i>C</i><sub>3</sub> axis and one N–H bond. A <i>C</i><sub>3</sub> turn carries each plane into the next, so they form one class.</p>`,
+    ],
+    op: [
+      `<p>Do nothing. Every molecule has this operation. It is the only one that leaves every atom unmoved, so in ${glo('gamma-3n','Γ<sub>3<i>N</i></sub>')} each atom contributes 3 and χ(<i>E</i>) = 3<i>N</i> = 12 for ammonia.</p><p class="more">Not to be confused with the Mulliken label E in the bottom row. Same letter, different job. See ${glo('identity','identity')}.</p>`,
+      `<p>Rotate 360°/3 = 120° about the principal axis <i>z</i>. Doing it twice gives <i>C</i><sub>3</sub><sup>2</sup>, a 240° turn, and three times gives <i>E</i>.</p><p>In ammonia only N lies on the axis, so it is the only unmoved atom. Each unmoved atom contributes 1 + 2 cos 120° = 0 under <i>C</i><sub>3</sub>, so χ<sub>3<i>N</i></sub>(<i>C</i><sub>3</sub>) = 0.</p><p class="more">See ${glo('proper-rotation','proper rotation')}.</p>`,
+      `<p>Reflect through a plane that contains the principal axis. In ammonia each σ<sub>v</sub> contains N and one H, so two atoms are unmoved. Each contributes 1, so χ<sub>3<i>N</i></sub>(σ<sub>v</sub>) = 2.</p><p class="more">See ${glo('mirror-plane','mirror plane')}.</p>`,
+    ],
+    mull: [
+      `<p><b>A</b>: one-dimensional and symmetric (χ = +1) under the principal rotation <i>C</i><sub>3</sub>.<br><b>Subscript 1</b>: symmetric (χ = +1) under σ<sub>v</sub>. C<sub>3v</sub> has no <i>C</i><sub>2</sub> axes perpendicular to the principal axis, so σ<sub>v</sub> decides the subscript.</p><p>Every character in this row is +1, so it is also the ${glo('totally-symmetric','totally symmetric representation')}.</p>`,
+      `<p><b>A</b>: one-dimensional and symmetric (χ = +1) under <i>C</i><sub>3</sub>.<br><b>Subscript 2</b>: antisymmetric (χ = −1) under σ<sub>v</sub>.</p>`,
+      `<p><b>E</b>: two-dimensional, so χ(<i>E</i>) = 2. Its functions come in pairs, such as (<i>x</i>, <i>y</i>). This E is not the identity operation <i>E</i>; the same letter does two jobs. C<sub>3v</sub> has only one two-dimensional representation, so no subscript is needed.</p>`,
+    ],
+    lin: [
+      `<p><b>Row A<sub>1</sub></b> lists <i>z</i>, so T<sub><i>z</i></sub> is A<sub>1</sub>. A<sub>1</sub> vibrations are IR active, and the dipole oscillates along <i>z</i>, parallel to the <i>C</i><sub>3</sub> axis.</p>`,
+      `<p><b>Row A<sub>2</sub></b> lists only R<sub><i>z</i></sub>, the rotation about the <i>C</i><sub>3</sub> axis. It has no <i>x</i>, <i>y</i> or <i>z</i>, so an A<sub>2</sub> vibration would be IR inactive.</p>`,
+      `<p><b>Row E</b> lists (<i>x</i>, <i>y</i>) and (R<sub><i>x</i></sub>, R<sub><i>y</i></sub>). Translations and rotations perpendicular to the axis come as degenerate pairs. E vibrations are IR active, and the dipole oscillates in the <i>xy</i> plane.</p>`,
+    ],
+    quad: [
+      `<p><b>Row A<sub>1</sub></b> lists <i>x</i><sup>2</sup> + <i>y</i><sup>2</sup> and <i>z</i><sup>2</sup>, so A<sub>1</sub> vibrations are Raman active. As totally symmetric modes, they give polarized bands.</p>`,
+      `<p><b>Row A<sub>2</sub></b> is empty. No quadratic function is A<sub>2</sub>, so A<sub>2</sub> vibrations are Raman inactive. With no <i>x</i>, <i>y</i> or <i>z</i> either, an A<sub>2</sub> vibration would be ${glo('silent-mode','silent')}.</p>`,
+      `<p><b>Row E</b> lists two pairs, (<i>x</i><sup>2</sup> − <i>y</i><sup>2</sup>, <i>xy</i>) and (<i>xz</i>, <i>yz</i>), so E vibrations are Raman active.</p>`,
+    ],
+    quadExtra: `<p class="more">Ammonia has no inversion centre, so a mode can be both IR and Raman active. Its A<sub>1</sub> and E vibrations are both.</p>`,
+    chiE: {
+      1: `<p>The pair (<i>x</i>, <i>y</i>) is mixed by a 120° turn. The matrix that does it is <span class="mat2"><span>cos 120°</span><span>−sin 120°</span><span>sin 120°</span><span>cos 120°</span></span>, and its trace is 2 cos 120° = −1.</p>`,
+      2: `<p>Take the σ<sub>v</sub> that contains the <i>x</i> axis (the <i>xz</i> plane): <i>x</i> → <i>x</i> and <i>y</i> → −<i>y</i>. The matrix <span class="mat2"><span>1</span><span>0</span><span>0</span><span>−1</span></span> has trace 1 − 1 = 0. A zero does not mean nothing happens; the two diagonal entries cancel. The other two σ<sub>v</sub> give the same trace, because they are in the same class.</p>`,
+    },
+  },
+  C2v: {
+    pg: `<p>The top-left corner names the group in Schoenflies notation. C<sub>2v</sub> means a twofold principal axis (<i>C</i><sub>2</sub>, taken as <i>z</i>) plus <b>v</b>ertical mirror planes that contain it.</p>
+         <p>Water, formaldehyde (H<sub>2</sub>CO) and dichloromethane (CH<sub>2</sub>Cl<sub>2</sub>) are C<sub>2v</sub>. The table belongs to the group, so it serves every C<sub>2v</sub> molecule.</p>`,
+    orderExtra: `<p>Every heading is a single operation, so <i>h</i> is simply the number of columns.</p>`,
+    cls: null,
+    op: [
+      `<p>Do nothing. Every molecule has this operation. It is the only one that leaves every atom unmoved, so in ${glo('gamma-3n','Γ<sub>3<i>N</i></sub>')} each atom contributes 3 and χ(<i>E</i>) = 3<i>N</i> = 9 for water.</p><p class="more">See ${glo('identity','identity')}.</p>`,
+      `<p>Rotate 180° about the principal axis <i>z</i>. In water only O lies on the axis. It contributes 1 + 2 cos 180° = −1, so χ<sub>3<i>N</i></sub>(<i>C</i><sub>2</sub>) = −1.</p><p class="more">See ${glo('proper-rotation','proper rotation')}.</p>`,
+      `<p>Reflect through the <i>xz</i> plane. The label in brackets names the plane, because the two planes of C<sub>2v</sub> are in different classes and each needs its own column. With water drawn in the <i>xz</i> plane, as here, this is the molecular plane: all three atoms are unmoved and χ<sub>3<i>N</i></sub> = 3.</p>`,
+      `<p>The second vertical plane, perpendicular to the first; the prime tells the two apart. For water in <i>xz</i>, this plane cuts through O only, so χ<sub>3<i>N</i></sub> = 1.</p><p class="more">If your textbook puts water in the <i>yz</i> plane, the two planes swap roles and so do the labels B<sub>1</sub> and B<sub>2</sub>.</p>`,
+    ],
+    mull: [
+      `<p><b>A</b>: symmetric (χ = +1) under the principal rotation <i>C</i><sub>2</sub>.<br><b>Subscript 1</b>: symmetric under σ<sub>v</sub>(<i>xz</i>).</p><p>Every character in this row is +1, so it is also the ${glo('totally-symmetric','totally symmetric representation')}.</p>`,
+      `<p><b>A</b>: symmetric (χ = +1) under <i>C</i><sub>2</sub>.<br><b>Subscript 2</b>: antisymmetric (χ = −1) under σ<sub>v</sub>(<i>xz</i>).</p>`,
+      `<p><b>B</b>: antisymmetric (χ = −1) under the principal rotation <i>C</i><sub>2</sub>.<br><b>Subscript 1</b>: symmetric (χ = +1) under σ<sub>v</sub>(<i>xz</i>).</p><p class="more">Which plane is called <i>xz</i> is a convention, so water's antisymmetric stretch is B<sub>1</sub> in some books and B<sub>2</sub> in others.</p>`,
+      `<p><b>B</b>: antisymmetric (χ = −1) under <i>C</i><sub>2</sub>.<br><b>Subscript 2</b>: antisymmetric (χ = −1) under σ<sub>v</sub>(<i>xz</i>).</p>`,
+    ],
+    lin: [
+      `<p><b>Row A<sub>1</sub></b> lists <i>z</i>, so T<sub><i>z</i></sub> is A<sub>1</sub>. A<sub>1</sub> vibrations, such as water's symmetric stretch and bend, are IR active, and the dipole oscillates along the <i>C</i><sub>2</sub> axis.</p>`,
+      `<p><b>Row A<sub>2</sub></b> lists only R<sub><i>z</i></sub>. It has no <i>x</i>, <i>y</i> or <i>z</i>, so an A<sub>2</sub> vibration would be IR inactive. Water has no A<sub>2</sub> vibration.</p>`,
+      `<p><b>Row B<sub>1</sub></b> lists <i>x</i> and R<sub><i>y</i></sub>: T<sub><i>x</i></sub> and the rotation about <i>y</i> are B<sub>1</sub>. B<sub>1</sub> vibrations are IR active, with the dipole oscillating along <i>x</i>. Water's antisymmetric stretch is one (molecule in <i>xz</i>).</p>`,
+      `<p><b>Row B<sub>2</sub></b> lists <i>y</i> and R<sub><i>x</i></sub>. B<sub>2</sub> vibrations are IR active, with the dipole oscillating along <i>y</i>.</p>`,
+    ],
+    quad: [
+      `<p><b>Row A<sub>1</sub></b> lists <i>x</i><sup>2</sup>, <i>y</i><sup>2</sup> and <i>z</i><sup>2</sup>, so A<sub>1</sub> vibrations are Raman active. As totally symmetric modes, they give polarized bands.</p>`,
+      `<p><b>Row A<sub>2</sub></b> lists <i>xy</i>, so an A<sub>2</sub> vibration would be Raman active even though it is IR inactive.</p>`,
+      `<p><b>Row B<sub>1</sub></b> lists <i>xz</i>, so B<sub>1</sub> vibrations are Raman active.</p>`,
+      `<p><b>Row B<sub>2</sub></b> lists <i>yz</i>, so B<sub>2</sub> vibrations are Raman active.</p>`,
+    ],
+    quadExtra: `<p class="more">C<sub>2v</sub> has no inversion centre, so a mode can be both IR and Raman active. All three fundamentals of water are.</p>`,
+    chiE: {},
+  },
+};
+
+/* each region: kind label, title, body html, and which cells to highlight.
+   cell patterns are [row, col]: row 'h' header, 'f' footer, 'b' any body row, '*' header or body; col 's' symbols, 0.. classes, 'l' linear, 'q' quadratic */
+function region(key){
+  const t = TEXT[G.name], [kind, a, b] = key.split(':'), r = +a, k = +b;
+  const ir = G.ir[r];
+  switch (kind){
+    case 'pg': return {kind:'Point-group symbol', title:`${G.sym}`, body: t.pg + `<p class="more">To work out a molecule's group, try <a href="point-groups.html">Find the point group</a>. See also ${glo('point-group','point group')}.</p>`, hl:[['h','s']]};
+    case 'order': {
+      const sq = G.ir.map(x => `${x.chi[0]}<sup>2</sup>`).join(' + ');
+      return {kind:'Order of the group', title:`<i>h</i> = ${sumStr()} = ${G.h}`, body:
+        `<p>The ${glo('order','order')} <i>h</i> is the total number of symmetry operations. Add the coefficients in front of the column headings; a heading with no number counts once.</p>${t.orderExtra}
+         <p><i>h</i> is the 1/<i>h</i> in the ${glo('reduction-formula','reduction formula')}. It also equals the sum of the squares of the dimensions in the χ(<i>E</i>) column: ${sq} = ${G.h}.</p>`,
+        hl:[['f','*'], ...G.cls.map((c,j) => ['h', j])]};
+    }
+    case 'class': {
+      const c = G.cls[a];
+      const body = t.cls ? t.cls[a] : `<p>C<sub>2v</sub> is ${glo('abelian-group','abelian')}: every operation commutes with every other, so each operation is a class on its own and every <i>g</i> = 1. A coefficient of 1 is never written, which is why this table has four columns for four operations.</p>`;
+      return {kind:'Class and class size g', title: c.g > 1 ? `${c.g}${c.op}: a class of ${c.g} operations` : `${c.op}: a class of one`, body:
+        `<p>Each column heading is a ${glo('class','class')}: a set of operations that the group's other operations carry into one another. Operations in a class always have the same character, so one column covers them all.</p>${body}
+         <p>In the reduction formula and the orthogonality sums, multiply each column by its <i>g</i>.</p>`,
+        hl:[['*', a]], srcFallback:`op:${a}`};
+    }
+    case 'op': {
+      const c = G.cls[a];
+      const name = {E:'the identity', C3:'rotation by 120°', C2:'rotation by 180°', 'σv':'a vertical mirror plane', 'σv(xz)':'a vertical mirror plane', 'σv′(yz)':'a second vertical mirror plane'}[c.txt];
+      return {kind:'Symmetry operation', title:`${c.op}, ${name}`, body: t.op[a] + (c.g > 1 ? `<p class="more">The ${c.g} in front of it is the class size: tap it to see why.</p>` : ''), hl:[['h', a]]};
+    }
+    case 'mull': return {kind:'Mulliken symbol', title:`${chip(ir)} ${ir.chi[0] === 1 ? 'one-dimensional' : 'two-dimensional'}`, body: t.mull[r] + MULL_KEY + `<p class="more">See ${glo('mulliken-symbols','Mulliken symbols')}.</p>`, hl:[[r,'s']]};
+    case 'ts': return {kind:'Totally symmetric representation', title:`The first row, ${chip(G.ir[0])}`, body:
+      `<p>Every character is +1: anything that transforms this way, such as <i>z</i> or <i>x</i><sup>2</sup> + <i>y</i><sup>2</sup> + <i>z</i><sup>2</sup>, is left unchanged by every operation. It is always the first row. Other groups call it A<sub>1g</sub>, A′, A<sub>g</sub>, A or Σ<sub>g</sub><sup>+</sup>.</p>
+       <p>An integral over all space can be non-zero only if its integrand contains the totally symmetric representation. That is the basis of every ${glo('selection-rule','selection rule')}. Every molecule has at least one totally symmetric vibration, and these are always Raman active.</p>
+       <p class="more">See ${glo('totally-symmetric','totally symmetric representation')}.</p>`, hl:[[0,'*']], srcFallback:'mull:0'};
+    case 'chi': {
+      const c = G.cls[k], x = ir.chi[k];
+      let body;
+      if (ir.chi[0] === 1){
+        const f = ir.f, after = x > 0 ? f : `−${f}`;
+        const why = (G.name === 'C3v' && ir.id === 'A2' && k === 2) ? ' A reflection in a plane that contains <i>z</i> reverses the sense of a rotation about <i>z</i>.' : '';
+        body = `<p>A ${glo('character','character')} is the trace of the matrix that represents an operation. In a one-dimensional representation that "matrix" is a single number: +1 if a basis function is unchanged and −1 if it changes sign.</p>
+                <p>${f} transforms as ${chip(ir)}. ${c.op} turns ${f} into ${after}, so χ = ${fmt(x)}.${why}</p>`;
+      } else {
+        body = `<p>A ${glo('character','character')} is the trace of the matrix that represents an operation. In a two-dimensional representation the matrix is 2 × 2 and acts on a pair of functions together.</p>` + (TEXT[G.name].chiE[k] || '');
+      }
+      if (c.g > 1) body += `<p class="more">This one number is the character of ${c.g === 2 ? "both operations" : "all " + c.g + " operations"} in the class.</p>`;
+      return {kind:'Character', title:`χ = ${fmt(x)}: ${chip(ir)} under ${c.op}`, body, hl:[[r,k]], hl2:[[r,'s'],['h',k]]};
+    }
+    case 'dim': {
+      const d = ir.chi[0];
+      const tail = G.name === 'C2v'
+        ? `<p>Every C<sub>2v</sub> representation is one-dimensional, as in every ${glo('abelian-group','abelian group')}, so C<sub>2v</sub> molecules have no degenerate vibrations.</p>`
+        : d === 2
+          ? `<p>E is two-dimensional: its functions come in pairs, like (<i>x</i>, <i>y</i>) or (R<sub><i>x</i></sub>, R<sub><i>y</i></sub>), that <i>C</i><sub>3</sub> mixes, so they must be treated as one unit. An E vibration is a ${glo('dimension','degenerate pair')}: two modes with the same frequency that give one band. Ammonia has two of them. In the degrees-of-freedom check, each E counts as 2.</p>`
+          : `<p>A and B representations are one-dimensional: one function, and one non-degenerate vibration.</p>`;
+      return {kind:'χ(E) column: dimension', title:`χ(<i>E</i>) = ${d}: ${chip(ir)} is ${d === 1 ? 'one' : 'two'}-dimensional`, body:
+        `<p>The identity leaves everything alone, so its matrix is the unit matrix and its trace is just the size of the matrix: the ${glo('dimension','dimension')} of the representation.</p>${tail}`,
+        hl:[['b',0]], hl2:[['h',0]]};
+    }
+    case 'lin': return {kind:'Linear functions & rotations', title: a === undefined ? 'Linear functions & rotations' : `${chip(ir)}: ${fnList(ir.lin)}`, body:
+      `<p><i>x</i>, <i>y</i>, <i>z</i> show how the translations, and the dipole-moment components μ<sub><i>x</i></sub>, μ<sub><i>y</i></sub>, μ<sub><i>z</i></sub>, transform. R<sub><i>x</i></sub>, R<sub><i>y</i></sub>, R<sub><i>z</i></sub> show how rotations about each axis transform. Use this column to:</p>
+       <ul><li>read off ${glo('translations-rotations','Γ<sub>trans</sub> and Γ<sub>rot</sub>')} and subtract them from Γ<sub>3<i>N</i></sub>;</li><li>apply the ${glo('ir-active','IR rule')}: a vibration is IR active if its row lists <i>x</i>, <i>y</i> or <i>z</i>.</li></ul>
+       ${a === undefined ? '' : t.lin[r]}
+       ${G.name === 'C3v' ? '<p class="more">Parentheses mean the functions inside transform together as one two-dimensional set.</p>' : ''}`,
+      hl:[['*','l']]};
+    case 'quad': return {kind:'Quadratic functions', title: a === undefined ? 'Quadratic functions' : `${chip(ir)}: ${ir.quad.length ? fnList(ir.quad) : 'none'}`, body:
+      `<p><i>x</i><sup>2</sup>, <i>xy</i>, … transform like the components α<sub><i>xx</i></sub>, α<sub><i>xy</i></sub>, … of the ${glo('polarizability','polarizability')}. That gives the ${glo('raman-active','Raman rule')}: a vibration is Raman active if its row lists any quadratic function.</p>
+       ${a === undefined ? '' : t.quad[r]}${t.quadExtra}`,
+      hl:[['*','q']]};
+  }
+}
+
+/* ================= character table ================= */
+function renderTable(){
+  const n = G.cls.length;
+  let h = `<table class="ct"><caption class="sr">Character table for the point group ${G.name}</caption><thead><tr>`;
+  h += `<th data-r="h" data-c="s"><button class="rg pg" type="button" data-k="pg" aria-label="Point group symbol ${G.name}"><span>${G.sym}</span></button></th>`;
+  G.cls.forEach((c,j) => {
+    h += `<th data-r="h" data-c="${j}"><span class="pair">${c.g > 1 ? `<button class="rg coef" type="button" data-k="class:${j}" aria-label="Class size ${c.g}"><span>${c.g}</span></button>` : ''}<button class="rg op ${c.g > 1 ? '' : 'solo'}" type="button" data-k="op:${j}" aria-label="Operation ${c.txt}"><span>${c.op}</span></button></span></th>`;
+  });
+  h += `<th data-r="h" data-c="l"><button class="rg fh" type="button" data-k="lin"><span>linear,<br>rotations</span></button></th><th data-r="h" data-c="q"><button class="rg fh" type="button" data-k="quad"><span>quadratic</span></button></th></tr></thead><tbody>`;
+  G.ir.forEach((ir,r) => {
+    h += `<tr><th data-r="${r}" data-c="s"><button class="rg ml" type="button" data-k="mull:${r}" aria-label="Mulliken symbol ${ir.id}">${chip(ir)}</button></th>`;
+    ir.chi.forEach((x,j) => {
+      h += `<td data-r="${r}" data-c="${j}"><button class="rg" type="button" data-k="${j === 0 ? 'dim:' + r : 'chi:' + r + ':' + j}" aria-label="Character of ${ir.id} under ${G.cls[j].txt}: ${fmt(x)}">${fmt(x)}</button></td>`;
+    });
+    h += `<td data-r="${r}" data-c="l"><button class="rg fx" type="button" data-k="lin:${r}" aria-label="Linear functions and rotations for ${ir.id}">${fnList(ir.lin)}</button></td>`;
+    h += `<td data-r="${r}" data-c="q"><button class="rg fx" type="button" data-k="quad:${r}" aria-label="${ir.quad.length ? 'Quadratic functions for ' + ir.id : 'No quadratic function for ' + ir.id}">${fnList(ir.quad)}</button></td></tr>`;
+  });
+  h += `</tbody><tfoot><tr><td data-r="f" data-c="f" colspan="${n + 3}"><button class="rg ord" type="button" data-k="order"><span>Order&nbsp;<b><i>h</i> = ${sumStr()} = ${G.h}</b>&nbsp;operations</span></button></td></tr></tfoot></table>`;
+  $('ct-wrap').innerHTML = h;
+}
+
+let current = null, tourIdx = -1;
+const KINDS = ['pg','order','class','op','mull','ts','chi','dim','lin','quad'];
+
+function cellMatch(cell, [r, c]){
+  const cr = cell.dataset.r, cc = cell.dataset.c;
+  const rowOk = r === '*' ? cr !== 'f' : r === 'b' ? /^\d+$/.test(cr) : cr === String(r);
+  return rowOk && (c === '*' || cc === String(c));
+}
+function select(key){
+  current = key;
+  const R = region(key);
+  const cells = $('ct-wrap').querySelectorAll('[data-r]');
+  cells.forEach(cell => {
+    cell.classList.toggle('hl', R.hl.some(p => cellMatch(cell, p)));
+    cell.classList.toggle('hl2', !cell.classList.contains('hl') && !!R.hl2 && R.hl2.some(p => cellMatch(cell, p)));
+  });
+  $('ct-wrap').querySelectorAll('.src').forEach(b => b.classList.remove('src'));
+  let src = $('ct-wrap').querySelector(`[data-k="${key}"]`) || (R.srcFallback && $('ct-wrap').querySelector(`[data-k="${R.srcFallback}"]`));
+  if (src) src.classList.add('src');
+  $('ex').innerHTML = `<p class="ex-kind">${R.kind}</p><h3>${R.title}</h3>${R.body}`;
+  const kind = key.split(':')[0];
+  tourIdx = KINDS.indexOf(kind);
+  syncTour();
+}
+function intro(){
+  current = null; tourIdx = -1;
+  $('ct-wrap').querySelectorAll('.hl,.hl2').forEach(c => c.classList.remove('hl','hl2'));
+  $('ct-wrap').querySelectorAll('.src').forEach(b => b.classList.remove('src'));
+  $('ex').innerHTML = `<p class="ex-kind">How to read it</p><h3>Ten parts, one table</h3>
+    <p>Rows are the <a href="#irreducible-representation">irreducible representations</a> of ${G.sym}. Columns are its <a href="#class">classes</a> of symmetry operations. The numbers in the middle are <a href="#character">characters</a>. The two columns on the right say which simple functions transform like each row, and that is what tells you about translations, rotations, IR and Raman activity.</p>
+    <p>Hover over or tap any part of the table, or press <b>Start the tour</b>.</p>`;
+  syncTour();
+}
+function syncTour(){
+  const n = G.tour.length;
+  $('tour-prev').disabled = tourIdx <= 0;
+  $('tour-next').disabled = tourIdx >= n - 1;
+  $('tour-next').textContent = tourIdx < 0 ? 'Start the tour →' : 'Next →';
+  $('tour-pos').textContent = tourIdx < 0 ? '' : `Part ${tourIdx + 1} of ${n}`;
+}
+$('tour-next').addEventListener('click', () => select(G.tour[Math.min(G.tour.length - 1, tourIdx + 1)]));
+$('tour-prev').addEventListener('click', () => { if (tourIdx > 0) select(G.tour[tourIdx - 1]); });
+
+const wrap = $('ct-wrap');
+wrap.addEventListener('click', e => { const b = e.target.closest('[data-k]'); if (b) select(b.dataset.k); });
+// mouse hover selects after a short pause, so sweeping across the table on the way to the panel does not flicker it
+let hoverT = null;
+wrap.addEventListener('pointerover', e => {
+  if (e.pointerType !== 'mouse') return;
+  const b = e.target.closest('[data-k]');
+  clearTimeout(hoverT);
+  if (b && b.dataset.k !== current) hoverT = setTimeout(() => select(b.dataset.k), 140);
+});
+wrap.addEventListener('pointerleave', () => clearTimeout(hoverT));
+wrap.addEventListener('keyup', e => { if (e.key === 'Tab'){ const b = document.activeElement.closest && document.activeElement.closest('[data-k]'); if (b && wrap.contains(b)) select(b.dataset.k); } });
+
+$('grp').addEventListener('click', e => {
+  const b = e.target.closest('[data-g]'); if (!b || GROUPS[b.dataset.g] === G) return;
+  G = GROUPS[b.dataset.g];
+  $('grp').querySelectorAll('[data-g]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  const keepIdx = tourIdx;
+  renderTable(); renderOrtho(true);
+  if (keepIdx >= 0) select(G.tour[keepIdx]); else intro();
+});
+
+/* ================= orthogonality check ================= */
+let oi = 0, oj = 1;
+function renderOrtho(reset){
+  if (reset){ oi = 0; oj = 1; }
+  const pick = (sel, withG) => G.ir.map((ir,r) => `<button class="pk" type="button" data-r="${r}" aria-pressed="${sel === r}">${chip(ir)}</button>`).join('')
+    + (withG ? `<button class="pk" type="button" data-r="g" aria-pressed="${sel === 'g'}"><span>${G.g3nLabel}</span></button>` : '');
+  $('pick-i').innerHTML = pick(oi, false);
+  $('pick-j').innerHTML = pick(oj, true);
+  $('g3n-name').innerHTML = G.g3nLabel;
+
+  const A = G.ir[oi], isG = oj === 'g', B = isG ? null : G.ir[oj];
+  const bChi = isG ? G.g3n : B.chi, bLab = isG ? G.g3nLabel : `χ(${B.html})`;
+  const prods = G.cls.map((c,k) => c.g * A.chi[k] * bChi[k]);
+  const sum = prods.reduce((s,x) => s + x, 0);
+  const sumLine = prods.map((p,k) => k === 0 ? fmt(p) : (p < 0 ? ` − ${-p}` : ` + ${p}`)).join('');
+  let verdict;
+  if (isG){
+    const n = sum / G.h;
+    verdict = `<p class="verdict h"><span class="big">${sum} ÷ ${G.h} = ${n}</span><span>Dividing by <i>h</i> = ${G.h} gives <i>n</i>(${A.html}) = ${n}: ${G.g3nLabel} contains ${chip(A)} ${n === 1 ? "once" : n + " times"}. That is the ${glo('reduction-formula','reduction formula')}.</span></p>`;
+  } else if (oi === oj){
+    verdict = `<p class="verdict h"><span class="big">= ${sum} = <i>h</i></span><span>A row paired with itself gives the order of the group.</span></p>`;
+  } else {
+    verdict = `<p class="verdict ok"><span class="big">= 0</span><span>${chip(A)} and ${chip(B)} are <b>orthogonal</b>, as every pair of different rows is.</span></p>`;
+  }
+  $('ortho-out').innerHTML = `<div class="tablewrap"><table>
+    <thead><tr><th></th>${G.cls.map(c => `<th>${c.g > 1 ? c.g : ''}${c.op}</th>`).join('')}<th>Sum</th></tr></thead>
+    <tbody>
+      <tr><th>class size <i>g</i></th>${G.cls.map(c => `<td>${c.g}</td>`).join('')}<td></td></tr>
+      <tr><th>χ(${A.html})</th>${A.chi.map(x => `<td>${fmt(x)}</td>`).join('')}<td></td></tr>
+      <tr><th>${bLab}</th>${bChi.map(x => `<td>${fmt(x)}</td>`).join('')}<td></td></tr>
+      <tr class="total"><th><i>g</i> · χ · χ</th>${prods.map(x => `<td>${fmt(x)}</td>`).join('')}<td>${fmt(sum)}</td></tr>
+    </tbody></table></div>
+    <p class="mono" style="margin:0 0 4px;font-size:14px;overflow-x:auto;white-space:nowrap">${sumLine} = ${fmt(sum)}</p>${verdict}`;
+
+  const dims = G.ir.map(ir => ir.chi[0]);
+  $('facts').innerHTML = `<div class="fact"><b>Sum of squared dimensions</b><br>${dims.map(d => `${d}<sup>2</sup>`).join(' + ')} = ${dims.reduce((s,d) => s + d*d, 0)} = <i>h</i></div>
+    <div class="fact"><b>Rows = columns</b><br>${G.cls.length} classes and ${G.ir.length} irreducible representations, as in every group.</div>`;
+}
+$('pick-i').addEventListener('click', e => { const b = e.target.closest('[data-r]'); if (!b) return; oi = +b.dataset.r; renderOrtho(); $('pick-i').querySelector(`[data-r="${oi}"]`).focus(); });
+$('pick-j').addEventListener('click', e => { const b = e.target.closest('[data-r]'); if (!b) return; oj = b.dataset.r === 'g' ? 'g' : +b.dataset.r; renderOrtho(); $('pick-j').querySelector(`[data-r="${oj}"]`).focus(); });
+
+renderTable(); intro(); renderOrtho();
+
+/* ================= glossary search & filter ================= */
+const terms = [...document.querySelectorAll('.term')];
+const topics = [...document.querySelectorAll('.topic')];
+const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+  .replace(/σ/g, 'sigma').replace(/χ/g, ' chi ').replace(/γ/g, ' gamma ').replace(/∞/g, ' inf ').replace(/ν/g, ' nu ').replace(/α/g, ' alpha ')
+  .replace(/[′']/g, "'").replace(/−/g, '-').replace(/centre/g, 'center').replace(/polaris/g, 'polariz').replace(/\s+/g, ' ');
+terms.forEach(t => { t._hay = norm((t.dataset.keys || '') + ' ' + t.textContent); t._name = norm(t.querySelector('h4').textContent); });
+let topicSel = 'all';
+function filter(){
+  const q = norm($('q').value).trim().replace(/\s+/g, ' ');
+  const toks = q ? q.replace(/\bsigma (?=[hvd]\b)/g, 'sigma').split(' ') : [];
+  let shown = 0;
+  topics.forEach(tp => {
+    let n = 0;
+    const tOk = topicSel === 'all' || tp.dataset.topic === topicSel;
+    tp.querySelectorAll('.term').forEach(t => {
+      const ok = tOk && toks.every(k => t._hay.includes(k));
+      t.hidden = !ok; if (ok) n++;
+    });
+    tp.hidden = n === 0;
+    tp.querySelector('h3 .n').textContent = n;
+    shown += n;
+  });
+  $('gl-empty').hidden = shown > 0;
+  $('gl-count').textContent = shown === terms.length ? `${terms.length} terms` : `Showing ${shown} of ${terms.length} terms`;
+}
+$('q').addEventListener('input', filter);
+$('q').addEventListener('keydown', e => { if (e.key === 'Escape'){ $('q').value = ''; filter(); } });
+$('topics').addEventListener('click', e => {
+  const b = e.target.closest('[data-t]'); if (!b) return;
+  topicSel = b.dataset.t;
+  $('topics').querySelectorAll('[data-t]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  filter();
+});
+filter();
+
+// a link to an entry that the current filter hides clears the filter first
+function reveal(id){
+  const el = id && document.getElementById(id);
+  if (!el) return;
+  const term = el.closest('.term');
+  if (term && term.hidden){
+    $('q').value = ''; topicSel = 'all';
+    $('topics').querySelectorAll('[data-t]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.t === 'all')));
+    filter();
+  }
+}
+document.addEventListener('click', e => {
+  const a = e.target.closest && e.target.closest('a[href^="#"]');
+  if (!a) return;
+  const id = decodeURIComponent(a.getAttribute('href').slice(1));
+  const el = document.getElementById(id);
+  if (el && el.closest('.term') && el.closest('.term').hidden){ reveal(id); }
+});
+window.addEventListener('hashchange', () => reveal(decodeURIComponent(location.hash.slice(1))));
+if (location.hash){
+  reveal(decodeURIComponent(location.hash.slice(1)));
+  const el = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+  if (el) requestAnimationFrame(() => el.scrollIntoView());
+}
+})();
+</script>
+<script src="assets/site.js"></script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>try{var t=localStorage.getItem('igt-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<title>Allene Vibrations in D₂d</title>
+<meta name="description" content="An interactive lesson on the vibrational modes of allene using the D2d point group, with its S4 axis, ending with IR and Raman selection rules.">
+<meta name="color-scheme" content="light dark">
+<link rel="stylesheet" href="assets/lesson.css">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+
+<div class="app">
+  <header class="head">
+    <div class="brand">
+      <div class="kicker">Group theory · D<sub>2d</sub> · C<sub>3</sub>H<sub>4</sub></div>
+      <h1>Allene's vibrational modes</h1>
+    </div>
+    <nav class="site-tools"><a class="back" href="index.html">← All lessons</a><a href="glossary.html">Glossary</a><button class="theme-toggle" data-theme-toggle></button></nav>
+  </header>
+
+  <section class="stage" id="stage" aria-label="3D model of an allene molecule">
+    <canvas id="gl" tabindex="0" aria-label="Drag or use arrow keys to rotate. Scroll or pinch to zoom."></canvas>
+    <div class="labels" id="labels"></div>
+    <div class="st-top">
+      <div class="toggles">
+        <button class="tg" id="tg-axes" aria-pressed="true">Axes</button>
+        <button class="tg" id="tg-elem" aria-pressed="false">Symmetry elements</button>
+        <button class="tg" id="tg-labels" aria-pressed="true">Labels</button>
+      </div>
+      <div class="showing" id="showing"></div>
+    </div>
+    <div class="st-bottom">
+      <div class="caption" id="caption"></div>
+      <div class="opbar" id="opbar"><span class="lbl">Apply</span></div>
+    </div>
+  </section>
+
+  <main class="lesson" id="lesson">
+    <ol class="stepper" id="stepper"></ol>
+    <div class="body" id="body"></div>
+    <div class="nav">
+      <button class="btn" id="prev">← Previous</button>
+      <button class="btn primary" id="next">Next →</button>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>window.THREE || document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"><\/script>')</script>
+<script>
+// Allene, H2C=C=CH2. z runs along C=C=C; the CH2 groups lie in the planes x = y (top) and x = −y (bottom).
+// r(C=C) = 1.308 Å, r(C–H) = 1.087 Å, H–C–H = 118.2°.
+(function(){
+const s2 = Math.SQRT1_2, D = Math.PI/180;
+const rCC = 1.308, rCH = 1.087, half = 118.2/2*D, hx = rCH*Math.sin(half)*s2, hz = rCC + rCH*Math.cos(half);
+const q = '<i>x</i><sup>2</sup>', sq = v => `<i>${v}</i><sup>2</sup>`;
+window.LESSON = {
+  id:'allene', nameText:'allene', formulaHTML:'Allene, C<sub>3</sub>H<sub>4</sub>,', groupHTML:'D<sub>2d</sub>',
+  scale:1.0, cam:{theta:-0.55, phi:1.15, r:9.5},
+  geometry(){
+    return {
+      atoms:[
+        {el:'C', html:'C<sub>1</sub>', pos:[0,0,rCC]},
+        {el:'C', html:'C<sub>2</sub>', pos:[0,0,0]},
+        {el:'C', html:'C<sub>3</sub>', pos:[0,0,-rCC]},
+        {el:'H', html:'H<sub>1</sub>', pos:[hx,hx,hz]},
+        {el:'H', html:'H<sub>2</sub>', pos:[-hx,-hx,hz]},
+        {el:'H', html:'H<sub>3</sub>', pos:[hx,-hx,-hz]},
+        {el:'H', html:'H<sub>4</sub>', pos:[-hx,hx,-hz]},
+      ],
+      bonds:[{i:0,j:1,k:9.6,order:2},{i:1,j:2,k:9.6,order:2},{i:0,j:3,k:5.0},{i:0,j:4,k:5.0},{i:2,j:5,k:5.0},{i:2,j:6,k:5.0}],
+    };
+  },
+  ff:{linBend:0.25, chainTors:0.35, chainTag:'twist of the two CH₂ groups'},
+  charges:(at,i) => at.el === 'H' ? 0.1 : (i === 1 ? -0.1 : -0.15),
+  ops:[
+    {id:'E',    cls:'E',   type:'E', html:'<i>E</i>', name:'Identity'},
+    {id:'S4',   cls:'S4',  type:'S', axis:[0,0,1], n:4, k:1, html:'<i>S</i><sub>4</sub>', name:'Rotate 90° about z, then reflect through the xy plane'},
+    {id:'S43',  cls:'S4',  type:'S', axis:[0,0,1], n:4, k:3, html:'<i>S</i><sub>4</sub><sup>3</sup>', name:'Rotate 270° about z, then reflect through the xy plane'},
+    {id:'C2',   cls:'C2',  type:'C', axis:[0,0,1], n:2, html:'<i>C</i><sub>2</sub>', name:'Rotation by 180° about z'},
+    {id:'C2x',  cls:'C2p', type:'C', axis:[1,0,0], n:2, html:'<i>C</i><sub>2</sub>′', name:'Rotation by 180° about x'},
+    {id:'C2y',  cls:'C2p', type:'C', axis:[0,1,0], n:2, html:'<i>C</i><sub>2</sub>′', name:'Rotation by 180° about y'},
+    {id:'sd1',  cls:'sd',  type:'s', normal:[s2,-s2,0], html:'σ<sub>d</sub>', name:'Reflection through the plane of the top CH₂ group'},
+    {id:'sd2',  cls:'sd',  type:'s', normal:[s2,s2,0],  html:'σ<sub>d</sub>′', name:'Reflection through the plane of the bottom CH₂ group'},
+  ],
+  classes:[
+    {id:'E',   html:'<i>E</i>',                  desc:'Do nothing.'},
+    {id:'S4',  html:'2<i>S</i><sub>4</sub>',     desc:'Rotate 90° (or 270°) about the C=C=C axis, then reflect through the plane perpendicular to it at C<sub>2</sub>.'},
+    {id:'C2',  html:'<i>C</i><sub>2</sub>',      desc:'Rotate 180° about the C=C=C axis.'},
+    {id:'C2p', html:'2<i>C</i><sub>2</sub>′',    desc:'Rotate 180° about an axis through C<sub>2</sub>, perpendicular to C=C=C, at 45° to both CH<sub>2</sub> planes. The molecule turns end over end.'},
+    {id:'sd',  html:'2σ<sub>d</sub>',            desc:'Reflect through a plane that contains the C=C=C axis and one CH<sub>2</sub> group.'},
+  ],
+  irreps:[
+    {id:'A1', cls:'a1', html:'A<sub>1</sub>', chi:[1, 1, 1, 1, 1],   quad:`${sq('x')} + ${sq('y')}, ${sq('z')}`},
+    {id:'A2', cls:'a2', html:'A<sub>2</sub>', chi:[1, 1, 1,-1,-1],   rot:['R<sub><i>z</i></sub>']},
+    {id:'B1', cls:'b1', html:'B<sub>1</sub>', chi:[1,-1, 1, 1,-1],   quad:`${sq('x')} − ${sq('y')}`},
+    {id:'B2', cls:'b2', html:'B<sub>2</sub>', chi:[1,-1, 1,-1, 1],   lin:['<i>z</i>'], quad:'<i>xy</i>'},
+    {id:'E',  cls:'e',  html:'E',             chi:[2, 0,-2, 0, 0],   lin:['(<i>x</i>, <i>y</i>)'], rot:['(R<sub><i>x</i></sub>, R<sub><i>y</i></sub>)'], quad:'(<i>xz</i>, <i>yz</i>)'},
+  ],
+  splitOp:'C2x', mixOp:'S4',
+  tr:[{id:'Tz', parts:[[0,0,1]]}, {id:'Txy', parts:[[1,0,0],[0,1,0]]}, {id:'Rz', R:true, parts:[[0,0,1]]}, {id:'Rxy', R:true, parts:[[1,0,0],[0,1,0]]}],
+  // gas-phase fundamentals, cm⁻¹, highest first within each species (Shimanouchi, NIST tables of molecular vibrational frequencies)
+  wn:{A1:[3015,1443,1073], B1:[865], B2:[3007,1957,1398], E:[3086,999,841,355]},
+  matOps:['S4','C2x','sd1'],
+  text:{
+    group:`<p>Allene, H<sub>2</sub>C=C=CH<sub>2</sub>, has its three carbons in a straight line, but its two CH<sub>2</sub> groups are not in the same plane: they are twisted 90° from each other. Each C=C π bond uses a different p orbital on the central carbon, and the two p orbitals are perpendicular. So allene looks like water's H–O–H at one end and the same shape turned a quarter turn at the other.</p>
+      <p>That twist removes the mirror plane perpendicular to the C=C=C axis and stops a 90° turn being a symmetry, but turning 90° <em>and then</em> reflecting through that plane brings every atom back onto an atom. That combination is the improper rotation <i>S</i><sub>4</sub>. Together with two perpendicular twofold axes and two mirror planes, it puts allene in <strong>D<sub>2d</sub></strong>: 8 operations in 5 classes, <i>h</i> = 8.</p>
+      <p>The <i>z</i> axis runs along C=C=C, which is the <i>S</i><sub>4</sub> axis and also a <i>C</i><sub>2</sub> axis. The <i>x</i> and <i>y</i> axes are the two <i>C</i><sub>2</sub>′ axes, each at 45° to both CH<sub>2</sub> planes, and the two σ<sub>d</sub> planes contain the CH<sub>2</sub> groups. If you put <i>x</i> and <i>y</i> in the mirror planes instead, the labels B<sub>1</sub> and B<sub>2</sub> trade places.</p>`,
+    opsHint:`<p class="hint">Watch <i>S</i><sub>4</sub> closely. After the 90° turn the molecule does not match its starting position, and the plane it is then reflected through (shown in grey) is not a mirror plane of allene. Only the two steps together are a symmetry operation. Applying <i>S</i><sub>4</sub> twice gives <i>C</i><sub>2</sub>.</p>`,
+    vecNote:`<p class="muted">Only the central carbon stays put under <i>S</i><sub>4</sub>. Its <i>x</i> and <i>y</i> vectors turn by 90° (cos 90° = 0) and its <i>z</i> vector is reversed by the reflection, so it contributes 0 + 0 − 1 = −1.</p>`,
+    contribNote:`For <i>S</i><sub>4</sub>: −1 + 2 cos 90° = −1.`,
+    vibNote:`<p class="muted">The two CH<sub>2</sub> groups are each a little like a water molecule, and you can find their stretches, scissors, wags and rocks among these 15 vibrations, combined in-phase and out-of-phase across the molecule.</p>`,
+    modesHint:`<i>S</i><sub>4</sub>, <i>C</i><sub>2</sub>′ and σ<sub>d</sub> are a good start.`,
+    irNote:`<p>Allene's IR spectrum should show the three B<sub>2</sub> fundamentals, which change the dipole along the C=C=C axis, and the four E pairs, which change it perpendicular to the axis. The strong band near 1957 cm<sup>−1</sup> is the antisymmetric C=C=C stretch, a signature of cumulated double bonds.</p>`,
+    ramanNote:`<p>D<sub>2d</sub> has no centre of inversion, so mutual exclusion does not apply, and the B<sub>2</sub> and E vibrations are seen in both spectra. The A<sub>1</sub> vibrations and the B<sub>1</sub> twist, in which the two CH<sub>2</sub> groups rotate against each other, change the polarizability but not the dipole, so they appear only in the Raman spectrum.</p>`,
+  },
+};
+})();
+</script>
+<script src="assets/lesson.js"></script>
+<script src="assets/site.js"></script>
+</body>
+</html>

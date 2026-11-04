@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{var t=localStorage.getItem('igt-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <title>Interactive Group Theory</title>
-<meta name="description" content="Interactive lessons on molecular symmetry and group theory.">
+<meta name="description" content="Interactive lessons on molecular symmetry and group theory: point groups, character tables, normal modes, and IR and Raman selection rules.">
 <meta name="color-scheme" content="light dark">
 <style>
 :root{
@@ -26,24 +27,41 @@
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--body);-webkit-font-smoothing:antialiased}
-main{max-width:760px;margin:0 auto;padding:56px 16px}
+main{max-width:980px;margin:0 auto;padding:28px 16px 56px}
+.topbar{display:flex;justify-content:flex-end;margin-bottom:22px}
 .kicker{font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 h1{font:600 clamp(30px,5vw,42px)/1.1 var(--display);margin:10px 0 12px;letter-spacing:-.01em}
-.lede{color:var(--muted);margin:0 0 36px}
-.lessons{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-.lessons a{display:flex;flex-direction:column;align-items:center;gap:10px;padding:22px 16px 18px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:inherit;text-decoration:none;transition:border-color .15s,transform .15s}
-.lessons a:hover,.lessons a:focus-visible{border-color:var(--accent);transform:translateY(-2px)}
-.lessons a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.lessons svg{display:block;width:100%;max-width:220px;height:auto}
-.lessons h2{font:600 21px/1.2 var(--display);margin:0;text-align:center}
+.lede{color:var(--muted);margin:0 0 8px;max-width:64ch}
+.sec{font:600 12px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:32px 0 12px}
+.lessons{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:14px}
+.lessons a{display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;padding:18px 14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:inherit;text-decoration:none;transition:border-color .15s,transform .15s}
+.lessons a:hover,.lessons a:focus-visible,.tools a:hover,.tools a:focus-visible{border-color:var(--accent);transform:translateY(-2px)}
+.lessons a:focus-visible,.tools a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lessons svg{display:block;width:100%;max-width:200px;height:auto;margin-bottom:4px}
+.lessons h2{font:600 19px/1.2 var(--display);margin:0;text-align:center}
+.pg{font:500 13px var(--mono);color:var(--muted)}
+.tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.tools a{display:flex;gap:14px;align-items:flex-start;padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:inherit;text-decoration:none;transition:border-color .15s,transform .15s}
+.tools svg{flex:none;width:40px;height:40px;color:var(--accent)}
+.tools b{display:block;font:600 17px/1.3 var(--display);margin-bottom:3px}
+.tools span{color:var(--muted);font-size:14.5px;line-height:1.45}
 .credits{color:var(--muted);font-size:14.5px;margin:36px 0 0}
 .credits a{color:var(--accent)}
-@media (prefers-reduced-motion: reduce){ .lessons a{transition:none} .lessons a:hover,.lessons a:focus-visible{transform:none} }
+@media (max-width:560px){
+  main{padding-top:14px}
+  .lessons{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .lessons a{padding:12px 8px}
+  .lessons h2{font-size:15.5px}
+  .pg{font-size:12px}
+}
+@media (prefers-reduced-motion: reduce){ .lessons a,.tools a{transition:none} .lessons a:hover,.lessons a:focus-visible,.tools a:hover,.tools a:focus-visible{transform:none} }
 /* molecule drawings */
 .bd{stroke:var(--bond);stroke-width:5;stroke-linecap:round}
 .bd.thin{stroke-width:3.5}
+.bd.hair{stroke-width:1.6;opacity:.6}
 .h{stroke:var(--h-edge);stroke-width:1}
 </style>
+<link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
 <!-- shared shading for the atom spheres -->
@@ -53,12 +71,18 @@ h1{font:600 clamp(30px,5vw,42px)/1.1 var(--display);margin:10px 0 12px;letter-sp
     <radialGradient id="gN" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#9ab8ff"/><stop offset="1" stop-color="#335ccc"/></radialGradient>
     <radialGradient id="gC" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#97a3b0"/><stop offset="1" stop-color="#3b4550"/></radialGradient>
     <radialGradient id="gH" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#c3ccd6"/></radialGradient>
+    <radialGradient id="gBr" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#e0896f"/><stop offset="1" stop-color="#8a2f1d"/></radialGradient>
+    <radialGradient id="gCl" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#9af0a8"/><stop offset="1" stop-color="#23943b"/></radialGradient>
+    <radialGradient id="gFe" cx="35%" cy="30%" r="70%"><stop offset="0" stop-color="#ffc58a"/><stop offset="1" stop-color="#b55e17"/></radialGradient>
   </defs>
 </svg>
 <main>
+  <div class="topbar"><nav class="site-tools"><button class="theme-toggle" data-theme-toggle></button></nav></div>
   <div class="kicker">Group theory · Molecular symmetry</div>
   <h1>Interactive Group Theory</h1>
-  <p class="lede">Hands-on lessons that pair 3D molecular models with the point-group calculations behind them. Each one ends by predicting which vibrations appear in the infrared and Raman spectra.</p>
+  <p class="lede">Hands-on lessons that pair 3D molecular models with the point-group calculations behind them. Each one works out the symmetry of every vibration and ends by predicting which ones appear in the infrared and Raman spectra.</p>
+
+  <h2 class="sec">Lessons</h2>
   <ul class="lessons">
     <li>
       <a href="water-vibrations.html">
@@ -67,7 +91,7 @@ h1{font:600 clamp(30px,5vw,42px)/1.1 var(--display);margin:10px 0 12px;letter-sp
           <circle cx="80" cy="48" r="21" fill="url(#gO)"/>
           <circle class="h" cx="40.5" cy="78.6" r="13" fill="url(#gH)"/><circle class="h" cx="119.5" cy="78.6" r="13" fill="url(#gH)"/>
         </svg>
-        <h2>Water</h2>
+        <h2>Water</h2><span class="pg">C<sub>2v</sub></span>
       </a>
     </li>
     <li>
@@ -79,7 +103,7 @@ h1{font:600 clamp(30px,5vw,42px)/1.1 var(--display);margin:10px 0 12px;letter-sp
           <circle cx="80" cy="40" r="20" fill="url(#gN)"/>
           <circle class="h" cx="44" cy="80" r="13" fill="url(#gH)"/><circle class="h" cx="92" cy="98" r="13" fill="url(#gH)"/>
         </svg>
-        <h2>Ammonia</h2>
+        <h2>Ammonia</h2><span class="pg">C<sub>3v</sub></span>
       </a>
     </li>
     <li>
@@ -89,7 +113,7 @@ h1{font:600 clamp(30px,5vw,42px)/1.1 var(--display);margin:10px 0 12px;letter-sp
           <circle cx="80" cy="60" r="16" fill="url(#gC)"/>
           <circle cx="30" cy="60" r="20" fill="url(#gO)"/><circle cx="130" cy="60" r="20" fill="url(#gO)"/>
         </svg>
-        <h2>Carbon dioxide</h2>
+        <h2>Carbon dioxide</h2><span class="pg">D<sub>∞h</sub></span>
       </a>
     </li>
     <li>
@@ -105,11 +129,80 @@ h1{font:600 clamp(30px,5vw,42px)/1.1 var(--display);margin:10px 0 12px;letter-sp
           <g fill="url(#gC)"><circle cx="110" cy="60" r="9"/><circle cx="95" cy="86" r="9"/><circle cx="65" cy="86" r="9"/><circle cx="50" cy="60" r="9"/><circle cx="65" cy="34" r="9"/><circle cx="95" cy="34" r="9"/></g>
           <g class="h" fill="url(#gH)"><circle cx="132" cy="60" r="7"/><circle cx="106" cy="105" r="7"/><circle cx="54" cy="105" r="7"/><circle cx="28" cy="60" r="7"/><circle cx="54" cy="15" r="7"/><circle cx="106" cy="15" r="7"/></g>
         </svg>
-        <h2>Benzene</h2>
+        <h2>Benzene</h2><span class="pg">D<sub>6h</sub></span>
+      </a>
+    </li>
+    <li>
+      <a href="allene-vibrations.html">
+        <svg viewBox="0 0 160 120" aria-hidden="true">
+          <circle class="h" cx="138" cy="47" r="9" fill="url(#gH)" opacity=".75"/>
+          <line class="bd thin" x1="110" y1="60" x2="138" y2="47"/>
+          <g class="bd dbl"><line x1="50" y1="56" x2="110" y2="56"/><line x1="50" y1="64" x2="110" y2="64"/></g>
+          <line class="bd thin" x1="50" y1="60" x2="27" y2="38"/><line class="bd thin" x1="50" y1="60" x2="27" y2="82"/><line class="bd thin" x1="110" y1="60" x2="132" y2="76"/>
+          <g fill="url(#gC)"><circle cx="50" cy="60" r="12"/><circle cx="80" cy="60" r="12"/><circle cx="110" cy="60" r="12"/></g>
+          <g class="h" fill="url(#gH)"><circle cx="27" cy="38" r="10"/><circle cx="27" cy="82" r="10"/><circle cx="132" cy="76" r="11"/></g>
+        </svg>
+        <h2>Allene</h2><span class="pg">D<sub>2d</sub></span>
+      </a>
+    </li>
+    <li>
+      <a href="biphenyl-vibrations.html">
+        <svg viewBox="0 0 160 120" aria-hidden="true">
+          <g class="bd thin" stroke-linejoin="round" fill="none">
+            <polygon points="70,60 61,75.6 43,75.6 34,60 43,44.4 61,44.4"/><polygon points="90,60 99,75.6 117,75.6 126,60 117,44.4 99,44.4"/>
+            <line x1="70" y1="60" x2="90" y2="60"/>
+            <line x1="34" y1="60" x2="20" y2="60"/><line x1="43" y1="75.6" x2="36" y2="87.7"/><line x1="43" y1="44.4" x2="36" y2="32.3"/><line x1="61" y1="75.6" x2="68" y2="87.7"/><line x1="61" y1="44.4" x2="68" y2="32.3"/>
+            <line x1="126" y1="60" x2="140" y2="60"/><line x1="117" y1="75.6" x2="124" y2="87.7"/><line x1="117" y1="44.4" x2="124" y2="32.3"/><line x1="99" y1="75.6" x2="92" y2="87.7"/><line x1="99" y1="44.4" x2="92" y2="32.3"/>
+          </g>
+          <g fill="url(#gC)"><circle cx="70" cy="60" r="6.5"/><circle cx="61" cy="75.6" r="6.5"/><circle cx="43" cy="75.6" r="6.5"/><circle cx="34" cy="60" r="6.5"/><circle cx="43" cy="44.4" r="6.5"/><circle cx="61" cy="44.4" r="6.5"/><circle cx="90" cy="60" r="6.5"/><circle cx="99" cy="75.6" r="6.5"/><circle cx="117" cy="75.6" r="6.5"/><circle cx="126" cy="60" r="6.5"/><circle cx="117" cy="44.4" r="6.5"/><circle cx="99" cy="44.4" r="6.5"/></g>
+          <g class="h" fill="url(#gH)"><circle cx="20" cy="60" r="5"/><circle cx="36" cy="87.7" r="5"/><circle cx="36" cy="32.3" r="5"/><circle cx="68" cy="87.7" r="5"/><circle cx="68" cy="32.3" r="5"/><circle cx="140" cy="60" r="5"/><circle cx="124" cy="87.7" r="5"/><circle cx="124" cy="32.3" r="5"/><circle cx="92" cy="87.7" r="5"/><circle cx="92" cy="32.3" r="5"/></g>
+        </svg>
+        <h2>Biphenyl</h2><span class="pg">D<sub>2h</sub></span>
+      </a>
+    </li>
+    <li>
+      <a href="bromochloroethene-vibrations.html">
+        <svg viewBox="0 0 160 120" aria-hidden="true">
+          <g class="bd dbl"><line x1="62" y1="60" x2="98" y2="60" transform="translate(0,-4)"/><line x1="62" y1="60" x2="98" y2="60" transform="translate(0,4)"/></g>
+          <line class="bd thin" x1="62" y1="60" x2="40" y2="30"/><line class="bd thin" x1="98" y1="60" x2="120" y2="32"/>
+          <line class="bd thin" x1="62" y1="60" x2="46" y2="86"/><line class="bd thin" x1="98" y1="60" x2="114" y2="86"/>
+          <g fill="url(#gC)"><circle cx="62" cy="60" r="12"/><circle cx="98" cy="60" r="12"/></g>
+          <circle cx="38" cy="28" r="18" fill="url(#gBr)"/><circle cx="121" cy="30" r="15" fill="url(#gCl)"/>
+          <g class="h" fill="url(#gH)"><circle cx="46" cy="87" r="9"/><circle cx="114" cy="87" r="9"/></g>
+        </svg>
+        <h2>Bromochloroethene</h2><span class="pg">C<sub>s</sub></span>
+      </a>
+    </li>
+    <li>
+      <a href="ferrocene-vibrations.html">
+        <svg viewBox="0 0 160 120" aria-hidden="true">
+          <g class="bd hair"><line x1="80" y1="60" x2="80" y2="35"/><line x1="80" y1="60" x2="80" y2="85"/></g>
+          <g class="bd thin" stroke-linejoin="round" fill="none">
+            <polygon points="114,24 90.5,33.5 52.5,30 57.5,16.5 99.5,13.8"/>
+            <polygon points="114,96 90.5,105.5 52.5,102 57.5,88.5 99.5,85.8"/>
+          </g>
+          <g fill="url(#gC)"><circle cx="114" cy="24" r="6.5"/><circle cx="90.5" cy="33.5" r="6.5"/><circle cx="52.5" cy="30" r="6.5"/><circle cx="57.5" cy="16.5" r="6"/><circle cx="99.5" cy="13.8" r="6"/>
+            <circle cx="114" cy="96" r="6.5"/><circle cx="90.5" cy="105.5" r="6.5"/><circle cx="52.5" cy="102" r="6.5"/><circle cx="57.5" cy="88.5" r="6"/><circle cx="99.5" cy="85.8" r="6"/></g>
+          <circle cx="80" cy="60" r="13" fill="url(#gFe)"/>
+        </svg>
+        <h2>Ferrocene</h2><span class="pg">D<sub>5h</sub></span>
       </a>
     </li>
   </ul>
+
+  <h2 class="sec">Tools</h2>
+  <div class="tools">
+    <a href="point-groups.html">
+      <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="13" y="3" width="14" height="8" rx="2"/><path d="M20 11v6M20 17l-9 6M20 17l9 6"/><rect x="3" y="23" width="14" height="8" rx="2"/><rect x="23" y="23" width="14" height="8" rx="2"/><path d="M10 31v5M30 31v5"/></svg>
+      <div><b>Find the point group</b><span>Walk the standard flowchart, question by question, on 3D molecules: the eight lesson molecules and more.</span></div>
+    </a>
+    <a href="glossary.html">
+      <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="32" height="30" rx="3"/><path d="M4 13h32M14 5v30M4 21h32M4 28h32"/></svg>
+      <div><b>Glossary &amp; character tables</b><span>Quick review of the vocabulary (character, class, order, orthogonal…) and an annotated anatomy of a character table.</span></div>
+    </a>
+  </div>
   <p class="credits">This website was created by Chris Avanessian and <a href="https://chemistry.jhu.edu/directory/sunita-thyagarajan/">Sunita Thyagarajan</a>. All source code is available in the <a href="https://github.com/sunitathyagarajan/interactive-group-theory">GitHub repository</a>.</p>
 </main>
+<script src="assets/site.js"></script>
 </body>
 </html>

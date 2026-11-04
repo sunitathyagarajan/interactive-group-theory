@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>try{var t=localStorage.getItem('igt-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<title>Ferrocene Vibrations in D₅h</title>
+<meta name="description" content="An interactive lesson on the vibrational modes of eclipsed ferrocene using the D5h point group, ending with IR and Raman selection rules.">
+<meta name="color-scheme" content="light dark">
+<link rel="stylesheet" href="assets/lesson.css">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+
+<div class="app">
+  <header class="head">
+    <div class="brand">
+      <div class="kicker">Group theory · D<sub>5h</sub> · <span class="f">Fe(C<sub>5</sub>H<sub>5</sub>)<sub>2</sub></span></div>
+      <h1>Ferrocene's vibrational modes</h1>
+    </div>
+    <nav class="site-tools"><a class="back" href="index.html">← All lessons</a><a href="glossary.html">Glossary</a><button class="theme-toggle" data-theme-toggle></button></nav>
+  </header>
+
+  <section class="stage" id="stage" aria-label="3D model of a ferrocene molecule">
+    <canvas id="gl" tabindex="0" aria-label="Drag or use arrow keys to rotate. Scroll or pinch to zoom."></canvas>
+    <div class="labels" id="labels"></div>
+    <div class="st-top">
+      <div class="toggles">
+        <button class="tg" id="tg-axes" aria-pressed="true">Axes</button>
+        <button class="tg" id="tg-elem" aria-pressed="false">Symmetry elements</button>
+        <button class="tg" id="tg-labels" aria-pressed="true">Labels</button>
+      </div>
+      <div class="showing" id="showing"></div>
+    </div>
+    <div class="st-bottom">
+      <div class="caption" id="caption"></div>
+      <div class="opbar" id="opbar"><span class="lbl">Apply</span></div>
+    </div>
+  </section>
+
+  <main class="lesson" id="lesson">
+    <ol class="stepper" id="stepper"></ol>
+    <div class="body" id="body"></div>
+    <div class="nav">
+      <button class="btn" id="prev">← Previous</button>
+      <button class="btn primary" id="next">Next →</button>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>window.THREE || document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"><\/script>')</script>
+<script>
+// Eclipsed ferrocene. z runs through both ring centres; C1 and C6 sit on the +x axis side, one above the other.
+// r(C–C) = 1.43 Å, r(C–H) = 1.08 Å, Fe to ring plane 1.66 Å. The hydrogens are kept in the ring planes.
+(function(){
+const D = Math.PI/180, rCC = 1.43, rCH = 1.08, h = 1.66, R = rCC/(2*Math.sin(36*D)), RH = R + rCH;
+const c1 = 2*Math.cos(72*D), c2 = 2*Math.cos(144*D);
+const sq = v => `<i>${v}</i><sup>2</sup>`, az = a => [Math.cos(a*D), Math.sin(a*D), 0];
+const ops = [
+  {id:'E', cls:'E', type:'E', html:'<i>E</i>', name:'Identity'},
+  {id:'C5', cls:'C5', type:'C', axis:[0,0,1], n:5, k:1, html:'<i>C</i><sub>5</sub>', name:'Rotation by 72°'},
+  {id:'C54', cls:'C5', type:'C', axis:[0,0,1], n:5, k:4, html:'<i>C</i><sub>5</sub><sup>4</sup>', name:'Rotation by 288°'},
+  {id:'C52', cls:'C52', type:'C', axis:[0,0,1], n:5, k:2, html:'<i>C</i><sub>5</sub><sup>2</sup>', name:'Rotation by 144°'},
+  {id:'C53', cls:'C52', type:'C', axis:[0,0,1], n:5, k:3, html:'<i>C</i><sub>5</sub><sup>3</sup>', name:'Rotation by 216°'},
+  ...[0,1,2,3,4].map(k => ({id:'C2'+(k+1), cls:'C2', type:'C', axis:az(36*k), n:2, html:'<i>C</i><sub>2</sub>', name:'Rotation by 180° about an axis between the rings'})),
+  {id:'sh', cls:'sh', type:'s', normal:[0,0,1], html:'σ<sub>h</sub>', name:'Reflection through the plane between the rings'},
+  {id:'S5', cls:'S5', type:'S', axis:[0,0,1], n:5, k:1, html:'<i>S</i><sub>5</sub>', name:'Rotate 72°, then reflect through σh'},
+  {id:'S59', cls:'S5', type:'S', axis:[0,0,1], n:5, k:9, html:'<i>S</i><sub>5</sub><sup>9</sup>', name:'Rotate 288°, then reflect through σh'},
+  {id:'S53', cls:'S53', type:'S', axis:[0,0,1], n:5, k:3, html:'<i>S</i><sub>5</sub><sup>3</sup>', name:'Rotate 216°, then reflect through σh'},
+  {id:'S57', cls:'S53', type:'S', axis:[0,0,1], n:5, k:7, html:'<i>S</i><sub>5</sub><sup>7</sup>', name:'Rotate 144°, then reflect through σh'},
+  ...[0,1,2,3,4].map(k => ({id:'sv'+(k+1), cls:'sv', type:'s', normal:[-Math.sin(36*k*D), Math.cos(36*k*D), 0], html:'σ<sub>v</sub>', name:'Reflection through a vertical plane'})),
+];
+window.LESSON = {
+  id:'ferrocene', nameText:'ferrocene', formulaHTML:'Ferrocene, Fe(C<sub>5</sub>H<sub>5</sub>)<sub>2</sub>,', groupHTML:'D<sub>5h</sub>',
+  scale:1.0, cam:{theta:-0.6, phi:1.2, r:10.5}, hideHLabels:true,
+  geometry(){
+    const atoms = [{el:'Fe', html:'Fe', pos:[0,0,0]}], bonds = [], extra = [];
+    [h,-h].forEach((z,ring) => [0,1,2,3,4].forEach(k => { const [c,s] = az(72*k); atoms.push({el:'C', html:`C<sub>${5*ring+k+1}</sub>`, pos:[R*c, R*s, z]}); }));
+    [h,-h].forEach((z,ring) => [0,1,2,3,4].forEach(k => { const [c,s] = az(72*k); atoms.push({el:'H', html:`H<sub>${5*ring+k+1}</sub>`, pos:[RH*c, RH*s, z]}); }));
+    const C = (ring,k) => 1 + 5*ring + ((k%5)+5)%5, H = (ring,k) => 11 + 5*ring + k;
+    [0,1].forEach(ring => [0,1,2,3,4].forEach(k => {
+      bonds.push({i:C(ring,k), j:C(ring,k+1), k:5.6, order:1.5, tag:'ring C–C stretch', torsTag:'ring pucker'});
+      bonds.push({i:C(ring,k), j:H(ring,k), k:5.1});
+      bonds.push({i:0, j:C(ring,k), k:0.65, soft:true, thin:true, tag:'Fe–ring stretch'});
+    }));
+    // weak cross-ring springs give the two rings a small resistance to turning against each other
+    [0,1,2,3,4].forEach(k => { extra.push({i:C(0,k), j:C(1,k+1), k:0.012, tag:'ring tilt or turn'}); extra.push({i:C(0,k), j:C(1,k-1), k:0.012, tag:'ring tilt or turn'}); });
+    return {atoms, bonds, extra};
+  },
+  ff:{bend:1.0, bendH:0.42, oop:0.28, tors:0.12},
+  skelTag:'ring deformation',
+  charges:at => ({Fe:0.4, C:-0.15, H:0.11})[at.el],
+  ops,
+  classes:[
+    {id:'E',   html:'<i>E</i>',                         desc:'Do nothing.'},
+    {id:'C5',  html:'2<i>C</i><sub>5</sub>',            desc:'Rotate 72° (or 288°) about the axis through both ring centres.'},
+    {id:'C52', html:'2<i>C</i><sub>5</sub><sup>2</sup>', desc:'Rotate 144° (or 216°) about the same axis.'},
+    {id:'C2',  html:'5<i>C</i><sub>2</sub>',            desc:'Rotate 180° about an axis through Fe, parallel to the rings. The molecule turns upside down and the rings swap.'},
+    {id:'sh',  html:'σ<sub>h</sub>',                    desc:'Reflect through the plane through Fe, parallel to the rings. The rings swap.'},
+    {id:'S5',  html:'2<i>S</i><sub>5</sub>',            desc:'Rotate 72° about the axis, then reflect through σ<sub>h</sub>.'},
+    {id:'S53', html:'2<i>S</i><sub>5</sub><sup>3</sup>', desc:'Rotate 216° (or 144°) about the axis, then reflect through σ<sub>h</sub>.'},
+    {id:'sv',  html:'5σ<sub>v</sub>',                   desc:'Reflect through a vertical plane that contains the axis and one C–H on each ring.'},
+  ],
+  irreps:[
+    {id:"A1'",  cls:'a1', html:'A<sub>1</sub>′',  chi:[1, 1, 1, 1, 1, 1, 1, 1],          quad:`${sq('x')} + ${sq('y')}, ${sq('z')}`},
+    {id:"A2'",  cls:'a2', html:'A<sub>2</sub>′',  chi:[1, 1, 1,-1, 1, 1, 1,-1],          rot:['R<sub><i>z</i></sub>']},
+    {id:"E1'",  cls:'e',  html:'E<sub>1</sub>′',  chi:[2, c1, c2, 0, 2, c1, c2, 0],      lin:['(<i>x</i>, <i>y</i>)']},
+    {id:"E2'",  cls:'b2', html:'E<sub>2</sub>′',  chi:[2, c2, c1, 0, 2, c2, c1, 0],      quad:`(${sq('x')} − ${sq('y')}, <i>xy</i>)`},
+    {id:"A1''", cls:'a1', html:'A<sub>1</sub>″',  chi:[1, 1, 1, 1,-1,-1,-1,-1]},
+    {id:"A2''", cls:'a2', html:'A<sub>2</sub>″',  chi:[1, 1, 1,-1,-1,-1,-1, 1],          lin:['<i>z</i>']},
+    {id:"E1''", cls:'e',  html:'E<sub>1</sub>″',  chi:[2, c1, c2, 0,-2,-c1,-c2, 0],      rot:['(R<sub><i>x</i></sub>, R<sub><i>y</i></sub>)'], quad:'(<i>xz</i>, <i>yz</i>)'},
+    {id:"E2''", cls:'b2', html:'E<sub>2</sub>″',  chi:[2, c2, c1, 0,-2,-c2,-c1, 0]},
+  ],
+  splitOp:'sv1', mixOp:'C5',
+  tr:[{id:'Tz', parts:[[0,0,1]]}, {id:'Txy', parts:[[1,0,0],[0,1,0]]}, {id:'Rz', R:true, parts:[[0,0,1]]}, {id:'Rxy', R:true, parts:[[1,0,0],[0,1,0]]}],
+  matOps:['C5','S5','sv1'],
+  text:{
+    group:`<p>Ferrocene is an iron atom sandwiched between two flat, five-membered cyclopentadienyl rings. In the gas phase the two rings are <strong>eclipsed</strong>: each carbon sits directly above a carbon of the other ring. The molecule then has a fivefold axis through both ring centres, five twofold axes between the rings, a horizontal mirror plane through Fe, and five vertical mirror planes. That is <strong>D<sub>5h</sub></strong>: 20 operations in 8 classes, <i>h</i> = 20.</p>
+      <p>Turn one ring by 36° and the rings are <strong>staggered</strong>. That conformer has a centre of inversion at Fe but no σ<sub>h</sub>, and belongs to D<sub>5d</sub>. The barrier between the two is only about 4 kJ mol<sup>−1</sup>, and many older books treat ferrocene as D<sub>5d</sub> because of early crystal structures. This lesson uses the eclipsed D<sub>5h</sub> form.</p>
+      <p>The <i>z</i> axis runs along the <i>C</i><sub>5</sub> axis. The <i>x</i> axis is one of the <i>C</i><sub>2</sub> axes and points towards C<sub>1</sub> and C<sub>6</sub>.</p>`,
+    opsHint:`<p class="hint">Fe is the only atom on the fivefold axis, in σ<sub>h</sub> and on the <i>C</i><sub>2</sub> axes, so every rotation, every <i>S</i><sub>5</sub> and σ<sub>h</sub> leave only Fe in place. Each σ<sub>v</sub> also contains one C–H from each ring.</p>`,
+    vecNote:`<p class="muted">Here the cos θ rule matters. Fe sits on the fivefold axis, so under <i>C</i><sub>5</sub> its <i>x</i> and <i>y</i> vectors turn by 72° and contribute cos 72° = 0.309 each. Its <i>z</i> vector stays put (+1), for a total of 1.618.</p>`,
+    contribNote:`With fivefold rotations: <i>C</i><sub>5</sub> = 1 + 2 cos 72° = 1.618, <i>C</i><sub>5</sub><sup>2</sup> = 1 + 2 cos 144° = −0.618, <i>S</i><sub>5</sub> = −1 + 2 cos 72° = −0.382 and <i>S</i><sub>5</sub><sup>3</sup> = −1 + 2 cos 144° = −2.618.`,
+    reduceNote:`<p class="muted">The E species have characters 2 cos 72° = 0.618 and 2 cos 144° = −1.618, which are (√5 − 1)/2 and −(√5 + 1)/2, cousins of the golden ratio. The products in each sum are not whole numbers, but every sum still divides by 20 to give a whole number. That is a good check on your arithmetic.</p>`,
+    vibNote:`<p class="muted">Primed species (′) are symmetric under σ<sub>h</sub>: the two rings move as mirror images. Double-primed species (″) are antisymmetric: when one ring moves up, the other moves down by the same amount, so Fe can move along the axis.</p>`,
+    modesHint:`σ<sub>h</sub> sorts ′ from ″, <i>C</i><sub>2</sub> or σ<sub>v</sub> separates A<sub>1</sub> from A<sub>2</sub>, and <i>C</i><sub>5</sub> tells E<sub>1</sub> from E<sub>2</sub>.`,
+    modesNote:`The weakest one, the two rings turning against each other, is almost a free rotation in the real molecule.`,
+    irNote:`<p>Only A<sub>2</sub>″ (dipole change along the axis) and E<sub>1</sub>′ (in the plane of the rings) can absorb. Most of ferrocene's vibrations are internal motions of the rings, and the ones that do absorb show up at similar wavenumbers to the same motions in other cyclopentadienyl complexes. The low-wavenumber IR bands, near 480–500 cm<sup>−1</sup> in the measured spectrum, involve the iron moving against the rings.</p>`,
+    ramanNote:`<p>Eclipsed ferrocene has no centre of inversion, so mutual exclusion does not hold as a rule, but it happens to hold here anyway: A<sub>2</sub>″ and E<sub>1</sub>′ carry <i>x</i>, <i>y</i> or <i>z</i> but no quadratic function, while A<sub>1</sub>′, E<sub>2</sub>′ and E<sub>1</sub>″ carry quadratic functions but no linear one. In staggered D<sub>5d</sub> ferrocene the same split is enforced by the inversion centre. Many of ferrocene's vibrations (A<sub>2</sub>′, A<sub>1</sub>″ and E<sub>2</sub>″) are silent in both spectra.</p>`,
+  },
+};
+})();
+</script>
+<script src="assets/lesson.js"></script>
+<script src="assets/site.js"></script>
+</body>
+</html>
