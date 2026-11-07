@@ -116,7 +116,7 @@ const LEVELS = [
   {id:'1pg', mos:['1pgx','1pgy'], E:{O:-13.1, N:-8.0}},
   {id:'3su', mos:['3su'],         E:{O:-9.0,  N:-4.5}},
 ];
-const AO_E = {O:{s:-32.4, p:-15.9}, N:{s:-25.6, p:-12.9}};
+const AO_E = {O:{s:-32.4, p:-15.9}, N:{s:-25.6, p:-13.2}};   // valence orbital ionization energies, eV
 const levelById = id => LEVELS.find(L => L.id === id);
 const SPECIES = [
   {id:'N2',   html:'N<sub>2</sub>',              el:'N', n:10, len:110},
@@ -955,7 +955,7 @@ STEPS.push({short:'Reducible Γ', enter(){ show('ao:pxA'); S.elements = false; }
     ${S.showWork ? `<div class="work">${work}</div>` : ''}
     ${nOk || S.showWork ? `<div class="result"><span class="lhs">${GN.all} =</span><span class="rep">${repHTML(nAll)}</span><span class="muted">8 AOs: 2 + 1 + 1 + 2 + 1 + 1 = 8</span></div>
       <p>That is exactly the list of SALCs from step 4 and the MO labels from step 7. The reducible representation predicted them before any orbital was combined: <strong>8 AOs in, 8 MOs out, with these symmetries</strong>. Translated to D<sub>∞h</sub> with the correlation table: ${GN.all} = ${dinfSum}.</p>
-      <p class="muted">You can also reduce each row separately: ${GN.s} = ${repHTML(reduce(GAMMA.s))}, ${GN.z} = ${repHTML(reduce(GAMMA.z))}, ${GN.x} = ${repHTML(reduce(GAMMA.x))}, ${GN.y} = ${repHTML(reduce(GAMMA.y))}. Since ${GN.s} and ${GN.z} contain the same species, the 2s and 2p<sub><i>z</i></sub> SALCs are allowed to mix: that is the s–p mixing of step 6.</p>
+      <p class="muted">You can also reduce each row separately: ${GN.s} = ${repHTML(reduce(GAMMA.s))}, ${GN.z} = ${repHTML(reduce(GAMMA.z))}, ${GN.x} = ${repHTML(reduce(GAMMA.x))}, ${GN.y} = ${repHTML(reduce(GAMMA.y))}. Since ${GN.s} and ${GN.z} contain the same species, the 2s and 2p<sub><i>z</i></sub> SALCs are allowed to mix: that is the s–p mixing of step 5, which reorders the levels of N<sub>2</sub> in step 6.</p>
       <h3>The whole method</h3>
       <ol>
         <li>Find the point group (D<sub>∞h</sub>, worked in D<sub>2h</sub>).</li>
@@ -1027,7 +1027,7 @@ function decode(id){
       `<li>In O<sub>2</sub>: ${mos.length ? mos.map(m => m.html).join(' and ') : 'no valence orbital has this symmetry'}.</li>`,
     ];
     const hot = ['C2z','C2y','C2x','i'];
-    out.innerHTML = `<b>${ir.html}</b><div class="row">${OPS.map((op,j) => `<span class="${hot.includes(op.id) ? 'hot' : ''}">${op.html}<b class="${cellCls(ir.chi[j])}">${fmtS(ir.chi[j])}</b></span>`).join('')}</div><ul>${lines.join('')}</ul>${mos.length ? `<button class="btn sm" type="button" data-gdemo-mo="${mos[0].id}">Show ${mos[0].html} in 3D</button>` : ''}`;
+    out.innerHTML = `<b>${ir.html}</b><div class="row">${OPS.map((op,j) => `<span class="${hot.includes(op.id) ? 'hot' : ''}"><span class="op">${op.html}</span><b class="${cellCls(ir.chi[j])}">${fmtS(ir.chi[j])}</b></span>`).join('')}</div><ul>${lines.join('')}</ul>${mos.length ? `<button class="btn sm" type="button" data-gdemo-mo="${mos[0].id}">Show ${mos[0].html} in 3D</button>` : ''}`;
   } else if (d){
     const isPi = d.id.startsWith('P'), gu = d.id.includes('g'), mos = MOS.filter(m => m.dinf === d.id);
     out.innerHTML = `<b>${d.html}</b><ul>

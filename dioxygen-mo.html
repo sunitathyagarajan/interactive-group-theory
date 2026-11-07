@@ -23,6 +23,9 @@
 }
 :root[data-theme="dark"]{ --pos:#6c9dff; --neg:#ffb84d; --sg:#5fd09a; --su:#b993f0; --pu:#5cc2ea; --pg:#f0a85a; --nn:#93a1b0; --lvl:#e2e8ef; --elec:#e2e8ef; }
 
+/* lesson.css makes .chip an inline flexbox, which turns the sub/superscripts of a Mulliken label into separate,
+   vertically centred flex items ("A g" instead of A_g). Labels here are plain text, so use normal inline flow. */
+.chip{display:inline-block;line-height:1.35}
 .chip.sg{--c:var(--sg)}.chip.su{--c:var(--su)}.chip.pu{--c:var(--pu)}.chip.pg{--c:var(--pg)}.chip.nn{--c:var(--nn)}
 button.chip{border:0;cursor:pointer;font:600 13.5px var(--body)}
 button.chip:hover{box-shadow:inset 0 0 0 1px var(--c)}
@@ -155,14 +158,18 @@ td.p1{color:var(--good);font-weight:600} td.m1{color:var(--bad);font-weight:600}
 .gterm .lbl{font:600 10.5px var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-right:6px}
 .gterm svg{display:block;width:100%;max-width:380px;height:auto;margin:4px 0 8px}
 .gterm .btn{font-size:13px}
-.decoder .pick{margin:6px 0}
+.decoder .pick{margin:6px 0;flex-wrap:nowrap;align-items:flex-start}
+.decoder .pick .lbl{min-width:38px;margin:9px 0 0;text-transform:none;letter-spacing:0;font-size:12.5px}
+.decoder .pick .opts{display:flex;flex-wrap:wrap;gap:6px}
 .decoder .out{background:var(--surface-2);border-radius:8px;padding:8px 10px;font-size:14px;margin-top:6px}
 .decoder .out ul{margin:4px 0 0;padding-left:18px}
-.decoder .row{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0 2px}
-.decoder .row span{display:inline-flex;flex-direction:column;align-items:center;min-width:44px;padding:3px 4px;border:1px solid var(--line);border-radius:6px;background:var(--surface);font-size:11.5px;color:var(--muted)}
-.decoder .row span b{font:600 14px var(--body);color:var(--ink)}
-.decoder .row span.hot{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
-.decoder .row span b.p1{color:var(--good)} .decoder .row span b.m1{color:var(--bad)}
+.decoder .row{display:grid;grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:4px;margin:6px 0 2px}
+/* one cell per operation: the operation's name (kept on one line) above its character */
+.decoder .row>span{display:inline-flex;flex-direction:column;align-items:center;gap:2px;min-width:0;padding:3px 2px;border:1px solid var(--line);border-radius:6px;background:var(--surface);font-size:11.5px;color:var(--muted)}
+.decoder .row>span .op{white-space:nowrap}
+.decoder .row>span b{font:600 14px var(--body);color:var(--ink)}
+.decoder .row>span.hot{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.decoder .row>span b.p1{color:var(--good)} .decoder .row>span b.m1{color:var(--bad)}
 .gfoot{font-size:13.5px;color:var(--muted);margin-top:14px}
 
 @media (max-width:900px){
@@ -176,6 +183,7 @@ td.p1{color:var(--good);font-weight:600} td.m1{color:var(--bad);font-weight:600}
   .readout .s b{font-size:18px}
   .glo-btn .long{display:none}
   .gdrawer{width:100vw;border-left:0}
+  .decoder .row{grid-template-columns:repeat(4,minmax(0,1fr))}
 }
 </style>
 <link rel="stylesheet" href="assets/site.css">
@@ -285,8 +293,8 @@ td.p1{color:var(--good);font-weight:600} td.m1{color:var(--bad);font-weight:600}
     <article class="gterm decoder" id="g-decoder">
       <h3><span class="big">?</span>Label decoder</h3>
       <p>Pick a label to see what each part of it says, letter by letter.</p>
-      <div class="pick"><div class="opts" id="dec-d2h" role="group" aria-label="D2h labels"></div></div>
-      <div class="pick"><div class="opts" id="dec-dinf" role="group" aria-label="D-infinity-h labels"></div></div>
+      <div class="pick"><span class="lbl">D<sub>2h</sub></span><div class="opts" id="dec-d2h" role="group" aria-label="D2h labels"></div></div>
+      <div class="pick"><span class="lbl">D<sub>∞h</sub></span><div class="opts" id="dec-dinf" role="group" aria-label="D-infinity-h labels"></div></div>
       <div class="out" id="dec-out" aria-live="polite"></div>
     </article>
     <p class="gfoot">More terms, such as character, class and reduction formula, are in the full <a href="glossary.html#mulliken-symbols">site glossary</a>.</p>
