@@ -13,7 +13,7 @@
   --bond:#8e9cac; --h-edge:#aab5c1;
   --display:"Segoe UI", Calibri, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
   --body:"Segoe UI", Calibri, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
-  --mono:Consolas, "Cascadia Mono", ui-monospace, Menlo, monospace;
+  --mono:"Segoe UI", Calibri, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -80,9 +80,9 @@ h1{font:600 clamp(30px,5vw,42px)/1.1 var(--display);margin:10px 0 12px;letter-sp
   <div class="topbar"><nav class="site-tools"><button class="theme-toggle" data-theme-toggle></button></nav></div>
   <div class="kicker">Group theory · Molecular symmetry</div>
   <h1>Interactive Group Theory</h1>
-  <p class="lede">Hands-on lessons that pair 3D molecular models with the point-group calculations behind them. Each one works out the symmetry of every vibration and ends by predicting which ones appear in the infrared and Raman spectra.</p>
+  <p class="lede">Hands-on lessons that pair 3D molecular models with the point-group calculations behind them. The vibration lessons work out the symmetry of every vibration and predict which ones appear in the infrared and Raman spectra. The molecular orbital lesson builds the MO diagram of O<sub>2</sub> from symmetry-adapted linear combinations.</p>
 
-  <h2 class="sec">Lessons</h2>
+  <h2 class="sec">Vibrations</h2>
   <ul class="lessons">
     <li>
       <a href="water-vibrations.html">
@@ -190,11 +190,26 @@ h1{font:600 clamp(30px,5vw,42px)/1.1 var(--display);margin:10px 0 12px;letter-sp
     </li>
   </ul>
 
+  <h2 class="sec">Molecular orbitals</h2>
+  <ul class="lessons">
+    <li>
+      <a href="dioxygen-mo.html">
+        <svg viewBox="0 0 160 120" aria-hidden="true">
+          <!-- the 1πg* orbital: lobes of opposite sign (blue +, amber −) above and below each atom -->
+          <g opacity=".6"><ellipse cx="52" cy="35" rx="17" ry="21" fill="#3d7bff"/><ellipse cx="52" cy="85" rx="17" ry="21" fill="#ffaa33"/><ellipse cx="108" cy="35" rx="17" ry="21" fill="#ffaa33"/><ellipse cx="108" cy="85" rx="17" ry="21" fill="#3d7bff"/></g>
+          <g class="bd thin"><line x1="52" y1="55" x2="108" y2="55"/><line x1="52" y1="65" x2="108" y2="65"/></g>
+          <circle cx="52" cy="60" r="17" fill="url(#gO)"/><circle cx="108" cy="60" r="17" fill="url(#gO)"/>
+        </svg>
+        <h2>Dioxygen</h2><span class="pg">D<sub>∞h</sub> · SALCs &amp; MOs</span>
+      </a>
+    </li>
+  </ul>
+
   <h2 class="sec">Tools</h2>
   <div class="tools">
     <a href="point-groups.html">
       <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="13" y="3" width="14" height="8" rx="2"/><path d="M20 11v6M20 17l-9 6M20 17l9 6"/><rect x="3" y="23" width="14" height="8" rx="2"/><rect x="23" y="23" width="14" height="8" rx="2"/><path d="M10 31v5M30 31v5"/></svg>
-      <div><b>Find the point group</b><span>Walk the standard flowchart, question by question, on 3D molecules: the eight lesson molecules and more.</span></div>
+      <div><b>Find the point group</b><span>Walk the standard flowchart, question by question, on 3D molecules: the nine lesson molecules and more.</span></div>
     </a>
     <a href="glossary.html">
       <svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="32" height="30" rx="3"/><path d="M4 13h32M14 5v30M4 21h32M4 28h32"/></svg>

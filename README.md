@@ -15,7 +15,11 @@ Interactive lessons on molecular symmetry and group theory, published with GitHu
 - [1,2-Bromochloroethene's vibrational modes](https://sunitathyagarajan.github.io/interactive-group-theory/bromochloroethene-vibrations.html): Cₛ, with a cis/trans switch; compare 1,2-dichloroethene (C₂ᵥ / C₂h).
 - [Ferrocene's vibrational modes](https://sunitathyagarajan.github.io/interactive-group-theory/ferrocene-vibrations.html): eclipsed D₅h, with fivefold characters such as 2 cos 72°.
 
-Every lesson ends with two steps on selection rules, one for IR and one for Raman: which vibrations change the dipole moment or the polarizability, how to read that off the character table, and the predicted spectra.
+Every vibration lesson ends with two steps on selection rules, one for IR and one for Raman: which vibrations change the dipole moment or the polarizability, how to read that off the character table, and the predicted spectra.
+
+## Molecular orbitals
+
+- [Dioxygen's molecular orbitals](https://sunitathyagarajan.github.io/interactive-group-theory/dioxygen-mo.html): symmetry operations and character tables (D∞h, worked in D₂h), SALCs from the projection operator, molecular orbitals built from atomic orbitals, an interactive MO diagram (electron filling, bond order, magnetism, O₂⁺/O₂⁻/O₂²⁻ and N₂), the symmetry label of every MO, and reducible representations. Orbitals are drawn as true isosurfaces of the LCAO wavefunctions. It has its own A, B, g, u glossary panel with a label decoder.
 
 ## Tools
 
@@ -30,7 +34,9 @@ Every page has a light/dark switch (remembered per browser) and a phone layout.
 - The four newer lessons are short HTML pages with a `window.LESSON` config (geometry, operations, character table, text). They use `assets/lesson.js` and `assets/lesson.css`. The engine computes the symmetry bookkeeping. It also computes normal modes from a simple valence force field, solved one symmetry block at a time.
   - Allene uses measured gas-phase wavenumbers (the `wn` table in its config).
   - The other three show force-field estimates, labelled "est." on the page. You can replace them with literature values: add a `wn: {species: [highest, …]}` table to the config.
+- The dioxygen lesson is `dioxygen-mo.html` with its script in `assets/dioxygen-mo.js`. It reuses `assets/lesson.css` for the page layout. Orbitals are Slater-type 2s/2p functions (ζ = 2.275 from Slater's rules), and the 3D shapes are isosurfaces built by marching tetrahedra.
 - `assets/site.css` and `assets/site.js` are loaded by every page. They provide the theme toggle and the phone layout.
+- Every page uses Segoe UI for all text. Segoe UI ships with Windows; on other systems the font stack falls back to Calibri, then the system font.
 
 ## Running locally
 

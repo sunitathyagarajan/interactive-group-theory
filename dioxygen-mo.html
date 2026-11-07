@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>try{var t=localStorage.getItem('igt-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<title>Dioxygen Molecular Orbitals</title>
+<meta name="description" content="An interactive lesson on the molecular orbitals of O2: symmetry operations, character tables, SALCs, the MO diagram, the symmetry labels of the orbitals and reducible representations.">
+<meta name="color-scheme" content="light dark">
+<link rel="stylesheet" href="assets/lesson.css">
+<style>
+/* Dioxygen MO lesson. Builds on assets/lesson.css; everything here is specific to orbitals. */
+:root{
+  --display:"Segoe UI", Calibri, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --body:"Segoe UI", Calibri, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --mono:"Segoe UI", Calibri, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --pos:#2f6fe4; --neg:#d98a00;            /* orbital phases: + blue, − amber (also used in the 3D view) */
+  --sg:#1d7548; --su:#7647b5; --pu:#1a7aa1; --pg:#b8640f; --nn:#5a6775;
+  --lvl:#16202b; --elec:#16202b;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --pos:#6c9dff; --neg:#ffb84d; --sg:#5fd09a; --su:#b993f0; --pu:#5cc2ea; --pg:#f0a85a; --nn:#93a1b0; --lvl:#e2e8ef; --elec:#e2e8ef; }
+}
+:root[data-theme="dark"]{ --pos:#6c9dff; --neg:#ffb84d; --sg:#5fd09a; --su:#b993f0; --pu:#5cc2ea; --pg:#f0a85a; --nn:#93a1b0; --lvl:#e2e8ef; --elec:#e2e8ef; }
+
+.chip.sg{--c:var(--sg)}.chip.su{--c:var(--su)}.chip.pu{--c:var(--pu)}.chip.pg{--c:var(--pg)}.chip.nn{--c:var(--nn)}
+button.chip{border:0;cursor:pointer;font:600 13.5px var(--body)}
+button.chip:hover{box-shadow:inset 0 0 0 1px var(--c)}
+.ph{display:inline-flex;align-items:center;gap:6px;font:500 12px var(--body);color:var(--stage-muted)}
+.ph i{display:inline-block;width:11px;height:11px;border-radius:50%}
+.ph .p{background:#3d7bff}.ph .n{background:#ffaa33}
+.lab.orb{font:600 13px/1 var(--body);color:#fff;background:#0c141dcc;padding:3px 7px;border-radius:5px}
+/* "before" picture-in-picture, drawn by the renderer into this box while an operation is shown */
+.inset{position:absolute;right:12px;top:52px;border:1px solid #4b6380;border-radius:8px;pointer-events:none;display:none;z-index:1}
+.inset span{position:absolute;left:7px;top:5px;font:600 10.5px var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--stage-muted)}
+.cbox>span{white-space:nowrap}
+
+/* glossary terms inside the text */
+.gl{border:0;background:none;padding:0;font:inherit;color:inherit;cursor:pointer;border-bottom:1.5px dotted var(--accent);line-height:1.2}
+.gl:hover{color:var(--accent)}
+.glo-btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:4px 12px;font:600 12.5px var(--body);cursor:pointer;line-height:1.2}
+.glo-btn:hover{background:var(--accent);color:var(--accent-ink)}
+
+/* orbital pickers */
+.orbs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0}
+.orbs.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.orb{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 10px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:3px;min-width:0}
+.orb:hover{border-color:var(--accent)}
+.orb.active{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.orb .nm{font:600 15px var(--display)}
+.orb .sub{font-size:12.5px;color:var(--muted)}
+.grp-lbl{font:600 11px var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:14px 0 -4px}
+
+/* character tables */
+.ctab td,.ctab th{padding:6px 9px}
+.ctab tbody tr{cursor:pointer}
+.ctab tbody tr:hover th,.ctab tbody tr:hover td{background:color-mix(in srgb,var(--accent) 7%,transparent)}
+.ctab tr.on th,.ctab tr.on td{background:var(--accent-soft)}
+.ctab td.hot,.ctab th.hot{box-shadow:inset 0 0 0 2px var(--accent)}
+.ctab .grpname{font:600 14px var(--display);color:var(--ink)}
+td.p1{color:var(--good);font-weight:600} td.m1{color:var(--bad);font-weight:600}
+
+/* projection-operator tally */
+.proj tbody tr{cursor:pointer}
+.proj tbody tr.cur th,.proj tbody tr.cur td{background:color-mix(in srgb,var(--mode, #ffd35c) 22%,transparent)}
+.proj td.res{font-family:var(--body);text-align:left}
+.ao{white-space:nowrap}
+.ao.m{color:var(--bad)}
+.pick{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:10px 0}
+.pick .lbl{font:600 11px var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);min-width:96px}
+.pk{display:inline-flex;align-items:center;justify-content:center;min-height:34px;min-width:44px;padding:3px 10px;border:1px solid var(--line);background:var(--surface);border-radius:8px;cursor:pointer;font-size:14px}
+.pk:hover{border-color:var(--accent)}
+.pk[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--accent-soft)}
+.pk .chip{background:none;padding:0}
+.salcs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
+.salc{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.salc .eq{font:500 15px var(--display)}
+.salc .tag{font-size:12.5px;color:var(--muted)}
+.salc.q{border-style:dashed;color:var(--muted)}
+
+/* distance slider */
+.slider{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:12px 0}
+.slider input{flex:1;min-width:160px;accent-color:var(--accent)}
+.slider output{font:600 14px var(--body);min-width:92px;font-variant-numeric:tabular-nums}
+.slider .lbl{font:600 11px var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+/* MO diagram */
+.mod{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 10px 4px;margin:12px 0}
+.mod svg{display:block;width:100%;height:auto;overflow:visible;font-family:var(--body)}
+.mod .axis{stroke:var(--muted);stroke-width:1.2}
+.mod .axlab{font:500 12px var(--body);fill:var(--muted)}
+.mod .collab{font:600 13px var(--body);fill:var(--ink)}
+.mod .conn{stroke:var(--muted);stroke-width:1;stroke-dasharray:4 4;fill:none;opacity:.7}
+.mod .lv line.bar{stroke:var(--lvl);stroke-width:3;stroke-linecap:round}
+.mod .lv .hit{fill:transparent;cursor:pointer}
+.mod .lv text{font:500 12.5px var(--body);fill:var(--ink)}
+.mod .lv text.sm{font-size:11.5px;fill:var(--muted)}
+.mod .lv.mo:hover line.bar{stroke:var(--accent)}
+.mod .lv.sel line.bar{stroke:var(--accent);stroke-width:4.5}
+.mod .lv.sel text{fill:var(--accent);font-weight:600}
+.mod .lv:focus{outline:none}
+.mod .lv:focus-visible line.bar{stroke:var(--accent);stroke-width:5}
+.mod .el{stroke:var(--elec);stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.mod .el.ao{opacity:.45}
+.mod.compact .lv text{font-size:15.5px}
+.mod.compact .lv text.sm{font-size:13px}
+.mod.compact .collab{font-size:15.5px}
+.mod.compact .axlab{font-size:13.5px}
+.readout{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0}
+.readout .s{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.readout .s b{font:600 22px/1.15 var(--display)}
+.readout .s span{font-size:12.5px;color:var(--muted)}
+.readout .s.hi{background:var(--accent-soft);border-color:var(--accent)}
+.readout .s.hi b{color:var(--accent)}
+.config{font:500 15px/1.8 var(--display);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 14px;margin:10px 0;overflow-x:auto}
+.ctl{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:8px 0}
+.ctl .lbl{font:600 11px var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.seg button{font:500 13px var(--body)}
+.seg button+button{border-left:1px solid var(--line)}
+
+/* symmetry tests on the MOs */
+.mos{display:flex;flex-direction:column;gap:10px;margin:12px 0}
+.mo{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:start}
+.mo.active{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.mo h4{margin:0;font:600 16px var(--display)}
+.mo .sub{font-size:13px;color:var(--muted)}
+.mo .chars{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.cbox{cursor:pointer}
+.cbox:hover{border-color:var(--accent)}
+
+/* ---------- glossary drawer ---------- */
+.gback{position:fixed;inset:0;background:#0006;z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+@media (min-width:901px){ .gback{background:#0003} }
+.gback.open{opacity:1;pointer-events:auto}
+.gdrawer{position:fixed;top:0;right:0;bottom:0;width:min(460px,100vw);z-index:41;background:var(--bg);border-left:1px solid var(--line);box-shadow:-12px 0 32px -16px #0009;display:flex;flex-direction:column;transform:translateX(102%);transition:transform .25s ease;visibility:hidden}
+.gdrawer.open{transform:none;visibility:visible}
+@media (prefers-reduced-motion: reduce){ .gback,.gdrawer{transition:none} }
+.ghead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:16px 18px 10px;border-bottom:1px solid var(--line)}
+.ghead h2{font:600 21px/1.2 var(--display);margin:4px 0 0}
+.ghead .kicker{font:600 11px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.gclose{border:1px solid var(--line);background:var(--surface);border-radius:8px;min-width:36px;min-height:36px;font-size:18px;line-height:1;cursor:pointer;color:var(--ink)}
+.gclose:hover{border-color:var(--accent)}
+.gnav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 18px;border-bottom:1px solid var(--line)}
+.gnav a{display:inline-flex;align-items:center;justify-content:center;min-width:40px;min-height:34px;padding:2px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);text-decoration:none;color:var(--ink);font:600 15px var(--display)}
+.gnav a:hover{border-color:var(--accent);color:var(--accent)}
+.gscroll{overflow-y:auto;padding:4px 18px 28px;flex:1;overscroll-behavior:contain}
+.gterm{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:12px 0;scroll-margin-top:12px}
+.gterm.flash{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.gterm h3{display:flex;align-items:baseline;gap:10px;margin:0 0 6px;font:600 17px/1.3 var(--display)}
+.gterm h3 .big{display:inline-grid;place-items:center;min-width:38px;height:38px;padding:0 6px;border-radius:9px;background:var(--accent-soft);color:var(--accent);font:600 22px/1 var(--display)}
+.gterm p{margin:0 0 8px;font-size:14.5px}
+.gterm ul{margin:0 0 8px;padding-left:18px;font-size:14px}
+.gterm li{margin-bottom:3px}
+.gterm .test{background:var(--surface-2);border-radius:8px;padding:7px 10px;font-size:14px;margin:0 0 8px}
+.gterm .lbl{font:600 10.5px var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-right:6px}
+.gterm svg{display:block;width:100%;max-width:380px;height:auto;margin:4px 0 8px}
+.gterm .btn{font-size:13px}
+.decoder .pick{margin:6px 0}
+.decoder .out{background:var(--surface-2);border-radius:8px;padding:8px 10px;font-size:14px;margin-top:6px}
+.decoder .out ul{margin:4px 0 0;padding-left:18px}
+.decoder .row{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0 2px}
+.decoder .row span{display:inline-flex;flex-direction:column;align-items:center;min-width:44px;padding:3px 4px;border:1px solid var(--line);border-radius:6px;background:var(--surface);font-size:11.5px;color:var(--muted)}
+.decoder .row span b{font:600 14px var(--body);color:var(--ink)}
+.decoder .row span.hot{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.decoder .row span b.p1{color:var(--good)} .decoder .row span b.m1{color:var(--bad)}
+.gfoot{font-size:13.5px;color:var(--muted);margin-top:14px}
+
+@media (max-width:900px){
+  .orbs{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media (max-width:560px){
+  .orbs,.orbs.three{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .salcs{grid-template-columns:minmax(0,1fr)}
+  .readout{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .readout .s{padding:7px 8px}
+  .readout .s b{font-size:18px}
+  .glo-btn .long{display:none}
+  .gdrawer{width:100vw;border-left:0}
+}
+</style>
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+
+<div class="app">
+  <header class="head">
+    <div class="brand">
+      <div class="kicker">Group theory · D<sub>∞h</sub> · O<sub>2</sub></div>
+      <h1>Dioxygen's molecular orbitals</h1>
+    </div>
+    <nav class="site-tools"><a class="back" href="index.html">← All lessons</a><a href="glossary.html">Glossary</a><button class="glo-btn" type="button" data-glo="top" aria-haspopup="dialog" aria-controls="gdrawer">A · B · g · u<span class="long">&nbsp;labels</span></button><button class="theme-toggle" data-theme-toggle></button></nav>
+  </header>
+
+  <section class="stage" id="stage" aria-label="3D model of an O2 molecule and its orbitals">
+    <canvas id="gl" tabindex="0" aria-label="Drag or use arrow keys to rotate. Scroll or pinch to zoom."></canvas>
+    <div class="labels" id="labels"></div>
+    <div class="st-top">
+      <div class="toggles">
+        <button class="tg" id="tg-axes" aria-pressed="true">Axes</button>
+        <button class="tg" id="tg-elem" aria-pressed="false">Symmetry elements</button>
+        <button class="tg" id="tg-labels" aria-pressed="true">Labels</button>
+      </div>
+      <div class="showing" id="showing"></div>
+    </div>
+    <div class="st-bottom">
+      <div class="caption" id="caption"></div>
+      <div class="opbar" id="opbar"><span class="lbl">Apply</span></div>
+    </div>
+  </section>
+
+  <main class="lesson" id="lesson">
+    <ol class="stepper" id="stepper"></ol>
+    <div class="body" id="body"></div>
+    <div class="nav">
+      <button class="btn" id="prev">← Previous</button>
+      <button class="btn primary" id="next">Next →</button>
+    </div>
+  </main>
+</div>
+
+<!-- ================= A, B, g, u glossary (slide-over panel) ================= -->
+<div class="gback" id="gback"></div>
+<aside class="gdrawer" id="gdrawer" role="dialog" aria-modal="true" aria-labelledby="g-title" aria-hidden="true">
+  <div class="ghead">
+    <div><div class="kicker">Glossary · Mulliken symbols</div><h2 id="g-title">What do A, B, g and u mean?</h2></div>
+    <button class="gclose" id="gclose" type="button" aria-label="Close the glossary">×</button>
+  </div>
+  <nav class="gnav" aria-label="Glossary entries"><a href="#g-A">A</a><a href="#g-B">B</a><a href="#g-g">g</a><a href="#g-u">u</a><a href="#g-more">1 2 3 · Σ Π</a><a href="#g-decoder">Decoder</a></nav>
+  <div class="gscroll" id="gscroll">
+    <p style="font-size:14.5px;margin:12px 0 0">Every orbital, vibration and electronic state carries a <strong>Mulliken symbol</strong>, such as A<sub>g</sub> or B<sub>3u</sub>. Each part of the symbol records how the object responds to one particular symmetry operation: <b>+1</b> if it is unchanged, <b>−1</b> if it changes sign. Use <em>Show in 3D</em> to watch each test on an O<sub>2</sub> orbital.</p>
+
+    <article class="gterm" id="g-A">
+      <h3><span class="big">A</span>Symmetric under rotation</h3>
+      <p>A one-dimensional representation whose character under rotation about the principal axis is <b>+1</b>: the orbital is unchanged by the turn.</p>
+      <p class="test"><span class="lbl">Test</span>Apply the principal <i>C<sub>n</sub></i>. Same orbital, same colours → A.</p>
+      <p><b>D<sub>2h</sub> has three perpendicular <i>C</i><sub>2</sub> axes</b> and none outranks the others, so the rule is stated for all three: <b>A</b> means χ = +1 under <i>every</i> <i>C</i><sub>2</sub>.</p>
+      <p><span class="lbl">In O<sub>2</sub></span>The σ<sub>g</sub> orbitals (2σ<sub>g</sub> and 3σ<sub>g</sub>) are A<sub>g</sub>: whichever axis you turn about, every lobe lands on a lobe of the same colour.</p>
+      <button class="btn" type="button" data-gdemo="A">Show in 3D: 3σ<sub>g</sub> under <i>C</i><sub>2</sub>(<i>y</i>)</button>
+    </article>
+
+    <article class="gterm" id="g-B">
+      <h3><span class="big">B</span>Antisymmetric under rotation</h3>
+      <p>A one-dimensional representation whose character under rotation about the principal axis is <b>−1</b>: the turn puts every lobe on a lobe of the opposite colour.</p>
+      <p class="test"><span class="lbl">Test</span>Apply the principal <i>C<sub>n</sub></i>. Same shape, colours swapped → B.</p>
+      <p><b>In D<sub>2h</sub></b>, a B representation is −1 under two of the three <i>C</i><sub>2</sub> rotations and +1 under the third. The number tells you which one gives +1:</p>
+      <ul>
+        <li><b>B<sub>1</sub></b>: symmetric under <i>C</i><sub>2</sub>(<i>z</i>), the O–O axis</li>
+        <li><b>B<sub>2</sub></b>: symmetric under <i>C</i><sub>2</sub>(<i>y</i>)</li>
+        <li><b>B<sub>3</sub></b>: symmetric under <i>C</i><sub>2</sub>(<i>x</i>)</li>
+      </ul>
+      <p><span class="lbl">In O<sub>2</sub></span>The bonding π orbital along <i>x</i>, 1π<sub>u</sub>(<i>x</i>), is B<sub>3u</sub>. A 180° turn about the O–O axis swaps its top and bottom lobes, so χ(<i>C</i><sub>2</sub>(<i>z</i>)) = −1.</p>
+      <button class="btn" type="button" data-gdemo="B">Show in 3D: 1π<sub>u</sub>(<i>x</i>) under <i>C</i><sub>2</sub>(<i>z</i>)</button>
+    </article>
+
+    <article class="gterm" id="g-g">
+      <h3><span class="big">g</span>Gerade: symmetric under inversion</h3>
+      <p>From the German <i>gerade</i>, "even". Inversion <i>i</i> sends every point (<i>x</i>, <i>y</i>, <i>z</i>) through the centre of the molecule to (−<i>x</i>, −<i>y</i>, −<i>z</i>). A <b>g</b> orbital has χ(<i>i</i>) = <b>+1</b>: every lobe lands on a lobe of the <em>same</em> colour.</p>
+      <p class="test"><span class="lbl">Test</span>Apply <i>i</i>. Colours unchanged → g.</p>
+      <p><span class="lbl">In O<sub>2</sub></span>2σ<sub>g</sub>, 3σ<sub>g</sub> (σ bonding) and 1π<sub>g</sub>* (π antibonding).</p>
+      <button class="btn" type="button" data-gdemo="g">Show in 3D: 1π<sub>g</sub>* under <i>i</i></button>
+    </article>
+
+    <article class="gterm" id="g-u">
+      <h3><span class="big">u</span>Ungerade: antisymmetric under inversion</h3>
+      <p>From <i>ungerade</i>, "odd". A <b>u</b> orbital has χ(<i>i</i>) = <b>−1</b>: inversion puts every lobe on a lobe of the <em>opposite</em> colour.</p>
+      <p class="test"><span class="lbl">Test</span>Apply <i>i</i>. Colours swapped → u.</p>
+      <p><span class="lbl">In O<sub>2</sub></span>2σ<sub>u</sub>*, 3σ<sub>u</sub>* (σ antibonding) and 1π<sub>u</sub> (π bonding).</p>
+      <button class="btn" type="button" data-gdemo="u">Show in 3D: 1π<sub>u</sub>(<i>x</i>) under <i>i</i></button>
+      <p class="test" style="margin-top:10px"><span class="lbl">Pattern</span>For a homonuclear diatomic, σ bonding is g and σ* is u, but π bonding is u and π* is g. Only molecules with an inversion centre get g/u labels: O<sub>2</sub> does, CO does not.</p>
+    </article>
+
+    <article class="gterm" id="g-more">
+      <h3><span class="big">…</span>The rest of the symbol</h3>
+      <ul>
+        <li><b>Subscripts 1, 2, 3</b>: in D<sub>2h</sub>, which <i>C</i><sub>2</sub> axis (<i>z</i>, <i>y</i>, <i>x</i>) the representation is symmetric under. In groups with one principal axis, 1/2 means symmetric/antisymmetric under a perpendicular <i>C</i><sub>2</sub> or, if there is none, a σ<sub>v</sub>.</li>
+        <li><b>E</b> and <b>T</b>: two- and three-dimensional (degenerate) representations. They never apply to D<sub>2h</sub>.</li>
+        <li><b>Σ, Π, Δ</b>: linear molecules (D<sub>∞h</sub>, C<sub>∞v</sub>) use Greek letters. Σ is one-dimensional, like A. Π and Δ are doubly degenerate. In orbital names they become σ, π, δ: zero, one or two nodal planes containing the bond axis.</li>
+        <li><b>Superscript + / −</b> on Σ: symmetric / antisymmetric under the mirror planes σ<sub>v</sub> that contain the axis.</li>
+        <li><b>′ / ″</b>: symmetric / antisymmetric under a horizontal mirror plane σ<sub>h</sub> (not needed for O<sub>2</sub>).</li>
+        <li><b>Lower case</b> (a<sub>g</sub>, b<sub>3u</sub>, σ<sub>g</sub>, π<sub>u</sub>) is used for single orbitals; upper case for representations and electronic states, such as the ground state of O<sub>2</sub>, <sup>3</sup>Σ<sub>g</sub><sup>−</sup>.</li>
+        <li><b>Asterisk *</b>: not a symmetry label, just a reminder that an orbital is antibonding (1π<sub>g</sub>*).</li>
+      </ul>
+    </article>
+
+    <article class="gterm decoder" id="g-decoder">
+      <h3><span class="big">?</span>Label decoder</h3>
+      <p>Pick a label to see what each part of it says, letter by letter.</p>
+      <div class="pick"><div class="opts" id="dec-d2h" role="group" aria-label="D2h labels"></div></div>
+      <div class="pick"><div class="opts" id="dec-dinf" role="group" aria-label="D-infinity-h labels"></div></div>
+      <div class="out" id="dec-out" aria-live="polite"></div>
+    </article>
+    <p class="gfoot">More terms, such as character, class and reduction formula, are in the full <a href="glossary.html#mulliken-symbols">site glossary</a>.</p>
+  </div>
+</aside>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>window.THREE || document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"><\/script>')</script>
+<script src="assets/dioxygen-mo.js"></script>
+<script src="assets/site.js"></script>
+</body>
+</html>

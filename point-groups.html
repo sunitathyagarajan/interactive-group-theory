@@ -16,7 +16,7 @@
   --stage:#0c141d; --stage-2:#142131; --stage-ink:#dbe5ee; --stage-muted:#8a9bab; --stage-line:#26384c;
   --display:"Segoe UI", Calibri, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
   --body:"Segoe UI", Calibri, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
-  --mono:Consolas, "Cascadia Mono", ui-monospace, Menlo, monospace;
+  --mono:"Segoe UI", Calibri, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -576,6 +576,11 @@ const MOLS = [
   why:{lin:'Yes. O=C=O: all three atoms are on one line.',
    lin_i:'Yes. The C atom is a centre of inversion; inverting through it swaps the two O atoms.'},
   summary:'[Dinfh], like every linear molecule that is the same at both ends.'},
+ {id:'o2', set:'lesson', name:'Dioxygen', formula:'O_2', pg:'Dinfh', lesson:'dioxygen-mo.html', lessonName:'dioxygen molecular orbital',
+  build:() => [['O',[0,0,0.604]], ['O',[0,0,-0.604]]], view:[-1.15,1.35],
+  why:{lin:'Yes. Any two atoms lie on a line, so every diatomic molecule is linear.',
+   lin_i:'Yes. The midpoint of the O=O bond is a centre of inversion; inverting through it swaps the two O atoms. There is no atom at the centre, but an inversion centre does not need one.'},
+  summary:'[Dinfh], like every homonuclear diatomic (H_2, N_2, O_2, F_2).'},
  {id:'benzene', set:'lesson', name:'Benzene', formula:'C_6H_6', pg:'D6h', lesson:'benzene-vibrations.html', lessonName:'benzene', view:FLAT,
   build:() => [...B.ring('C',6,1.397), ...B.ring('H',6,2.481)],
   why:{lin:'No. Benzene is a flat hexagon.',

@@ -15,7 +15,7 @@
   --a1:#1d7548; --a2:#7647b5; --b1:#b8640f; --b2:#1a7aa1; --e:#b8640f;
   --display:"Segoe UI", Calibri, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
   --body:"Segoe UI", Calibri, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
-  --mono:Consolas, "Cascadia Mono", ui-monospace, Menlo, monospace;
+  --mono:"Segoe UI", Calibri, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -283,6 +283,7 @@ td{font-family:var(--mono);font-variant-numeric:tabular-nums}
         <button data-t="rep" aria-pressed="false">Representations &amp; tables</button>
         <button data-t="vib" aria-pressed="false">Vibrations</button>
         <button data-t="spec" aria-pressed="false">Spectroscopy</button>
+        <button data-t="orb" aria-pressed="false">Orbitals &amp; bonding</button>
       </div>
       <p class="gl-count" id="gl-count" role="status"></p>
     </div>
@@ -422,7 +423,7 @@ td{font-family:var(--mono);font-variant-numeric:tabular-nums}
           <a class="pl" href="#linear-molecule" aria-label="Link to Linear molecules">#</a>
           <p>The axis of a linear molecule is a <i>C</i><sub>∞</sub> axis: rotation by any angle φ is a symmetry operation, and infinitely many σ<sub>v</sub> planes contain the axis. Without an <a href="#inversion-centre">inversion centre</a> the group is C<sub>∞v</sub> (HCl, HCN, OCS). With one it is D<sub>∞h</sub> (CO<sub>2</sub>, N<sub>2</sub>, HC≡CH), which also has infinitely many <i>C</i><sub>2</sub> axes perpendicular to the molecule.</p>
           <p>The <a href="#order">order</a> is infinite, so you cannot use the reduction formula directly. Instead, work in a finite <a href="#subgroup">subgroup</a> (C<sub>2v</sub> or D<sub>2h</sub>) and <a href="#correlation-table">correlate</a> back. Irreducible representations get Greek labels, Σ<sup>+</sup>, Σ<sup>−</sup>, Π, Δ, with g/u added in D<sub>∞h</sub>. A linear molecule has 3<i>N</i> − 5 vibrations.</p>
-          <p class="see"><span class="lbl">See it in</span><a href="co2-vibrations.html">Carbon dioxide</a></p>
+          <p class="see"><span class="lbl">See it in</span><a href="co2-vibrations.html">Carbon dioxide</a><a href="dioxygen-mo.html">Dioxygen</a></p>
         </article>
 
       </div>
@@ -510,7 +511,25 @@ td{font-family:var(--mono);font-variant-numeric:tabular-nums}
           </ul>
           <p>Lower-case letters (a<sub>1</sub>, e, t<sub>2</sub>) are often used for orbitals.</p>
           <p class="ex"><span class="lbl">Example</span>Which C<sub>2v</sub> plane is called <i>xz</i> is a convention, so water's antisymmetric stretch is B<sub>1</sub> in some books and B<sub>2</sub> in others.</p>
-          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a><a href="benzene-vibrations.html">Benzene</a><a href="bromochloroethene-vibrations.html">Bromochloroethene</a></p>
+          <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a><a href="benzene-vibrations.html">Benzene</a><a href="dioxygen-mo.html">Dioxygen</a></p>
+        </article>
+
+        <article class="term" id="a-and-b" data-keys="A B labels mulliken symmetric antisymmetric principal rotation B1 B2 B3">
+          <h4>A and B labels</h4>
+          <a class="pl" href="#a-and-b" aria-label="Link to A and B labels">#</a>
+          <p>Both mark a one-dimensional representation. <b>A</b>: the character under rotation about the <a href="#principal-axis">principal axis</a> is +1, so the function is unchanged by the turn. <b>B</b>: the character is −1, so the turn reverses its sign.</p>
+          <p>D<sub>2h</sub> has three perpendicular <i>C</i><sub>2</sub> axes and none outranks the others, so there A means +1 under all three, and B<sub>1</sub>, B<sub>2</sub>, B<sub>3</sub> are +1 under just one of them: <i>C</i><sub>2</sub>(<i>z</i>), <i>C</i><sub>2</sub>(<i>y</i>) or <i>C</i><sub>2</sub>(<i>x</i>).</p>
+          <p class="ex"><span class="lbl">Example</span>Water's symmetric stretch is A<sub>1</sub> and its antisymmetric stretch is a B. In O<sub>2</sub>, the σ<sub>g</sub> orbitals are A<sub>g</sub> and the bonding π orbital along <i>x</i> is B<sub>3u</sub>.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="dioxygen-mo.html">Dioxygen</a><a href="water-vibrations.html">Water</a></p>
+        </article>
+
+        <article class="term" id="g-and-u" data-keys="g u gerade ungerade inversion even odd parity">
+          <span class="alias" id="gerade"></span><span class="alias" id="ungerade"></span>
+          <h4>g and u labels <span class="sym">gerade, ungerade</span></h4>
+          <a class="pl" href="#g-and-u" aria-label="Link to g and u labels">#</a>
+          <p>Only groups with an <a href="#inversion-centre">inversion centre</a> use them. <b>g</b> (German <i>gerade</i>, even): χ(<i>i</i>) = +1, so inversion leaves the function unchanged. <b>u</b> (<i>ungerade</i>, odd): χ(<i>i</i>) = −1, so inversion reverses its sign.</p>
+          <p class="ex"><span class="lbl">Example</span>In O<sub>2</sub>, σ bonding orbitals are g but π bonding orbitals are u, so g does not mean "bonding". <i>x</i>, <i>y</i>, <i>z</i> are always u and quadratic functions always g, which is the root of the <a href="#mutual-exclusion">rule of mutual exclusion</a>.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="dioxygen-mo.html">Dioxygen</a><a href="co2-vibrations.html">Carbon dioxide</a></p>
         </article>
 
         <article class="term" id="orthogonality" data-keys="orthogonal orthogonality great orthogonality theorem normalized normalised">
@@ -560,7 +579,7 @@ td{font-family:var(--mono);font-variant-numeric:tabular-nums}
           <div class="formula"><i>P</i><sup>(<i>i</i>)</sup><i>f</i> ∝ Σ<sub><i>R</i></sub> χ<sub><i>i</i></sub>(<i>R</i>) · <i>R f</i></div>
           <p>A recipe that takes any starting function <i>f</i> (one bond stretch, one atom's displacement, one atomic orbital) and keeps only the part that belongs to irreducible representation <i>i</i>. Apply every operation <i>R</i> to <i>f</i> (all of them, not one per class), multiply by χ<sub><i>i</i></sub>(<i>R</i>), and add. The result, if it is not zero, is a symmetry-adapted linear combination (SALC). The full prefactor (<i>d<sub>i</sub></i>/<i>h</i>) only sets the scale and is often dropped.</p>
           <p class="ex"><span class="lbl">Example</span>Start from one O–H stretch <i>r</i><sub>1</sub> of water. Projecting onto A<sub>1</sub> gives <i>r</i><sub>1</sub> + <i>r</i><sub>2</sub>, the symmetric stretch. Projecting onto B<sub>1</sub> (molecule in <i>xz</i>) gives <i>r</i><sub>1</sub> − <i>r</i><sub>2</sub>, the antisymmetric stretch.</p>
-          <p class="see"><span class="lbl">See it in</span><a href="benzene-vibrations.html">Benzene</a></p>
+          <p class="see"><span class="lbl">See it in</span><a href="dioxygen-mo.html">Dioxygen</a><a href="benzene-vibrations.html">Benzene</a></p>
         </article>
 
       </div>
@@ -716,6 +735,63 @@ td{font-family:var(--mono);font-variant-numeric:tabular-nums}
           <p>A normal mode whose fundamental is neither IR nor Raman active, because its row lists neither <i>x</i>, <i>y</i>, <i>z</i> nor a quadratic function. Silent modes still exist. They can be found through <a href="#overtone-combination">combination bands</a>, inelastic neutron scattering, or by lowering the symmetry (for example, by isotopic substitution).</p>
           <p class="ex"><span class="lbl">Example</span>An A<sub>2</sub> vibration in C<sub>3v</sub> would be silent. Benzene has 20 distinct fundamental frequencies: 4 IR active, 7 Raman active and 9 silent.</p>
           <p class="see"><span class="lbl">See it in</span><a href="benzene-vibrations.html">Benzene</a></p>
+        </article>
+
+      </div>
+    </div>
+    <!-- ----- Orbitals & bonding ----- -->
+    <div class="topic" data-topic="orb">
+      <h3>Orbitals &amp; bonding <span class="n"></span></h3>
+      <div class="terms">
+
+        <article class="term" id="molecular-orbital" data-keys="molecular orbital MO LCAO linear combination of atomic orbitals AO">
+          <span class="alias" id="lcao"></span>
+          <h4>Molecular orbital &amp; LCAO</h4>
+          <a class="pl" href="#molecular-orbital" aria-label="Link to Molecular orbital">#</a>
+          <p>A molecular orbital (MO) spreads over the whole molecule. In the LCAO approximation (linear combination of atomic orbitals) each MO is a sum of atomic orbitals (AOs) with coefficients. Orbitals are conserved: <i>n</i> AOs always give <i>n</i> MOs. AOs mix only if they have the same symmetry, overlap well and have similar energies.</p>
+          <p class="ex"><span class="lbl">Example</span>The 8 valence AOs of O<sub>2</sub> (2s, 2p<sub><i>x</i></sub>, 2p<sub><i>y</i></sub>, 2p<sub><i>z</i></sub> on each atom) give 8 valence MOs.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="dioxygen-mo.html">Dioxygen</a></p>
+        </article>
+
+        <article class="term" id="salc" data-keys="SALC symmetry adapted linear combination projection group orbital">
+          <span class="alias" id="symmetry-adapted-linear-combination"></span>
+          <h4>SALC <span class="sym">symmetry-adapted linear combination</span></h4>
+          <a class="pl" href="#salc" aria-label="Link to SALC">#</a>
+          <p>A combination of equivalent orbitals (or other basis functions) that transforms as exactly one irreducible representation. SALCs are built with the <a href="#projection-operator">projection operator</a>, and a <a href="#reducible-representation">reducible representation</a> predicts which symmetries appear. Only SALCs of the same symmetry can combine into a molecular orbital.</p>
+          <p class="ex"><span class="lbl">Example</span>In O<sub>2</sub>, with both 2p<sub><i>z</i></sub> orbitals pointing along +<i>z</i>: 2p<sub><i>z</i></sub>(A) − 2p<sub><i>z</i></sub>(B) is A<sub>g</sub> (σ<sub>g</sub>) and 2p<sub><i>z</i></sub>(A) + 2p<sub><i>z</i></sub>(B) is B<sub>1u</sub> (σ<sub>u</sub>).</p>
+          <p class="see"><span class="lbl">See it in</span><a href="dioxygen-mo.html">Dioxygen</a></p>
+        </article>
+
+        <article class="term" id="bonding-antibonding" data-keys="bonding antibonding nonbonding node phase overlap in phase out of phase asterisk">
+          <h4>Bonding &amp; antibonding orbitals</h4>
+          <a class="pl" href="#bonding-antibonding" aria-label="Link to Bonding and antibonding orbitals">#</a>
+          <p>Where lobes of the same sign (phase) overlap, the waves add, electron density builds up between the nuclei, and the MO is <b>bonding</b>: lower in energy than the AOs. Where lobes of opposite sign overlap, a nodal plane cuts the bond and the MO is <b>antibonding</b>, marked *: higher in energy. A <b>nonbonding</b> orbital has no net overlap and keeps roughly its AO energy.</p>
+          <p class="ex"><span class="lbl">Example</span>O<sub>2</sub>: 1π<sub>u</sub> is bonding and 1π<sub>g</sub>* antibonding.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="dioxygen-mo.html">Dioxygen</a></p>
+        </article>
+
+        <article class="term" id="sigma-pi" data-keys="sigma pi delta σ π δ orbital nodal plane bond axis">
+          <h4>σ, π and δ orbitals</h4>
+          <a class="pl" href="#sigma-pi" aria-label="Link to sigma, pi and delta orbitals">#</a>
+          <p>Labels for the orbitals of a linear molecule, by how many nodal planes contain the bond axis: σ none, π one, δ two. They are the lower-case forms of the D<sub>∞h</sub> and C<sub>∞v</sub> labels Σ, Π and Δ. A σ orbital is unchanged by any rotation about the bond; π and δ orbitals come in degenerate pairs.</p>
+          <p class="ex"><span class="lbl">Example</span>In O<sub>2</sub>, 3σ<sub>g</sub> comes from end-on 2p<sub><i>z</i></sub> overlap and 1π<sub>u</sub> from side-on 2p<sub><i>x</i></sub> and 2p<sub><i>y</i></sub> overlap.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="dioxygen-mo.html">Dioxygen</a></p>
+        </article>
+
+        <article class="term" id="bond-order" data-keys="bond order bonding antibonding electrons paramagnetic diamagnetic unpaired">
+          <h4>Bond order</h4>
+          <a class="pl" href="#bond-order" aria-label="Link to Bond order">#</a>
+          <div class="formula">bond order = ½ (bonding electrons − antibonding electrons)</div>
+          <p>A higher bond order means a shorter, stronger bond. Unpaired electrons in the MO diagram make a molecule paramagnetic; if every electron is paired it is diamagnetic.</p>
+          <p class="ex"><span class="lbl">Example</span>O<sub>2</sub><sup>+</sup> 2.5, O<sub>2</sub> 2 (two unpaired electrons, paramagnetic), O<sub>2</sub><sup>−</sup> 1.5, O<sub>2</sub><sup>2−</sup> 1.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="dioxygen-mo.html">Dioxygen</a></p>
+        </article>
+
+        <article class="term" id="sp-mixing" data-keys="s-p mixing sp mixing orbital mixing N2 O2 ordering sigma g pi u">
+          <h4>s–p mixing</h4>
+          <a class="pl" href="#sp-mixing" aria-label="Link to s–p mixing">#</a>
+          <p>In a homonuclear diatomic, the SALCs from 2s and from 2p<sub><i>z</i></sub> share symmetries (σ<sub>g</sub> with σ<sub>g</sub>, σ<sub>u</sub> with σ<sub>u</sub>), so they can mix. The mixing pushes the lower orbital of each pair down and the upper one up. It is strong when the 2s–2p gap is small (B<sub>2</sub>, C<sub>2</sub>, N<sub>2</sub>), where it lifts σ<sub>g</sub>(2p) above π<sub>u</sub>, and weak in O<sub>2</sub> and F<sub>2</sub>.</p>
+          <p class="see"><span class="lbl">See it in</span><a href="dioxygen-mo.html">Dioxygen</a></p>
         </article>
 
       </div>

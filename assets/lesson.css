@@ -8,7 +8,7 @@
   --x:#f2a23a; --y:#45d0a0; --z:#93a6ff; --mode:#ffd35c;
   --display:"Segoe UI", Calibri, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
   --body:"Segoe UI", Calibri, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
-  --mono:Consolas, "Cascadia Mono", ui-monospace, Menlo, monospace;
+  --mono:"Segoe UI", Calibri, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
