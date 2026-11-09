@@ -208,7 +208,7 @@ a{color:var(--accent)}
   <p class="lede">A molecule's point group is the set of symmetry operations that leave it looking unchanged. You can find it with a short series of yes/no questions, the flowchart below. Practise on 3D models, where each answer is checked and the symmetry elements can be drawn for you, or walk through the questions for a molecule you have on paper.</p>
 
   <div class="modeseg" role="group" aria-label="Mode">
-    <button id="m-practice" type="button" aria-pressed="true">Practice with 3D models</button>
+    <button id="m-practice" type="button" aria-pressed="true">Practise with 3D models</button>
     <button id="m-walk" type="button" aria-pressed="false">Walk through on paper</button>
   </div>
 
@@ -307,8 +307,8 @@ a{color:var(--accent)}
     <h2 id="tipshead">Tips</h2>
     <div class="tipgrid">
       <div class="tip"><h3>Finding the principal axis</h3><p>It is the highest-order rotation axis. For a flat ring it is perpendicular to the ring through its centre; for a chain it usually runs along the backbone (C–C in ethane, C=C=C in allene); for a pyramid it runs through the apex. If several <i>C</i><sub>2</sub> axes tie, choose the unique one, such as the <i>C</i><sub>2</sub> that is also an <i>S</i><sub>4</sub> in allene. In D<sub>2</sub> and D<sub>2h</sub> any of the three works.</p></div>
-      <div class="tip"><h3>σ<sub>v</sub> or σ<sub>d</sub>?</h3><p>Both contain the principal axis. In a <i>D</i> group a σ<sub>d</sub> bisects the angle between two neighbouring <i>C</i><sub>2</sub>′ axes, while a σ<sub>v</sub> contains one. A <i>D</i>-group molecule whose vertical planes contain the <i>C</i><sub>2</sub>′ axes always has σ<sub>h</sub> as well, so the chart has already sent it to D<sub><i>n</i>h</sub>. <i>C</i> groups have no <i>C</i><sub>2</sub>′ axes, and every vertical plane is called σ<sub>v</sub>.</p></div>
-      <div class="tip"><h3>Why <i>S</i><sub>2<i>n</i></sub> is easy to miss</h3><p>An <i>S</i><sub>2<i>n</i></sub> rotates by 360°/2<i>n</i> and then reflects through the plane perpendicular to the axis. Neither half is a symmetry operation on its own, so you cannot spot it by looking for an axis or a mirror. Check for it whenever a molecule reaches the end of the <i>C</i> branch, especially twisted molecules with no mirror planes (try tetramethylcyclooctatetraene).</p></div>
+      <div class="tip"><h3>σ<sub>v</sub> or σ<sub>d</sub>?</h3><p>Both contain the principal axis. In D<sub><i>n</i>d</sub> every vertical plane bisects the angle between two neighbouring <i>C</i><sub>2</sub>′ axes, so all of them are σ<sub>d</sub>. In D<sub><i>n</i>h</sub> with odd <i>n</i>, each vertical plane contains a <i>C</i><sub>2</sub>′ axis and is σ<sub>v</sub>. When <i>n</i> is even (D<sub>4h</sub>, D<sub>6h</sub>, C<sub>4v</sub>, C<sub>6v</sub>), the vertical planes alternate between two classes: σ<sub>v</sub> planes pass through atoms (and, in D<sub><i>n</i>h</sub>, contain the <i>C</i><sub>2</sub>′ axes), while σ<sub>d</sub> planes lie between them (and contain the <i>C</i><sub>2</sub>″ axes). In C<sub>2v</sub> both planes are σ<sub>v</sub>.</p></div>
+      <div class="tip"><h3>Why <i>S</i><sub>2<i>n</i></sub> is easy to miss</h3><p>An <i>S</i><sub>2<i>n</i></sub> rotates by 360°/2<i>n</i> and then reflects through the plane perpendicular to the axis. Neither half needs to be a symmetry operation on its own, so you cannot always spot it by looking for an axis or a mirror. Check for it whenever a molecule reaches the end of the <i>C</i> branch, especially twisted molecules with no mirror planes (try tetramethylcyclooctatetraene).</p></div>
       <div class="tip"><h3>Linear molecules: a shortcut</h3><p>There are only two possibilities. If the molecule is the same at both ends (O=C=O, H–C≡C–H, N<sub>2</sub>) it has a centre of inversion and is D<sub>∞h</sub>. If the ends differ (HCN, CO, OCS) it is C<sub>∞v</sub>. You can skip the rest of the chart.</p></div>
       <div class="tip"><h3>High symmetry means a regular solid</h3><p>T<sub>d</sub>, O<sub>h</sub> and I<sub>h</sub> are the regular tetrahedron, octahedron (or cube) and icosahedron (or dodecahedron), with identical atoms at every corner. CH<sub>3</sub>Cl is tetrahedral in shape but only C<sub>3v</sub>.</p></div>
       <div class="tip"><h3>More practice</h3><p>Otterbein University's <a href="https://symotter.org/">Symmetry Resources</a> site has interactive 3D models and point-group challenges for many more molecules.</p></div>
@@ -382,14 +382,17 @@ function groupName(fam, n){
 const Ce = n => `<i>C</i><sub>${n}</sub>`, Se = n => `<i>S</i><sub>${n}</sub>`;
 function groupElements(g){
   const {fam, n, order} = parseG(g), E = '<i>E</i>', I = '<i>i</i>';
+  // with even n ≥ 4 the perpendicular C2 axes split into n/2 C2′ + n/2 C2″, and the vertical planes into n/2 σv + n/2 σd
+  const two = n >= 4 && n % 2 === 0, h2 = n/2;
+  const c2s = two ? `${h2}${Ce(2)}′, ${h2}${Ce(2)}″` : `${n}${Ce(2)}′`, svs = two ? `${h2}σ<sub>v</sub>, ${h2}σ<sub>d</sub>` : `${n}σ<sub>v</sub>`;
   const list = {
     C1:`${E} only`, Cs:`${E}, σ`, Ci:`${E}, ${I}`,
     Cn:`${E}, ${Ce(n)}`,
-    Cnv:`${E}, ${Ce(n)}, ${n}σ<sub>v</sub>`,
+    Cnv:`${E}, ${Ce(n)}, ${svs}`,
     Cnh:`${E}, ${Ce(n)}, σ<sub>h</sub>${n > 2 ? ', ' + Se(n) : ''}${n % 2 === 0 ? ', ' + I : ''}`,
     S2n:`${E}, ${Se(2*n)}, ${Ce(n)}${n % 2 ? ', ' + I : ''}`,
-    Dn:`${E}, ${Ce(n)}, ${n}${Ce(2)}′`,
-    Dnh:`${E}, ${Ce(n)}, ${n}${Ce(2)}′, σ<sub>h</sub>, ${n}σ<sub>v</sub>${n > 2 ? ', ' + Se(n) : ''}${n % 2 === 0 ? ', ' + I : ''}`,
+    Dn:`${E}, ${Ce(n)}, ${c2s}`,
+    Dnh:`${E}, ${Ce(n)}, ${c2s}, σ<sub>h</sub>, ${svs}${n > 2 ? ', ' + Se(n) : ''}${n % 2 === 0 ? ', ' + I : ''}`,
     Dnd:`${E}, ${Ce(n)}, ${n}${Ce(2)}′, ${n}σ<sub>d</sub>, ${Se(2*n)}${n % 2 ? ', ' + I : ''}`,
     Td:`${E}, 4${Ce(3)}, 3${Ce(2)}, 3${Se(4)}, 6σ<sub>d</sub>`,
     Oh:`${E}, 3${Ce(4)}, 4${Ce(3)}, 6${Ce(2)}, ${I}, 3${Se(4)}, 4${Se(6)}, 3σ<sub>h</sub>, 6σ<sub>d</sub>`,
@@ -589,7 +592,7 @@ const MOLS = [
    n:'The {C6} perpendicular to the ring is the highest-order axis: <i>n</i> = 6.',
    perp:'Yes. Six {C2} axes lie in the ring plane: three through opposite C atoms and three through the midpoints of opposite C–C bonds.',
    d_sh:'Yes. The molecular plane is perpendicular to the {C6}, so it is {sh}.'},
-  summary:'[D6h]: {C6}, six {C2}′ axes, {sh}, six vertical planes (3 {sv}, 3 {sd}) and {i}.'},
+  summary:'[D6h]: {C6}, six perpendicular {C2} axes (3 {C2}′ through C atoms, 3 {C2}″ through bond midpoints), {sh}, six vertical planes (3 {sv}, 3 {sd}) and {i}.'},
  {id:'allene', set:'lesson', name:'Allene', formula:'H_2C=C=CH_2', pg:'D2d', lesson:'allene-vibrations.html', lessonName:'allene', view:[-1.0,1.25],
   build:() => B.allene(),
   why:{lin:'No. The C=C=C backbone is straight, but the H atoms are off that line.',
@@ -740,7 +743,7 @@ const MOLS = [
    n:'The {C4} is the highest-order axis: <i>n</i> = 4.',
    perp:'Yes. Four {C2} axes in the plane: two along F–Xe–F and two bisecting the F–Xe–F angles.',
    d_sh:'Yes. The molecular plane is {sh} (the two lone pairs, above and below Xe, are mirror images too).'},
-  summary:'[D4h]: {C4}, 4 {C2}, {sh}, 2 {sv}, 2 {sd}, {S4} and {i}.'},
+  summary:'[D4h]: {C4}, 2 {C2}′ (along F–Xe–F), 2 {C2}″, {sh}, 2 {sv}, 2 {sd}, {S4} and {i}.'},
  {id:'ethane', set:'extra', name:'Ethane (staggered)', formula:'C_2H_6', pg:'D3d', view:[-1.1,1.25],
   build:() => B.ethane(),
   why:{lin:'No.',
@@ -834,10 +837,31 @@ function analyse(atoms){
   const top = axes.length ? axes[0].n : 0;
   const prin = axes.find(a => a.n === top && Math.abs(a.d[2]) > .999) || axes[0] || null;
   const along = d => prin && Math.abs(dot(d, prin.d)) > 1 - 1e-6, across = d => prin && Math.abs(dot(d, prin.d)) < 1e-4;
-  return {linear:false, inv, axes, planes, prin,
-    perp: axes.filter(a => a.n === 2 && across(a.d)),
+  const perp = axes.filter(a => a.n === 2 && across(a.d)), vert = planes.filter(across);
+  // For even n ≥ 4 the perpendicular C2 axes, and the vertical planes, alternate between two classes round the principal axis.
+  // In Cnv, Dn and Dnh the class through more atoms is C2′ / σv and the other C2″ / σd (σv contains a C2′). itemsFor uses this only for those families.
+  let split = null;
+  if (prin && prin.n >= 4 && prin.n % 2 === 0){
+    const e1 = unit(cross(prin.d, Math.abs(prin.d[0]) < .9 ? [1,0,0] : [0,1,0])), e2 = cross(prin.d, e1);
+    const angOf = u => { let t = Math.atan2(dot(u, e2), dot(u, e1)); if (t < -1e-6) t += Math.PI; return t >= Math.PI - 1e-6 ? 0 : t; };
+    const halves = (list, lineOf, hits) => {
+      const sorted = [...list].sort((a,b) => angOf(lineOf(a)) - angOf(lineOf(b)));
+      const A = sorted.filter((_,k) => k % 2 === 0), B = sorted.filter((_,k) => k % 2 === 1);
+      const count = L => L.reduce((s,x) => s + P.filter(p => hits(x, p)).length, 0);
+      return count(B) > count(A) ? [B, A] : [A, B];
+    };
+    const offAxis = p => len(cross(p, prin.d)) > .02;
+    if (perp.length === prin.n){
+      const [c2p, c2pp] = halves(perp, a => a.d, (a, p) => offAxis(p) && len(cross(p, a.d)) < .02);
+      const sv = vert.filter(n => c2p.some(a => Math.abs(dot(a.d, n)) < 1e-4));
+      split = {c2p, c2pp, sv, sd:vert.filter(n => !sv.includes(n))};
+    } else if (vert.length === prin.n){
+      const [sv, sd] = halves(vert, n => cross(prin.d, n), (n, p) => offAxis(p) && Math.abs(dot(p, n)) < .02);
+      split = {c2p:[], c2pp:[], sv, sd};
+    }
+  }
+  return {linear:false, inv, axes, planes, prin, perp, vert, split,
     sh: planes.find(along) || null,
-    vert: planes.filter(across),
     Sz: (Sax.find(s => along(s.d)) || {n:0}).n,
     order: ops.length + 1};
 }
@@ -857,10 +881,10 @@ const AXC = {2:0x5cc2ea, 3:0x45d0a0, 4:0xf0a85a, 5:0xe879f9, 6:0xb993f0, 8:0xb99
 const PRIN = 0xffd35c, SAX = 0xff9e5c, INVC = 0xfff2a8, NOC = 0xff6b6b;
 const PLC = {sh:0x5d9cff, sv:0xc283ff, sd:0xff8fc0, s:0xc283ff, no:NOC};
 const hex = c => '#' + c.toString(16).padStart(6, '0');
-const axisColor = it => it.role === 'prin' ? PRIN : it.role === 'perp' ? AXC[2] : (AXC[it.n] || 0xdddddd);
+const axisColor = it => it.role === 'prin' ? PRIN : it.role === 'perp' ? AXC[2] : it.role === 'perp2' ? 0x7fe0b0 : (AXC[it.n] || 0xdddddd);
 const nTxt = n => n === Infinity ? '∞' : n;
 function itemLabel(it){
-  if (it.k === 'axis') return it.role === 'perp' ? '<i>C</i><sub>2</sub>′' : `<i>C</i><sub>${nTxt(it.n)}</sub>`;
+  if (it.k === 'axis') return it.role === 'perp' ? '<i>C</i><sub>2</sub>′' : it.role === 'perp2' ? '<i>C</i><sub>2</sub>″' : `<i>C</i><sub>${nTxt(it.n)}</sub>`;
   if (it.k === 'saxis') return `<i>S</i><sub>${it.n}</sub>`;
   if (it.k === 'inv') return it.ok ? '<i>i</i>' : 'no <i>i</i>';
   return {sh:'σ<sub>h</sub>', sv:'σ<sub>v</sub>', sd:'σ<sub>d</sub>', s:'σ', no:'not σ<sub>h</sub>'}[it.cls];
@@ -1022,6 +1046,9 @@ const R3 = (function(){
 })();
 
 /* ---------- which elements to draw for each question ---------- */
+// the C2′/C2″ and σv/σd split applies in Cnv, Dn and Dnh with even n ≥ 4 (in Dnd all the C2′ and all the σd are one class each)
+const splitFor = (s, fam) => s.split && ['Cnv','Dn','Dnh'].includes(fam) ? s.split : null;
+const perpRole = (sp, a) => sp && sp.c2pp.includes(a) ? 'perp2' : 'perp';
 function itemsFor(node, m){
   const s = m.sym, items = [], notes = [];
   const prin = () => { if (s.prin) items.push({k:'axis', d:s.prin.d, n:s.prin.n, role:'prin'}); };
@@ -1059,8 +1086,10 @@ function itemsFor(node, m){
     case 'n':
       prin(); s.axes.filter(a => a !== s.prin).forEach(a => items.push({k:'axis', d:a.d, n:a.n, role:'faint'}));
       break;
-    case 'perp':
-      prin(); s.perp.forEach(a => items.push({k:'axis', d:a.d, n:2, role:'perp'}));
+    case 'perp': {
+      const sp = splitFor(s, m.G.fam);
+      prin(); s.perp.forEach(a => items.push({k:'axis', d:a.d, n:2, role:perpRole(sp, a)}));
+    }
       if (!s.perp.length) notes.push('No C₂ axes are perpendicular to the principal axis.');
       break;
     case 'd_sh': case 'c_sh':
@@ -1085,14 +1114,14 @@ function itemsFor(node, m){
     case 'all': {
       const fam = m.G.fam;
       if (s.linear){ linAxis(); if (s.inv){ items.push({k:'plane', d:[0,0,1], cls:'sh'}); items.push({k:'inv', ok:true}); } break; }
-      const high = ['Td','Oh','Ih'].includes(fam);
+      const high = ['Td','Oh','Ih'].includes(fam), sp = splitFor(s, fam);
       if (!high) prin();
-      s.axes.forEach(a => { if (!high && a === s.prin) return; items.push({k:'axis', d:a.d, n:a.n, role:!high && s.perp.includes(a) ? 'perp' : 'ord'}); });
+      s.axes.forEach(a => { if (!high && a === s.prin) return; items.push({k:'axis', d:a.d, n:a.n, role:!high && s.perp.includes(a) ? perpRole(sp, a) : 'ord'}); });
       s.planes.forEach(p => {
         let cls = 's';
         if (!high && s.prin){
           if (p === s.sh) cls = 'sh';
-          else if (s.vert.includes(p)) cls = fam === 'Dnd' ? 'sd' : fam === 'Dnh' ? (s.perp.some(a => Math.abs(dot(a.d, p)) < 1e-4) ? 'sv' : 'sd') : 'sv';
+          else if (s.vert.includes(p)) cls = fam === 'Dnd' ? 'sd' : sp && sp.sd.includes(p) ? 'sd' : 'sv';
         }
         items.push({k:'plane', d:p, cls});
       });

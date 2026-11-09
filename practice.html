@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>try{var t=localStorage.getItem('igt-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
+<title>Practice Molecules</title>
+<meta name="description" content="Random practice molecules: find the point group, the symmetry of every vibration, and which vibrations are IR and Raman active, with checked answers at each step.">
+<meta name="color-scheme" content="light dark">
+<link rel="stylesheet" href="assets/lesson.css">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+
+<div class="app">
+  <header class="head">
+    <div class="brand">
+      <div class="kicker" id="mol-kicker">Practice</div>
+      <h1 id="mol-title">Practice molecule</h1>
+    </div>
+    <nav class="site-tools"><a class="back" href="index.html">← All lessons</a><a href="glossary.html">Glossary</a><a class="newmol" id="new-mol" href="practice.html">New molecule</a><button class="theme-toggle" data-theme-toggle></button></nav>
+  </header>
+
+  <section class="stage" id="stage" aria-label="3D model of the practice molecule">
+    <canvas id="gl" tabindex="0" aria-label="Drag or use arrow keys to rotate. Scroll or pinch to zoom."></canvas>
+    <div class="labels" id="labels"></div>
+    <div class="st-top">
+      <div class="toggles">
+        <button class="tg" id="tg-axes" aria-pressed="true">Axes</button>
+        <button class="tg" id="tg-elem" aria-pressed="false">Symmetry elements</button>
+        <button class="tg" id="tg-labels" aria-pressed="true">Labels</button>
+      </div>
+      <div class="showing" id="showing"></div>
+    </div>
+    <div class="st-bottom">
+      <div class="caption" id="caption"></div>
+      <div class="opbar" id="opbar"><span class="lbl">Apply</span></div>
+    </div>
+  </section>
+
+  <main class="lesson" id="lesson">
+    <ol class="stepper" id="stepper"></ol>
+    <div class="body" id="body"></div>
+    <div class="nav">
+      <button class="btn" id="prev">← Previous</button>
+      <button class="btn primary" id="next">Next →</button>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>window.THREE || document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"><\/script>')</script>
+<script src="assets/practice-molecules.js"></script>
+<script src="assets/lesson.js"></script>
+<script src="assets/site.js"></script>
+</body>
+</html>

@@ -233,7 +233,7 @@ td{font-family:var(--mono);font-variant-numeric:tabular-nums}
   <!-- ================= anatomy ================= -->
   <section id="anatomy" aria-labelledby="anatomy-h">
     <h2 id="anatomy-h">Anatomy of a character table</h2>
-    <p class="intro">Hover over or tap any part of the table to see what it means, or use the tour to step through each part. C<sub>3v</sub> (ammonia) shows classes with more than one operation and a two-dimensional representation. C<sub>2v</sub> (water) is the simplest table in the lessons.</p>
+    <p class="intro">Hover over or tap any part of the table to see what it means, or use the tour to step through each part. C<sub>3v</sub> (ammonia) shows classes with more than one operation and a two-dimensional representation. C<sub>2v</sub> (water) is a small table in which every operation is its own class.</p>
     <div class="ctl">
       <span class="lbl" id="grp-lbl">Point group</span>
       <div class="seg" role="group" aria-labelledby="grp-lbl" id="grp">
@@ -342,7 +342,7 @@ td{font-family:var(--mono);font-variant-numeric:tabular-nums}
             <li><b>σ<sub>v</sub></b>, vertical: contains the principal axis.</li>
             <li><b>σ<sub>d</sub></b>, dihedral: contains the principal axis and bisects the angle between two <i>C</i><sub>2</sub> axes perpendicular to it.</li>
           </ul>
-          <p class="ex"><span class="lbl">Example</span>Benzene's molecular plane is a σ<sub>h</sub>. Allene's two mirror planes are σ<sub>d</sub>. A planar molecule with no other symmetry, such as bromochloroethene, has only <i>E</i> and its molecular plane (point group C<sub>s</sub>).</p>
+          <p class="ex"><span class="lbl">Example</span>Benzene's molecular plane is a σ<sub>h</sub>. Allene's two mirror planes are σ<sub>d</sub>. A planar molecule with no other symmetry, such as 1-bromo-2-chloroethene, has only <i>E</i> and its molecular plane (point group C<sub>s</sub>).</p>
           <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a><a href="allene-vibrations.html">Allene</a><a href="bromochloroethene-vibrations.html">Bromochloroethene</a></p>
         </article>
 
@@ -493,7 +493,7 @@ td{font-family:var(--mono);font-variant-numeric:tabular-nums}
         <article class="term" id="totally-symmetric" data-keys="totally symmetric representation A1 A1g Ag A' Sigma g plus first row">
           <h4>Totally symmetric representation</h4>
           <a class="pl" href="#totally-symmetric" aria-label="Link to Totally symmetric representation">#</a>
-          <p>The irreducible representation with χ = +1 under every operation. It is always the first row of the table: A<sub>1</sub>, A<sub>1g</sub>, A′, A<sub>g</sub>, A, Σ<sup>+</sup> or Σ<sub>g</sub><sup>+</sup>, depending on the group. An integral over all space can be non-zero only if its integrand contains it, which is where <a href="#selection-rule">selection rules</a> come from. Totally symmetric vibrations are always <a href="#raman-active">Raman active</a>, because <i>x</i><sup>2</sup> + <i>y</i><sup>2</sup> + <i>z</i><sup>2</sup> is totally symmetric in every group.</p>
+          <p>The irreducible representation with χ = +1 under every operation. It is always the first row of the table: A<sub>1</sub>, A<sub>1g</sub>, A<sub>1</sub>′, A′, A<sub>g</sub>, A, Σ<sup>+</sup> or Σ<sub>g</sub><sup>+</sup>, depending on the group. An integral over all space can be non-zero only if its integrand contains it, which is where <a href="#selection-rule">selection rules</a> come from. Totally symmetric vibrations are always <a href="#raman-active">Raman active</a>, because <i>x</i><sup>2</sup> + <i>y</i><sup>2</sup> + <i>z</i><sup>2</sup> is totally symmetric in every group.</p>
           <p class="ex"><span class="lbl">Example</span>Water's symmetric stretch and bend are both A<sub>1</sub>.</p>
           <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a></p>
         </article>
@@ -708,7 +708,7 @@ td{font-family:var(--mono);font-variant-numeric:tabular-nums}
         <article class="term" id="polarizability" data-keys="polarizability polarisability alpha α tensor induced dipole">
           <h4>Polarizability <span class="sym">α</span></h4>
           <a class="pl" href="#polarizability" aria-label="Link to Polarizability">#</a>
-          <p>How easily an electric field distorts the electron cloud. The induced dipole is μ<sub>ind</sub> = α<b>E</b>. α is a symmetric 3 × 3 tensor whose components α<sub><i>xx</i></sub>, α<sub><i>xy</i></sub>, … transform like the quadratic functions <i>x</i><sup>2</sup>, <i>xy</i>, …. A vibration that makes α oscillate can <a href="#raman-active">Raman scatter</a>.</p>
+          <p>How easily an electric field distorts the electron cloud. The induced dipole is μ<sub>ind</sub> = α<b>E</b>. α is a symmetric 3 × 3 tensor whose components α<sub><i>xx</i></sub>, α<sub><i>xy</i></sub>, … transform like the quadratic functions <i>x</i><sup>2</sup>, <i>xy</i>, …. A vibration that makes α oscillate is <a href="#raman-active">Raman active</a>.</p>
           <p class="see"><span class="lbl">See it in</span><a href="water-vibrations.html">Water</a></p>
         </article>
 
@@ -959,7 +959,7 @@ function region(key){
     }
     case 'mull': return {kind:'Mulliken symbol', title:`${chip(ir)} ${ir.chi[0] === 1 ? 'one-dimensional' : 'two-dimensional'}`, body: t.mull[r] + MULL_KEY + `<p class="more">See ${glo('mulliken-symbols','Mulliken symbols')}.</p>`, hl:[[r,'s']]};
     case 'ts': return {kind:'Totally symmetric representation', title:`The first row, ${chip(G.ir[0])}`, body:
-      `<p>Every character is +1: anything that transforms this way, such as <i>z</i> or <i>x</i><sup>2</sup> + <i>y</i><sup>2</sup> + <i>z</i><sup>2</sup>, is left unchanged by every operation. It is always the first row. Other groups call it A<sub>1g</sub>, A′, A<sub>g</sub>, A or Σ<sub>g</sub><sup>+</sup>.</p>
+      `<p>Every character is +1: anything that transforms this way, such as <i>z</i> or <i>x</i><sup>2</sup> + <i>y</i><sup>2</sup> + <i>z</i><sup>2</sup>, is left unchanged by every operation. It is always the first row. Other groups call it A<sub>1g</sub>, A<sub>1</sub>′, A′, A<sub>g</sub>, A or Σ<sub>g</sub><sup>+</sup>.</p>
        <p>An integral over all space can be non-zero only if its integrand contains the totally symmetric representation. That is the basis of every ${glo('selection-rule','selection rule')}. Every molecule has at least one totally symmetric vibration, and these are always Raman active.</p>
        <p class="more">See ${glo('totally-symmetric','totally symmetric representation')}.</p>`, hl:[[0,'*']], srcFallback:'mull:0'};
     case 'chi': {

@@ -242,3 +242,31 @@ td.desc{white-space:normal;text-align:left;font-family:var(--body);color:var(--m
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
 .est{font:500 10.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:1px 5px;margin-left:6px;vertical-align:middle}
 .modelist{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+
+/* ---------- practice mode (practice.html) ---------- */
+.brand h1 .mol-name{display:block;font:500 15px/1.3 var(--body);color:var(--muted);margin-top:4px;letter-spacing:0}
+a.btn{text-decoration:none;color:inherit;display:inline-block}
+a.btn.primary{color:var(--accent-ink)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn:disabled:hover{border-color:var(--line)}
+.stepper button:disabled{opacity:.45;cursor:not-allowed}
+.tg:disabled{opacity:.4;cursor:not-allowed}
+.pgpick{display:flex;flex-direction:column;gap:6px;margin:10px 0;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.pgrow{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px;align-items:center}
+.pgrow .lbl{font:500 11.5px var(--body);color:var(--muted)}
+.pgset{display:flex;flex-wrap:wrap;gap:5px}
+.pgb{min-width:46px;border:1px solid var(--line);background:var(--surface-2);border-radius:7px;padding:3px 8px;font:500 14px var(--display);cursor:pointer}
+.pgb:hover:not(:disabled){border-color:var(--accent)}
+.pgb[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.pgb:disabled{cursor:default}
+.pgb:disabled:not([aria-pressed="true"]){opacity:.45}
+.flowq{margin:8px 0 12px;padding-left:22px}
+.flowq li{margin-bottom:6px}
+.flowq b{color:var(--accent);font-weight:600;margin-left:4px}
+.pset{margin:26px 0 4px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:10px 14px}
+.pset summary{cursor:pointer;font-weight:600}
+.pset[open] summary{margin-bottom:8px}
+.pchecks{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:4px 12px;font-size:14px}
+.pchecks label{display:flex;align-items:center;gap:6px;cursor:pointer}
+.site-tools .newmol{border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);border-radius:8px;padding:5px 12px;font-size:13.5px;font-weight:500;text-decoration:none}
+@media (max-width:560px){ .pgrow{grid-template-columns:minmax(0,1fr)} }

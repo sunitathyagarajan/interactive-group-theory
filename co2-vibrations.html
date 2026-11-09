@@ -822,7 +822,7 @@ const STEPS = [
   {short:'Operations', enter(){ setArrows('none'); S.elements = true; }, html(){
     const DESC = {
       E:'Leave the molecule alone. Every object has this operation.',
-      C2z:'Rotate 180° about the molecular axis. In D<sub>∞h</sub> this is just one of the rotations <i>C</i><sub>∞</sub><sup><i>φ</i></sup>, by any angle.',
+      C2z:'Rotate 180° about the molecular axis. In D<sub>∞h</sub> it is the rotation <i>C</i><sub>∞</sub><sup><i>φ</i></sup> with φ = 180°, one of infinitely many rotations about this axis.',
       C2y:'Rotate 180° about a perpendicular axis through C. The molecule turns end over end. D<sub>∞h</sub> has infinitely many of these.',
       C2x:'The same, about the other perpendicular axis.',
       i:'Send every point through the centre to the opposite side. The viewer shows it as a half turn about <i>z</i> followed by a reflection through the <i>xy</i> plane.',
@@ -907,7 +907,7 @@ const STEPS = [
     return `
     <p class="eyebrow">Step 5 of 9</p>
     <h2>Reduce ${G3N}</h2>
-    <p>${G3N} is reducible: it is a sum of the eight irreducible representations of D<sub>2h</sub>. The reduction formula tells you how many times each one appears.</p>
+    <p>${G3N} is reducible: it is a sum of irreducible representations of D<sub>2h</sub>. The reduction formula tells you how many times each one appears (some not at all).</p>
     <div class="formula"><i>n</i><sub><i>i</i></sub> = <span class="frac"><span>1</span><span><i>h</i></span></span> Σ<sub><i>R</i></sub> <i>g</i>(<i>R</i>) · χ(<i>R</i>) · χ<sub><i>i</i></sub>(<i>R</i>)</div>
     <p>Here <i>h</i> = 8 and <i>g</i>(<i>R</i>) = 1 for every column. Multiply the ${G3N} row by an irreducible row, column by column, add the products, and divide by 8.</p>
     ${charTable(false)}
@@ -990,7 +990,7 @@ const STEPS = [
 const SPEC_STEP = STEPS.length - 2, RA_STEP = STEPS.length - 1;
 
 /* ---------- steps 8 and 9: selection rules ---------- */
-const SPEC_NOTE = `CO<sub>2</sub> has a centre of inversion, so mutual exclusion applies. The symmetric stretch ν<sub>1</sub> is <i>g</i>: the two C=O bond dipoles grow together and cancel, so μ stays zero (the pink arrow never appears), but both bonds lengthen at once, so the polarizability breathes. It shows up only in the Raman spectrum. The antisymmetric stretch and the bend are <i>u</i>: they change μ, while the polarizability changes of the two bonds cancel. They show up only in the IR. Those two IR bands, at 667 cm<sup>−1</sup> (15 μm) and 2349 cm<sup>−1</sup>, are what make CO<sub>2</sub> a greenhouse gas.`;
+const SPEC_NOTE = `CO<sub>2</sub> has a centre of inversion, so mutual exclusion applies. The symmetric stretch ν<sub>1</sub> is <i>g</i>: the two C=O bond dipoles grow together and cancel, so μ stays zero (the pink arrow never appears), but both bonds lengthen at once, so the polarizability breathes. It shows up only in the Raman spectrum. The antisymmetric stretch and the bend are <i>u</i>: they change μ, while the polarizability changes of the two bonds cancel. They show up only in the IR. Those two IR bands are at 667 cm<sup>−1</sup> (15 μm) and 2349 cm<sup>−1</sup> (4.3 μm). The 15 μm bend, in the middle of the infrared that Earth radiates, does most of the work that makes CO<sub>2</sub> a greenhouse gas.`;
 const KIND = {
   ir:{name:'IR', long:'infrared', test:irActive, why:ir => irActive(ir) ? `like ${ir.lin.join(', ')}` : 'no <i>x</i>, <i>y</i> or <i>z</i>'},
   ra:{name:'Raman', long:'Raman', test:ramanActive, why:ir => ramanActive(ir) ? `like ${ir.quad}` : 'no quadratic function'},
@@ -1047,7 +1047,7 @@ function selectionStep(kind){
     <p class="hint">This is a toy model, but it respects the molecule's symmetry, so it always agrees with the group theory below. For the bend, try both partners.</p>
     <h3>The group theory shortcut</h3>
     <p>The same argument as for IR, with α in place of μ: ⟨0|α|1⟩ survives only if the mode has the same symmetry as one of the components of α.</p>
-    <div class="callout"><strong>Rule:</strong> a vibration is <strong>Raman active</strong> if its row of the character table lists a quadratic function such as <i>x</i><sup>2</sup>, <i>z</i><sup>2</sup> or <i>xy</i> (underlined in blue below).</div>`;
+    <div class="callout"><strong>Rule:</strong> a vibration is <strong>Raman active</strong> if its row of the character table lists a quadratic function such as <i>z</i><sup>2</sup>, <i>x</i><sup>2</sup> + <i>y</i><sup>2</sup> or <i>xy</i> (underlined in blue below).</div>`;
   return `
     <p class="eyebrow">Step ${(kind === 'ir' ? SPEC_STEP : RA_STEP) + 1} of ${STEPS.length}</p>
     ${intro}

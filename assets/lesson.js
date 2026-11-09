@@ -65,11 +65,16 @@ const chiOp = (ir, op) => ir.chi[classIdx(op.cls)];
 const G3N = 'Γ<sub>3<i>N</i></sub>', GV = 'Γ<sub>vib</sub>', GT = 'Γ<sub>trans</sub>', GR = 'Γ<sub>rot</sub>';
 const chip = ir => `<span class="chip ${ir.cls}">${ir.html}</span>`;
 const SPLIT = OPS.find(op => op.id === L.splitOp), MIX = OPS.find(op => op.id === L.mixOp);
+// triply degenerate species (T in Td, Oh): SPLIT3 picks out one partner, MIX3 (a C3) turns it into the other two
+const SPLIT3 = OPS.find(op => op.id === L.splitOp3), MIX3 = OPS.find(op => op.id === L.mixOp3);
+const PARTS = 'abc';
 // quick self-check of the character table: rows orthonormal under Σ g χi χj / h
 IRREPS.forEach((a,i) => IRREPS.forEach((b,j) => { const s = CLASSES.reduce((t,c,k)=> t + c.g*a.chi[k]*b.chi[k], 0)/ORDER; if (!near(s, i === j ? 1 : 0, 1e-6)) console.warn('character table not orthonormal', a.id, b.id, s); }));
 
 /* ---------- state ---------- */
+const PR = L.practice || null;   // practice mode: the student finds the point group first and fills in every answer
 const S = {
+  pg:{sel:null, ok:null, rev:false, hints:0}, cnt:null, check6:null,
   step:0, iso:L.isomers ? L.isomers.default : null, axes:true, elements:false, labels:true,
   arrows:'none', fieldId:null, part:0, playing:!reduced, phase:0, anim:null, hold:null,
   seenOps:{}, cart:{}, cartLast:null, modeTests:{}, motionSeen:{},
@@ -79,7 +84,9 @@ const S = {
 
 /* ---------- molecular model ---------- */
 const SCALE = L.scale || 1;
-const MASS = {H:1.008, C:12.011, N:14.007, O:15.999, F:18.998, Cl:35.45, Br:79.904, Fe:55.845};
+const MASS = {H:1.008, B:10.81, C:12.011, N:14.007, O:15.999, F:18.998, Al:26.982, Si:28.086, P:30.974, S:32.06, Cl:35.45, Ti:47.867, Mn:54.938, Fe:55.845,
+  Ni:58.693, Cu:63.546, Ge:72.63, As:74.922, Se:78.971, Br:79.904, Mo:95.95, Pd:106.42, Sb:121.76, Te:127.6, I:126.904, Xe:131.293, W:183.84,
+  Os:190.23, Pt:195.084, Au:196.967, U:238.029};
 let ATOMS = [], BONDS = [], EXTRA = [], FIELDS = {}, SPECIES = [], MODES = [], PERM = new Map(), RESP = {}, MODEL = {};
 
 function buildModel(){
@@ -123,8 +130,18 @@ function fieldMatrix(op, F){
   const Q = F.parts || [F.vecs], RQ = Q.map(q => actQ(op, q));
   const G = Q.map(a => Q.map(c => dotQ(a,c))), B = Q.map(a => RQ.map(rq => dotQ(a,rq)));
   if (Q.length === 1) return [[B[0][0]/G[0][0]]];
-  const det = G[0][0]*G[1][1] - G[0][1]*G[1][0], Gi = [[G[1][1]/det, -G[0][1]/det], [-G[1][0]/det, G[0][0]/det]];
-  return Gi.map(row => [0,1].map(k => row[0]*B[0][k] + row[1]*B[1][k]));
+  return solveG(G, B);
+}
+// G⁻¹B by Gauss–Jordan elimination (G is a small Gram matrix: 2 × 2 or 3 × 3)
+function solveG(G, B){
+  const n = G.length, A = G.map((row,i) => [...row, ...B[i]]);
+  for (let c = 0; c < n; c++){
+    let p = c; for (let r = c+1; r < n; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r;
+    [A[c], A[p]] = [A[p], A[c]];
+    const d = A[c][c]; A[c] = A[c].map(x => x/d);
+    for (let r = 0; r < n; r++) if (r !== c){ const f = A[r][c]; A[r] = A[r].map((x,k) => x - f*A[c][k]); }
+  }
+  return A.map(row => row.slice(n));
 }
 const fieldDiag = (op, F) => fieldMatrix(op, F).map((row,k) => snap(row[k]));
 const fieldChar = (op, F) => snap(fieldDiag(op, F).reduce((a,c)=> a + c, 0));
@@ -239,13 +256,13 @@ function solveModes(){
   SPECIES = []; MODES = [];
   IRREPS.forEach((ir, k) => {
     const n = Math.round(nv[k]); if (!n) return;
-    const two = ir.dim === 2;
+    const two = ir.dim === 2, three = ir.dim === 3, splitter = three ? SPLIT3 : SPLIT;
     const basis = [];
     for (let c = 0; c < n3 && basis.length < n; c++){
       const e = new Array(n3).fill(0); e[c] = 1;
       let v = new Array(n3).fill(0);
       OPS.forEach(op => { const w = actV(op, e), x = chiOp(ir, op); if (x) for (let i=0;i<n3;i++) v[i] += x*w[i]; });
-      if (two){ const w = actV(SPLIT, v); for (let i=0;i<n3;i++) v[i] += w[i]; }
+      if (two || three){ const w = actV(splitter, v); for (let i=0;i<n3;i++) v[i] += w[i]; }
       v = orth(orth(v, TRB), basis);
       const nn = vnorm(v); if (nn > 1e-6) basis.push(v.map(x => x/nn));
     }
@@ -271,6 +288,9 @@ function solveModes(){
       if (two){
         let b = actV(MIX, eta); const w = actV(SPLIT, b); b = b.map((x,i) => x - w[i]); const bn = vnorm(b); b = b.map(x => x/bn);
         F.parts = [nrm(cartOf(eta)), nrm(cartOf(b))]; F.partHTML = ['partner a', 'partner b'];
+      } else if (three){
+        const b = actV(MIX3, eta), c = actV(MIX3, b);
+        F.parts = [eta, b, c].map(v => nrm(cartOf(v))); F.partHTML = ['partner a', 'partner b', 'partner c'];
       } else F.vecs = nrm(cartOf(eta));
       FIELDS[id] = F; return id;
     });
@@ -315,8 +335,11 @@ let renderer;
 try { renderer = new THREE.WebGLRenderer({canvas, antialias:true}); }
 catch(err){ stageEl.insertAdjacentHTML('beforeend','<div class="nogl">This browser could not start WebGL, so the 3D model is unavailable. The lesson still works.</div>'); }
 
-const ECOL = {H:0xe9eef3, C:0x7d8996, N:0x5a7bff, O:0xe2564c, F:0x9be36a, Cl:0x3fcf6a, Br:0xb0503a, Fe:0xe08a3c};
-const ERAD = {H:.19, C:.28, N:.29, O:.3, F:.27, Cl:.34, Br:.39, Fe:.4, ...(L.atomR || {})};
+const ECOL = {H:0xe9eef3, C:0x7d8996, N:0x5a7bff, O:0xe2564c, F:0x9be36a, Cl:0x3fcf6a, Br:0xb0503a, Fe:0xe08a3c,
+  B:0xffb59e, Al:0xbfa6a6, Si:0xdcc39c, P:0xff9a3d, S:0xf2d64b, Ti:0xb8bcc4, Mn:0x9c7ac7, Ni:0x6fd07a, Cu:0xd88c51, Ge:0x8fa8a0, As:0xc28fe0,
+  Se:0xf0a33a, Mo:0x54b5b5, Pd:0x7ab0c8, Sb:0x9e63b5, Te:0xd4842a, I:0x9b4fd0, Xe:0x4fc6d6, W:0x4f95d6, Os:0x4f8fb0, Pt:0xd2d5e0, Au:0xffcf3a, U:0x4fa36b};
+const ERAD = {H:.19, C:.28, N:.29, O:.3, F:.27, Cl:.34, Br:.39, Fe:.4, B:.27, Al:.36, Si:.34, P:.33, S:.33, Ti:.38, Mn:.38, Ni:.37, Cu:.37, Ge:.36,
+  As:.36, Se:.37, Mo:.39, Pd:.39, Sb:.4, Te:.4, I:.41, Xe:.41, W:.4, Os:.4, Pt:.4, Au:.4, U:.44, ...(L.atomR || {})};
 const COL = {bond:0x8e9cac, x:0xf2a23a, y:0x45d0a0, z:0x93a6ff, mode:0xffd35c, halo:0x7dffc0};
 const AXCOL = [0xffd35c, 0xffa95c, 0x9dff8a, 0x8ae6ff], PLCOL = [0x5d9cff, 0xc283ff, 0xff7fae, 0x7fe0b0];
 const scene = new THREE.Scene();
@@ -496,7 +519,8 @@ function resultCaption(r){
     if (!F.parts) s += r.chi > 0 ? ' The yellow pattern lands on itself: χ = <b>+1</b>.' : ' The yellow pattern is reversed: χ = <b>−1</b>.';
     else {
       const mixed = r.diag.some(d => !Number.isInteger(d));
-      s += `${mixed ? ' The pattern has turned into a mix of the two partners.' : ''} How much of each partner survives: ${F.partHTML[0]} <b>${niceS(r.diag[0])}</b>, ${F.partHTML[1]} <b>${niceS(r.diag[1])}</b>. The pair's character is their sum: χ = <b>${nice(r.chi)}</b>.`;
+      const three = F.parts.length === 3;
+      s += `${mixed ? ` The pattern has turned into a mix of the ${three ? 'partners' : 'two partners'}.` : ''} How much of each partner survives: ${F.partHTML.map((h,k) => `${h} <b>${niceS(r.diag[k])}</b>`).join(', ')}. The ${three ? 'set' : 'pair'}'s character is their sum: χ = <b>${nice(r.chi)}</b>.`;
     }
   }
   return s;
@@ -505,7 +529,7 @@ function defaultCaption(){
   if (S.arrows === 'cart') return `${3*ATOMS.length} unit vectors: <i>x</i>, <i>y</i>, <i>z</i> on each atom. Apply an operation and watch where each one ends up.`;
   if (S.arrows === 'field'){
     const F = FIELDS[S.fieldId];
-    if (F.parts) return `Showing ${F.partHTML[S.part]} of the degenerate pair ${F.html}. Apply an operation and see how much of each partner survives.`;
+    if (F.parts) return `Showing ${F.partHTML[S.part]} of the degenerate ${F.parts.length === 3 ? 'set' : 'pair'} ${F.html}. Apply an operation and see how much of each partner survives.`;
     return `Showing ${F.kind === 'vib' ? F.html + ', ' + F.name : F.name.toLowerCase()}. Apply an operation: does the yellow pattern stay the same (+1) or reverse (−1)?`;
   }
   return 'Drag to rotate, scroll or pinch to zoom. Apply an operation to see what it does to the molecule.';
@@ -633,14 +657,14 @@ function syncToggles(){
   $('tg-labels').setAttribute('aria-pressed', S.labels);
 }
 $('tg-axes').onclick = () => { S.axes = !S.axes; syncToggles(); };
-$('tg-elem').onclick = () => { S.elements = !S.elements; syncToggles(); };
+$('tg-elem').onclick = () => { if (locked()) return; S.elements = !S.elements; syncToggles(); };
 $('tg-labels').onclick = () => { S.labels = !S.labels; syncToggles(); };
 function renderShowing(){
   const el = $('showing');
   if (S.arrows === 'cart') el.innerHTML = `<div class="legend"><span><i style="background:var(--x)"></i>x</span><span><i style="background:var(--y)"></i>y</span><span><i style="background:var(--z)"></i>z</span></div>`;
   else if (S.arrows === 'field'){
     const f = FIELDS[S.fieldId];
-    const partners = f.parts ? `<span class="partners" role="group" aria-label="Partner pattern">${f.partHTML.map((h,k) => `<button class="mini" data-part="${k}" aria-pressed="${S.part===k}">${k ? 'b' : 'a'}</button>`).join('')}</span>` : '';
+    const partners = f.parts ? `<span class="partners" role="group" aria-label="Partner pattern">${f.partHTML.map((h,k) => `<button class="mini" data-part="${k}" aria-pressed="${S.part===k}">${PARTS[k]}</button>`).join('')}</span>` : '';
     const r = (S.step === IR_STEP || S.step === RA_STEP) && response(S.fieldId, S.part);
     // symmetry can allow a change that this simple model makes vanishingly small: say so rather than "zero"
     const sp = f.kind === 'vib' && IRREPS.find(ir => ir.id === f.species);
@@ -685,7 +709,7 @@ const estBadge = () => anyEst() ? '<span class="est" title="Estimated with this 
 const dimCheck = n => n.reduce((s,x,k)=> s + x*IRREPS[k].dim, 0);
 
 const STEPS = [
-  {short:'Count motions', enter(){ setArrows('none'); S.elements = false; }, html(){ return `
+  {short:PR ? 'Point group' : 'Count motions', enter(){ setArrows('none'); S.elements = false; }, html(){ if (PR) return practiceStep1(); return `
     ${eyebrow(1)}
     <h2>Count the ways ${NAME} can move</h2>
     <p>Describing where every atom of an <i>N</i>-atom molecule is takes 3<i>N</i> coordinates: an <i>x</i>, <i>y</i> and <i>z</i> for each atom. ${L.formulaHTML} has <i>N</i> = ${N()}, so it has <strong>${3*N()} degrees of freedom</strong>.</p>
@@ -702,7 +726,7 @@ const STEPS = [
     </ul>
     <h3>Point group and axes</h3>
     ${tx('group')}
-    <p class="hint">Not sure how to get the point group? <a href="point-groups.html#${L.pgKey || L.id}">Walk through the flowchart for ${NAME}</a>, or look up any term in the <a href="glossary.html">glossary</a>.</p>
+    <p class="hint">Not sure how to get the point group? <a href="point-groups.html#${(typeof L.pgKey === 'function' ? L.pgKey(S.iso) : L.pgKey) || L.id}">Walk through the flowchart for ${NAME}</a>, or look up any term in the <a href="glossary.html">glossary</a>.</p>
     <div class="callout"><strong>Try it.</strong> Drag the molecule to turn it, scroll or pinch to zoom, and turn on <em>Symmetry elements</em> above the model.</div>`; }},
 
   {short:'Operations', enter(){ setArrows('none'); S.elements = true; }, html(){
@@ -715,10 +739,10 @@ const STEPS = [
     return `
     ${eyebrow(2)}
     <h2>Watch each kind of symmetry operation</h2>
-    <p>A symmetry operation moves the molecule into a position you cannot tell apart from where it started. ${L.groupHTML} has ${ORDER} operations in ${CLASSES.length} classes, so its order is <i>h</i> = ${ORDER}. Operations in the same class always behave the same way, so you only need to try one from each class. Note how many atoms <strong>stay exactly where they were</strong>.</p>
+    <p>A symmetry operation moves the molecule into a position you cannot tell apart from where it started. ${L.groupHTML} has ${ORDER} ${plural(ORDER, 'operation')} in ${CLASSES.length} ${plural(CLASSES.length, 'class', 'classes')}, so its order is <i>h</i> = ${ORDER}. Operations in the same class always behave the same way, so you only need to try one from each class. Note how many atoms <strong>stay exactly where they were</strong>.</p>
     <div class="tablewrap"><table><thead><tr><th>Class</th><th>What it does</th><th></th><th>Unmoved atoms</th></tr></thead><tbody>${rows}</tbody></table></div>
     ${tx('opsHint')}
-    ${allSeen ? `<div class="callout"><strong>${keep.length === CLASSES.length ? 'Every class leaves some atom in place.' : `Only ${keep.length} of the ${CLASSES.length} classes leave any atom in place:`}</strong> ${keep.map(c => `${c.html} (${unmoved(c.rep).length})`).join(', ')}.${zero ? ` The other ${zero} characters of ${G3N} will be 0.` : ''}</div>` : '<p class="hint">Apply one operation from every class to fill in the last column.</p>'}`; }},
+    ${allSeen ? `<div class="callout"><strong>${keep.length === CLASSES.length ? 'Every class leaves some atom in place.' : `Only ${keep.length} of the ${CLASSES.length} classes ${keep.length === 1 ? 'leaves' : 'leave'} any atom in place:`}</strong> ${keep.map(c => `${c.html} (${unmoved(c.rep).length})`).join(', ')}.${zero ? (zero === 1 ? ` The other character of ${G3N} will be 0.` : ` The other ${zero} characters of ${G3N} will be 0.`) : ''}</div>` : '<p class="hint">Apply one operation from every class to fill in the last column.</p>'}`; }},
 
   {short:'Vector basis', enter(){ setArrows('cart'); S.elements = false; }, html(){
     const r = S.cartLast && S.cart[S.cartLast];
@@ -752,8 +776,11 @@ const STEPS = [
     const reps = (L.matOps ? L.matOps.map(id => OPS.find(op => op.id === id)) : CLASSES.slice(1).map(c => c.rep).sort((a,b) => unmoved(b).length - unmoved(a).length).slice(0,3));
     const mats = reps.map(op => `<div class="mat"><span class="t">${op.html}</span><div class="grid">${op.M.flat().map((v,k)=>`<span class="${k%4===0?'d':''}">${nice(v)}</span>`).join('')}</div><span class="tr">trace = ${nice(trace(op.M))}</span></div>`).join('');
     const c = S.check4;
-    const rows = CLASSES.map((cl,k) => `<tr><th>${cl.html}</th><td>${unmoved(cl.rep).length}</td><td>${nice(trace(cl.rep.M))}</td><td><input class="cell-in ${c ? (c[k] ? 'ok':'no') : ''}" id="g3n-${cl.id}" inputmode="decimal" autocomplete="off" aria-label="χ(Γ3N) for ${cl.id}" value="${S.inputs['g3n-'+cl.id] ?? ''}"></td></tr>`).join('');
-    const allOk = c && c.every(Boolean);
+    const box = (key, cl, k, label) => `<input class="cell-in ${c ? (c[k][key] ? 'ok':'no') : ''}" id="${key}-${cl.id}" inputmode="decimal" autocomplete="off" aria-label="${label} for ${cl.id}" value="${S.inputs[key+'-'+cl.id] ?? ''}">`;
+    const rows = CLASSES.map((cl,k) => PR
+      ? `<tr><th>${cl.html}</th><td>${box('um', cl, k, 'unmoved atoms')}</td><td>${box('ct', cl, k, 'contribution per atom')}</td><td>${box('g3n', cl, k, 'χ(Γ3N)')}</td></tr>`
+      : `<tr><th>${cl.html}</th><td>${unmoved(cl.rep).length}</td><td>${nice(trace(cl.rep.M))}</td><td>${box('g3n', cl, k, 'χ(Γ3N)')}</td></tr>`).join('');
+    const allOk = c && c.every(x => x.g3n && (!PR || (x.um && x.ct)));
     return `
     ${eyebrow(4)}
     <h2>Build ${G3N} with the shortcut</h2>
@@ -762,10 +789,10 @@ const STEPS = [
     <div class="matrices">${mats}</div>
     <p class="muted">General contributions per unmoved atom: <i>E</i> = 3, σ = 1, <i>i</i> = −3, <i>C<sub>n</sub></i> = 1 + 2 cos(360°/<i>n</i>), <i>S<sub>n</sub></i> = −1 + 2 cos(360°/<i>n</i>). ${tx('contribNote')}</p>
     <h3>Your turn</h3>
-    <p>Fill in the last column, then check.${CLASSES.some(cl => !Number.isInteger(snap(trace(cl.rep.M)))) ? ' Decimals to two places are fine.' : ''}</p>
+    <p>${PR ? 'Fill in all three columns, then check. Count unmoved atoms in the viewer (step 2) if you need to.' : 'Fill in the last column, then check.'}${CLASSES.some(cl => !Number.isInteger(snap(trace(cl.rep.M)))) ? ' Decimals to two places are fine.' : ''}</p>
     <div class="tablewrap"><table><thead><tr><th>Class</th><th>Unmoved atoms</th><th>Contribution per atom</th><th>χ(${G3N})</th></tr></thead><tbody>${rows}</tbody></table></div>
     <div class="btnrow"><button class="btn primary" data-action="check4">Check</button><button class="btn" data-action="reveal4">Show answer</button></div>
-    ${c ? (allOk ? `<p class="fb ok">Correct. ${G3N} = ${g.map(nice).join(', ')}. These match the tally from step 3.</p>` : `<p class="fb no">Some entries are off. Multiply the two numbers beside each box.</p>`) : ''}`; }},
+    ${c ? (allOk ? `<p class="fb ok">Correct. ${G3N} = ${g.map(nice).join(', ')}. These match the tally from step 3.</p>` : `<p class="fb no">${PR ? 'Some entries are off. Check the unmoved atoms against the viewer, the contributions against the list above, and multiply.' : 'Some entries are off. Multiply the two numbers beside each box.'}</p>`) : ''}`; }},
 
   {short:'Reduce', enter(){ setArrows('none'); S.elements = false; }, html(){
     const g = gamma3N(), n = reduce(g), c = S.check5;
@@ -779,7 +806,7 @@ const STEPS = [
     <h2>Reduce ${G3N}</h2>
     <p>The reduction formula tells you how many times each of the ${IRREPS.length} irreducible representations appears in ${G3N}:</p>
     <div class="formula"><i>n</i><sub><i>i</i></sub> = <span class="frac"><span>1</span><span><i>h</i></span></span> Σ<sub><i>R</i></sub> <i>g</i>(<i>R</i>) · χ(<i>R</i>) · χ<sub><i>i</i></sub>(<i>R</i>)</div>
-    <p>Here <i>h</i> = ${ORDER}, and <i>g</i>(<i>R</i>) is the number of operations in each class (the number in front of the class label).${nz.length < CLASSES.length ? ` Because ${G3N} is zero in ${CLASSES.length - nz.length} ${plural(CLASSES.length - nz.length, 'class', 'classes')}, only ${nz.length} terms survive in each sum.` : ''}</p>
+    <p>Here <i>h</i> = ${ORDER}, and <i>g</i>(<i>R</i>) is the number of operations in each class (the number in front of the class label).${nz.length < CLASSES.length ? ` Because ${G3N} is zero in ${CLASSES.length - nz.length} ${plural(CLASSES.length - nz.length, 'class', 'classes')}, only ${nz.length} ${plural(nz.length, 'term')} ${nz.length === 1 ? 'survives' : 'survive'} in each sum.` : ''}</p>
     ${tx('reduceNote')}
     ${charTable(false)}
     <div class="tablewrap"><table>${classHead()}<tbody><tr class="total"><th>χ(${G3N})</th>${charCells(g)}</tr></tbody></table></div>
@@ -788,7 +815,7 @@ const STEPS = [
     <div class="btnrow"><button class="btn primary" data-action="check5">Check</button><button class="btn" data-action="work5">${S.showWork ? 'Hide working' : 'Show working'}</button></div>
     ${c ? (allOk ? `<p class="fb ok">Correct.</p>` : `<p class="fb no">Not quite. Open the working to see where your sum differs. Did you multiply by <i>g</i>?</p>`) : ''}
     ${S.showWork ? `<div class="work">${work}</div>` : ''}
-    ${allOk || S.showWork ? `<div class="result"><span class="lhs">${G3N} =</span><span class="rep">${repHTML(n)}</span><span class="muted">Degrees of freedom check${twoD ? ', counting each E as two' : ''}: ${dimCheck(n)} = 3<i>N</i></span></div>` : ''}`; }},
+    ${allOk || S.showWork ? `<div class="result"><span class="lhs">${G3N} =</span><span class="rep">${repHTML(n)}</span><span class="muted">Degrees of freedom check${twoD ? `, counting each E as two${IRREPS.some(ir => ir.dim === 3) ? ' and each T as three' : ''}` : ''}: ${dimCheck(n)} = 3<i>N</i></span></div>` : ''}`; }},
 
   {short:'Remove T & R', enter(){ if (isTR(S.fieldId)) setArrows('field', S.fieldId); else setArrows('none'); S.elements = false; }, html(){
     const g = gamma3N(), gt = sumChars(TR_IDS()), gr = sumChars(ROT_IDS());
@@ -797,22 +824,25 @@ const STEPS = [
     const ids = L.tr.map(t => t.id), allSeen = ids.every(id => S.motionSeen[id]);
     const rows = CLASSES.map((cl,k) => `<tr><th>${cl.html}</th><td>${nice(g[k])}</td><td class="z">${nice(gt[k])}</td><td class="z">${nice(gr[k])}</td><td>${S.vibRevealed ? nice(gv[k]) : '<span class="muted">?</span>'}</td></tr>`).join('');
     const pairs = SPECIES.filter(sp => sp.ir.dim === 2).reduce((s,sp)=> s + sp.n, 0), distinct = SPECIES.reduce((s,sp)=> s + sp.n, 0);
+    const triples = SPECIES.filter(sp => sp.ir.dim === 3).reduce((s,sp)=> s + sp.n, 0);
+    const degText = triples ? `, but only <strong>${distinct} distinct frequencies</strong>, because ${[pairs ? `${2*pairs} of them come in ${pairs} degenerate ${plural(pairs, 'pair')}` : '', `${3*triples} come in ${triples} degenerate ${plural(triples, 'set')} of three`].filter(Boolean).join(' and ')}`
+      : pairs ? `, but only <strong>${distinct} distinct frequencies</strong>, because ${2*pairs} of them come in ${pairs} degenerate ${plural(pairs, 'pair')}` : '';
     const lin = IRREPS.filter(ir => ir.lin.length).map(ir => ir.lin.join(', ')).join(', '), rot = IRREPS.filter(ir => ir.rot.length).map(ir => ir.rot.join(', ')).join(', ');
     return `
     ${eyebrow(6)}
     <h2>Remove translations and rotations</h2>
     <p>${G3N} contains every motion, including the six that do not stretch or bend anything. The character table says where they live: translations transform like ${lin}, and rotations like ${rot}.</p>
     ${charTable(true)}
-    <p>${L.tr.some(t => t.parts.length > 1) ? 'Motions in brackets form degenerate pairs: either partner on its own is mixed into the other by some operations. ' : ''}Click a motion to animate it, then apply operations in the viewer to confirm its characters.${L.tr.some(t => t.parts.length > 1) ? ' For a pair, switch partners with the buttons above the model.' : ''}</p>
+    <p>${L.tr.some(t => t.parts.length > 2) ? 'Motions in brackets form degenerate sets: any one partner on its own is mixed into the others by some operations. ' : L.tr.some(t => t.parts.length > 1) ? 'Motions in brackets form degenerate pairs: either partner on its own is mixed into the other by some operations. ' : ''}Click a motion to animate it, then apply operations in the viewer to confirm its characters.${L.tr.some(t => t.parts.length > 1) ? ` For a ${L.tr.some(t => t.parts.length > 2) ? 'set' : 'pair'}, switch partners with the buttons above the model.` : ''}</p>
     <div class="motions">${ids.map(motion).join('')}</div>
     ${allSeen ? `<p class="fb ok">${GT} = ${repHTML(reduce(gt))} and ${GR} = ${repHTML(reduce(gr))}.</p>` : ''}
     <h3>Subtract</h3>
     <div class="tablewrap"><table><thead><tr><th>Class</th><th>${G3N}</th><th>− ${GT}</th><th>− ${GR}</th><th>${GV}</th></tr></thead><tbody>${rows}</tbody></table></div>
     ${S.vibRevealed ? `
       <div class="result"><span class="lhs">${GV} =</span><span class="rep">${repHTML(reduce(gv))}</span></div>
-      <p>Or subtract the reduced forms directly: (${repHTML(reduce(g))}) − (${repHTML(reduce(gt))}) − (${repHTML(reduce(gr))}). That leaves ${NV()} vibrations, as 3<i>N</i> − 6 predicted${pairs ? `, but only <strong>${distinct} distinct frequencies</strong>, because ${2*pairs} of them come in ${pairs} degenerate pairs` : ''}.</p>
+      <p>Or subtract the reduced forms directly: (${repHTML(reduce(g))}) − (${repHTML(reduce(gt))}) − (${repHTML(reduce(gr))}). That leaves ${NV()} vibrations, as 3<i>N</i> − 6 predicted${degText}.</p>
       ${tx('vibNote')}`
-      : `<div class="btnrow"><button class="btn primary" data-action="vib">Subtract and reduce</button></div>`}`; }},
+      : PR ? vibInputs() : `<div class="btnrow"><button class="btn primary" data-action="vib">Subtract and reduce</button></div>`}`; }},
 
   {short:'Normal modes', enter(){ setArrows('field', isMode(S.fieldId) ? S.fieldId : MODES[0]); S.elements = false; }, html(){
     const cur = isMode(S.fieldId) && FIELDS[S.fieldId].species;
@@ -824,7 +854,7 @@ const STEPS = [
       const boxes = CLASSES.map(c => { const v = tests[c.id]; return v === undefined ? '' : `<span class="cbox">${c.html} <b class="${v>0?'p1':v<0?'m1':''}">${fmtS(v)}</b></span>`; }).join('');
       const status = !Object.keys(tests).length ? '<span class="muted">apply operations to narrow it down</span>' : known ? chip(left[0]) : `<span class="muted">${left.length} rows of the table still match</span>`;
       return `<article class="mode ${cur===sp.ir.id?'active':''}">
-        <div><h4>Set ${k+1}: ${sp.n} ${two ? `degenerate ${plural(sp.n,'pair')}` : plural(sp.n,'vibration')}${where}</h4><span class="wn">≈ ${wnList(sp)} cm<sup>−1</sup>${estBadge()}</span></div>
+        <div><h4>Set ${k+1}: ${sp.n} ${two ? `degenerate ${plural(sp.n,'pair')}` : sp.ir.dim === 3 ? `triply degenerate ${plural(sp.n,'set')}` : plural(sp.n,'vibration')}${where}</h4><span class="wn">≈ ${wnList(sp)} cm<sup>−1</sup>${estBadge()}</span></div>
         <div class="btnrow tight">${sp.ids.map((id,j) => `<button class="btn sm ${S.fieldId===id?'active':''}" data-field="${id}" title="${FIELDS[id].name}">${FIELDS[id].wn}</button>`).join('')}</div>
         <div class="chars">${boxes} <span>→ ${status}</span></div>
       </article>`; }).join('');
@@ -832,13 +862,13 @@ const STEPS = [
     return `
     ${eyebrow(7)}
     <h2>Identify the vibrations by their symmetry</h2>
-    <p>${GV} = ${repHTML(vibIrreps())}: ${MODES.length} distinct frequencies in ${SPECIES.length} symmetry species. The cards below group ${NAME}'s vibrations into those ${SPECIES.length} sets, without saying which set is which. Your job is to identify them.</p>
+    <p>${GV} = ${repHTML(vibIrreps())}: ${MODES.length} distinct ${plural(MODES.length, 'frequency', 'frequencies')} in ${SPECIES.length} symmetry ${plural(SPECIES.length, 'species', 'species')}. ${SPECIES.length > 1 ? `The cards below group ${NAME}'s vibrations into those ${SPECIES.length} sets, without saying which set is which. Your job is to identify them.` : `All of ${NAME}'s vibrations share one species. Apply operations to confirm which one.`}</p>
     <p>Pick a vibration (the buttons show its wavenumber), then apply operations in the viewer. Each result rules out every row of the character table that disagrees. Keep going until only one row is left. ${tx('modesHint')}</p>
     <div class="modes">${cards}</div>
     <p class="hint">${anyEst()
       ? 'The patterns and the wavenumbers marked <em>est.</em> come from a simple valence force field built into this page: bond stretches, angle bends, out-of-plane wags and torsions with textbook force constants, solved separately in each symmetry block. Every pattern has exactly the right symmetry, but the shapes and especially the wavenumbers are rough estimates, not measured values. Hover a button to see which motion dominates.'
       : 'The patterns come from a simple valence force field built into this page, solved separately in each symmetry block, so each has exactly the right symmetry. The wavenumbers are measured fundamentals, matched to the patterns by order within each species. Hover a button to see which motion dominates.'} ${tx('modesNote')}</p>
-    ${found ? `<div class="callout"><strong>All ${SPECIES.length} sets identified.</strong> The symmetry of every one of ${NAME}'s ${NV()} vibrations follows from the character table alone.</div>` : ''}
+    ${found ? `<div class="callout"><strong>${SPECIES.length > 1 ? `All ${SPECIES.length} sets identified.` : 'Species identified.'}</strong> The symmetry of every one of ${NAME}'s ${NV()} vibrations follows from the character table alone.</div>` : ''}
     <p>Next: which of these vibrations can you actually see in a spectrum?</p>`; }},
 
   {short:'IR', enter(){ setArrows('field', isMode(S.fieldId) ? S.fieldId : MODES[0]); S.elements = false; }, html(){ return selectionStep('ir'); }},
@@ -912,7 +942,7 @@ function selectionStep(kind){
     ${c && !done ? `<p class="fb no">Not quite. Look along each species' row: ${kind === 'ir' ? 'is there an <i>x</i>, <i>y</i> or <i>z</i>?' : 'is there a quadratic function?'}</p>` : ''}
     ${done ? `${c && !S.rev[kind] ? '<p class="fb ok">Correct.</p>' : ''}
       <h3>The predicted ${K.long} spectrum</h3>
-      <p>Each active fundamental gives one band, and a degenerate pair gives a single band because both partners have the same frequency. Prediction: <strong>${n}</strong> ${K.name} ${plural(n,'band')}.</p>
+      <p>Each active fundamental gives one band, and a degenerate ${IRREPS.some(ir => ir.dim === 3) ? 'pair or set gives a single band because all its partners have' : 'pair gives a single band because both partners have'} the same frequency. Prediction: <strong>${n}</strong> ${K.name} ${plural(n,'band')}.</p>
       ${spectrumSVG([kind])}
       <p class="hint">Stick heights are not intensities: group theory says whether a band can appear, not how strong it is. Hover or tap a stick for details.${anyEst() ? ' Positions are force-field estimates.' : ''} Real spectra also show weaker overtone and combination bands.</p>
       ${kind === 'ir' ? tx('irNote') : `
@@ -921,18 +951,101 @@ function selectionStep(kind){
       ${spectrumSVG(['ir','ra'])}
       <h3>Centres of inversion and mutual exclusion</h3>
       <p>If a molecule has a centre of inversion, <i>x</i>, <i>y</i> and <i>z</i> all change sign under <i>i</i> (they are <i>u</i>), and every quadratic function keeps its sign (<i>g</i>). So a <i>u</i> vibration can only be IR active and a <i>g</i> vibration can only be Raman active: the <strong>rule of mutual exclusion</strong>.</p>
-      ${tx('ramanNote')}`}` : ''}`;
+      ${tx('ramanNote')}
+      ${PR ? practiceEnd() : ''}`}` : ''}`;
+}
+function practiceEnd(){
+  const nv = vibIrreps(), list = test => SPECIES.filter(sp => test(sp.ir)).map(sp => chip(sp.ir)).join(' ') || 'none';
+  const bands = test => MODES.filter(id => test(IRREPS.find(r => r.id === FIELDS[id].species))).length;
+  return `<h3>Your answer, in full</h3>
+    <div class="tablewrap"><table><tbody>
+      <tr><th>Point group</th><td class="fn">${L.groupHTML}</td></tr>
+      <tr><th>${GV}</th><td class="fn">${repHTML(nv)} (${NV()} vibrations)</td></tr>
+      <tr><th>IR active</th><td class="fn">${list(irActive)}: ${bands(irActive)} ${plural(bands(irActive), 'band')}</td></tr>
+      <tr><th>Raman active</th><td class="fn">${list(ramanActive)}: ${bands(ramanActive)} ${plural(bands(ramanActive), 'band')}</td></tr>
+    </tbody></table></div>
+    <div class="btnrow"><a class="btn primary" href="${PR.nextURL(PR.allowed)}">Try another molecule →</a></div>`;
+}
+
+/* ---------- practice mode ---------- */
+// Until the point group is found (or revealed) the later steps, the operation buttons and the symmetry elements stay hidden.
+const locked = () => !!PR && !(S.pg.ok || S.pg.rev);
+function syncLock(){
+  const lk = locked();
+  $('opbar').style.display = lk ? 'none' : '';
+  $('tg-elem').disabled = lk; if (lk){ S.elements = false; syncToggles(); }
+  renderStepper();
+}
+const PG_ROWS = [['Low symmetry',['C1','Cs','Ci']], ['C<sub><i>n</i></sub>',['C2','C3','C4']], ['C<sub><i>n</i>v</sub>',['C2v','C3v','C4v','C5v','C6v']],
+  ['C<sub><i>n</i>h</sub>',['C2h','C3h']], ['D<sub><i>n</i></sub>',['D2','D3','D4']], ['D<sub><i>n</i>h</sub>',['D2h','D3h','D4h','D5h','D6h']],
+  ['D<sub><i>n</i>d</sub>',['D2d','D3d','D4d','D5d']], ['S<sub>2<i>n</i></sub>',['S4','S6']], ['Cubic',['Td','Oh','Ih']], ['Linear',['Cinfv','Dinfh']]];
+function practiceStep1(){
+  const c = S.cnt, done = locked() ? false : true, opt = Object.fromEntries(PR.options.map(o => [o.key, o.html]));
+  const cin = (id, label) => `<input class="cell-in ${c ? (c[id] ? 'ok' : 'no') : ''}" id="${id}" inputmode="numeric" autocomplete="off" aria-label="${label}" value="${S.inputs[id] ?? ''}">`;
+  const cntOk = c && Object.values(c).every(Boolean);
+  const pgBtn = k => `<button class="pgb" data-pg="${k}" aria-pressed="${S.pg.sel === k}" ${done ? 'disabled' : ''}>${opt[k]}</button>`;
+  const pgRows = PG_ROWS.map(([lab, keys]) => `<div class="pgrow"><span class="lbl">${lab}</span><div class="pgset">${keys.map(pgBtn).join('')}</div></div>`).join('');
+  const flow = PR.flow.slice(0, S.pg.hints).map(f => `<li><span>${f.q}</span> <b>${f.a}</b></li>`).join('');
+  const classes = CLASSES.map(cl => cl.html).join(', ');
+  const fb = S.pg.ok === false ? `<p class="fb no">Not ${opt[S.pg.sel]}. ${S.pg.tries > 1 ? 'Try the flowchart questions below, one at a time.' : 'Look again at the model: which rotation axes and mirror planes does it really have?'}</p>`
+    : S.pg.ok ? `<p class="fb ok">Correct: ${L.groupHTML}.</p>` : '';
+  return `
+    ${eyebrow(1)}
+    <h2>Find the point group of ${PR.formulaHTML}</h2>
+    <p>Your molecule is ${PR.nameHTML}, ${PR.formulaHTML}. Drag the model to turn it, and look for rotation axes, mirror planes and a centre of inversion. You will work through the same steps as the solved lessons, but this time you supply the answers.</p>
+    <h3>Count the motions</h3>
+    <div class="tablewrap"><table><tbody>
+      <tr><th>Number of atoms, <i>N</i></th><td>${cin('pc-n', 'number of atoms')}</td></tr>
+      <tr><th>Degrees of freedom, 3<i>N</i></th><td>${cin('pc-3n', 'degrees of freedom')}</td></tr>
+      <tr><th>Vibrations (the molecule is not linear)</th><td>${cin('pc-v', 'number of vibrations')}</td></tr>
+    </tbody></table></div>
+    <div class="btnrow"><button class="btn primary" data-action="checkCount">Check</button><button class="btn" data-action="revealCount">Show answer</button></div>
+    ${c ? (cntOk ? `<div class="dof" role="img" aria-label="${3*N()} degrees of freedom split into 3 translations, 3 rotations and ${NV()} vibrations">
+      <div class="s t"><b>3</b><span>translations</span></div><div class="s r"><b>3</b><span>rotations</span></div><div class="s v"><b>${NV()}</b><span>vibrations (3<i>N</i> − 6)</span></div></div>`
+      : '<p class="fb no">Not quite. Count every atom, multiply by 3, and remember that a nonlinear molecule has 3 translations and 3 rotations.</p>') : ''}
+    <h3>Which point group?</h3>
+    <p>Pick one, then check.</p>
+    <div class="pgpick">${pgRows}</div>
+    <div class="btnrow"><button class="btn primary" data-action="checkPg" ${S.pg.sel && !done ? '' : 'disabled'}>Check</button><button class="btn" data-action="revealPg" ${done ? 'disabled' : ''}>Show answer</button></div>
+    ${fb}
+    ${done ? `<div class="callout"><strong>${PR.formulaHTML} belongs to ${L.groupHTML}.</strong> It has ${ORDER} ${plural(ORDER, 'operation')} in ${CLASSES.length} ${plural(CLASSES.length, 'class', 'classes')}: ${classes}. So <i>h</i> = ${ORDER}.</div>
+      <p><strong>Axes for this problem.</strong> ${PR.axes} The <i>x</i>, <i>y</i> and <i>z</i> arrows in the viewer show them. The axis choice decides some labels in the character table, so use these axes from here on.</p>
+      <p>The symmetry operations are now in the bar under the model, and <em>Symmetry elements</em> draws them. Check that each one really leaves ${PR.formulaHTML} looking unchanged, then go on to step 2.</p>` : ''}
+    <h3>Stuck? Walk the flowchart</h3>
+    <p class="muted">Each question follows the standard flowchart on the <a href="point-groups.html">Find the point group</a> page. Reveal them one at a time.</p>
+    ${flow ? `<ol class="flowq">${flow}</ol>` : ''}
+    ${S.pg.hints < PR.flow.length ? `<div class="btnrow"><button class="btn" data-action="hint">${S.pg.hints ? 'Next question' : 'Show the first question'}</button></div>` : `<p class="fb ok">The flowchart ends at ${L.groupHTML}.</p>`}
+    ${practiceSettings()}`;
+}
+function practiceSettings(){
+  const on = k => !PR.allowed.length || PR.allowed.includes(k);
+  return `<details class="pset"><summary>Choose which point groups come up</summary>
+    <p class="muted">New molecules are drawn from the groups ticked here. Each group is equally likely.</p>
+    <div class="pchecks">${PR.groups.map(g => `<label><input type="checkbox" data-pgfilter value="${g.key}" ${on(g.key) ? 'checked' : ''}> ${g.html} <span class="muted">(${g.count})</span></label>`).join('')}</div>
+    <div class="btnrow"><button class="btn primary" data-action="newSet">New molecule from these groups</button></div>
+    <p class="hint">Share a problem by copying the page address: it names the molecule.</p></details>`;
+}
+function vibInputs(){
+  const c = S.check6;
+  const rows = IRREPS.map((ir,k) => `<tr><th>${chip(ir)}</th><td><input class="cell-in ${c ? (c[k] ? 'ok' : 'no') : ''}" id="nv-${ir.id}" inputmode="numeric" autocomplete="off" aria-label="number of ${ir.id} vibrations" value="${S.inputs['nv-'+ir.id] ?? ''}"></td></tr>`).join('');
+  return `<h3>Your turn</h3>
+    <p>How many times does each species appear in ${GV}? Subtract ${GT} and ${GR} from your reduced ${G3N} (step 5), or reduce the ${GV} characters directly. Leave a box empty for zero.</p>
+    <div class="tablewrap"><table><thead><tr><th>Species</th><th>Times in ${GV}</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="btnrow"><button class="btn primary" data-action="check6">Check</button><button class="btn" data-action="reveal6">Show answer</button></div>
+    ${c && !c.every(Boolean) ? `<p class="fb no">Not quite. Check how many vibrations you expect: 3<i>N</i> − 6 = ${NV()}, counting each degenerate species by its dimension.</p>` : ''}`;
 }
 
 function renderStepper(){
-  $('stepper').innerHTML = STEPS.map((s,i) => `<li><button data-step="${i}" ${i===S.step?'aria-current="step"':''} class="${i<S.step?'done':''}"><span class="n">${i+1}</span>${s.short.replace('Γ3N', G3N)}</button></li>`).join('');
+  const lk = locked();
+  $('stepper').innerHTML = STEPS.map((s,i) => `<li><button data-step="${i}" ${i===S.step?'aria-current="step"':''} class="${i<S.step?'done':''}" ${lk && i > 0 ? 'disabled title="Find the point group first"' : ''}><span class="n">${i+1}</span>${s.short.replace('Γ3N', G3N)}</button></li>`).join('');
 }
 function renderLesson(){
   $('body').innerHTML = STEPS[S.step].html();
-  $('prev').disabled = S.step === 0; $('next').disabled = S.step === STEPS.length - 1;
+  $('prev').disabled = S.step === 0; $('next').disabled = S.step === STEPS.length - 1 || locked();
   $('next').style.visibility = S.step === STEPS.length - 1 ? 'hidden' : '';
 }
 function goStep(i, scroll){
+  if (locked() && i > 0) return;
   S.step = Math.max(0, Math.min(STEPS.length-1, i));
   STEPS[S.step].enter(); syncToggles(); renderStepper(); renderLesson(); renderShowing();
   if (scroll) $('lesson').scrollIntoView({block:'start', behavior: reduced ? 'auto' : 'smooth'});
@@ -946,6 +1059,8 @@ $('body').addEventListener('click', e => {
   const opB = e.target.closest('[data-op]'); if (opB){ applyOp(opB.dataset.op); return; }
   const fB = e.target.closest('[data-field]');
   if (fB){ const id = fB.dataset.field; S.motionSeen[id] = true; setArrows('field', id); renderLesson(); return; }
+  const pgB = e.target.closest('[data-pg]');
+  if (pgB){ if (!(S.pg.ok || S.pg.rev)){ S.pg.sel = pgB.dataset.pg; S.pg.ok = null; renderLesson(); } return; }
   const ynB = e.target.closest('[data-yn]');
   if (ynB){ const [ir, key, v] = ynB.dataset.yn.split('|'); (S.sel[ir] ||= {})[key] = v === '1'; S.chk[key] = null; S.rev[key] = false; renderLesson(); return; }
   const a = e.target.closest('[data-action]'); if (!a) return;
@@ -953,11 +1068,22 @@ $('body').addEventListener('click', e => {
   switch (a.dataset.action){
     case 'check': S.chk[kind] = {}; SPECIES.forEach(sp => { S.chk[kind][sp.ir.id] = (S.sel[sp.ir.id] || {})[kind] === KIND[kind].test(sp.ir); }); break;
     case 'reveal': SPECIES.forEach(sp => (S.sel[sp.ir.id] ||= {})[kind] = KIND[kind].test(sp.ir)); S.rev[kind] = true; S.chk[kind] = null; break;
-    case 'check4': S.check4 = CLASSES.map((c,k) => near(parseNum(S.inputs['g3n-'+c.id]), g[k], 0.011)); break;
-    case 'reveal4': CLASSES.forEach((c,k) => S.inputs['g3n-'+c.id] = fmt(g[k]).replace('−','-')); S.check4 = CLASSES.map(() => true); break;
+    case 'check4': S.check4 = CLASSES.map((c,k) => ({g3n:near(parseNum(S.inputs['g3n-'+c.id]), g[k], 0.011),
+      um:near(parseNum(S.inputs['um-'+c.id]), unmoved(c.rep).length), ct:near(parseNum(S.inputs['ct-'+c.id]), trace(c.rep.M), 0.011)})); break;
+    case 'reveal4': CLASSES.forEach((c,k) => { S.inputs['g3n-'+c.id] = fmt(g[k]).replace('−','-'); S.inputs['um-'+c.id] = String(unmoved(c.rep).length); S.inputs['ct-'+c.id] = fmt(trace(c.rep.M)).replace('−','-'); });
+      S.check4 = CLASSES.map(() => ({g3n:true, um:true, ct:true})); break;
     case 'check5': S.check5 = IRREPS.map((ir,k) => parseNum(S.inputs['n-'+ir.id]) === n[k]); break;
     case 'work5': S.showWork = !S.showWork; break;
     case 'vib': S.vibRevealed = true; break;
+    case 'check6': { const nv = vibIrreps(), val = id => { const s = (S.inputs['nv-'+id] || '').trim(); return s === '' ? 0 : parseNum(s); };
+      S.check6 = IRREPS.map((ir,k) => val(ir.id) === nv[k]); if (S.check6.every(Boolean)) S.vibRevealed = true; break; }
+    case 'reveal6': { const nv = vibIrreps(); IRREPS.forEach((ir,k) => S.inputs['nv-'+ir.id] = String(nv[k])); S.check6 = null; S.vibRevealed = true; break; }
+    case 'checkCount': { const want = {'pc-n':N(), 'pc-3n':3*N(), 'pc-v':NV()}; S.cnt = {}; Object.keys(want).forEach(k => S.cnt[k] = parseNum(S.inputs[k]) === want[k]); break; }
+    case 'revealCount': S.inputs['pc-n'] = String(N()); S.inputs['pc-3n'] = String(3*N()); S.inputs['pc-v'] = String(NV()); S.cnt = {'pc-n':true, 'pc-3n':true, 'pc-v':true}; break;
+    case 'checkPg': S.pg.ok = S.pg.sel === PR.pg; S.pg.tries = (S.pg.tries || 0) + 1; syncLock(); break;
+    case 'revealPg': S.pg.rev = true; S.pg.sel = PR.pg; S.pg.hints = PR.flow.length; syncLock(); break;
+    case 'hint': S.pg.hints = Math.min(PR.flow.length, S.pg.hints + 1); break;
+    case 'newSet': { const g = [...document.querySelectorAll('[data-pgfilter]:checked')].map(x => x.value); location.href = PR.nextURL(g.length === PR.groups.length ? [] : g); return; }
   }
   renderLesson();
 });
@@ -992,6 +1118,7 @@ if (L.isomers){
 }
 
 window.LESSON_DEBUG = {S, OPS, CLASSES, IRREPS, FIELDS: () => FIELDS, SPECIES: () => SPECIES, MODES: () => MODES, gamma3N, reduce, vibIrreps, fieldChars, irrepOf, response, unmoved, MODEL: () => MODEL};
+if (PR) syncLock();
 goStep(0, false);
 resize(); requestAnimationFrame(frame);
 })();

@@ -787,7 +787,7 @@ const STEPS = [
       <li>A vector ends up pointing the same way: <strong>+1</strong>.</li>
       <li>A vector ends up reversed: <strong>−1</strong>.</li>
     </ul>
-    <p class="muted">In groups with <i>C</i><sub>3</sub>, <i>C</i><sub>4</sub>, and so on, a vector can turn by an angle θ and contributes cos θ. In C<sub>2v</sub> every angle is 0° or 180°.</p>
+    <p class="muted">In groups with <i>C</i><sub>3</sub>, <i>C</i><sub>4</sub>, and so on, a vector can turn by an angle θ, and then it contributes cos θ. In C<sub>2v</sub> every angle is 0° or 180°.</p>
     ${opButtons()}
     ${tally}
     <h3>Characters so far</h3>
@@ -825,7 +825,7 @@ const STEPS = [
     return `
     <p class="eyebrow">Step 5 of 9</p>
     <h2>Reduce ${G3N}</h2>
-    <p>${G3N} is reducible: it is a sum of the four irreducible representations in the character table. The reduction formula tells you how many times each one appears.</p>
+    <p>${G3N} is reducible: it is a sum of irreducible representations from the character table, some of them more than once. The reduction formula tells you how many times each one appears.</p>
     <div class="formula"><i>n</i><sub><i>i</i></sub> = <span class="frac"><span>1</span><span><i>h</i></span></span> Σ<sub><i>R</i></sub> <i>g</i>(<i>R</i>) · χ(<i>R</i>) · χ<sub><i>i</i></sub>(<i>R</i>)</div>
     <p>Here <i>h</i> = 4, and <i>g</i>(<i>R</i>), the number of operations in each class, is 1 for every column of C<sub>2v</sub>. Multiply the ${G3N} row by an irreducible row, column by column, add the products, and divide by 4.</p>
     ${charTable(false)}

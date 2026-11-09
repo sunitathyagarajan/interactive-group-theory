@@ -883,7 +883,7 @@ const STEPS = [
     return `
     <p class="eyebrow">Step 5 of 9</p>
     <h2>Reduce ${G3N}</h2>
-    <p>${G3N} is reducible: it is a sum of the three irreducible representations in the character table. The reduction formula tells you how many times each one appears.</p>
+    <p>${G3N} is reducible: it is a sum of irreducible representations from the character table, some of them more than once. The reduction formula tells you how many times each one appears.</p>
     <div class="formula"><i>n</i><sub><i>i</i></sub> = <span class="frac"><span>1</span><span><i>h</i></span></span> Σ<sub><i>R</i></sub> <i>g</i>(<i>R</i>) · χ(<i>R</i>) · χ<sub><i>i</i></sub>(<i>R</i>)</div>
     <p>Here <i>h</i> = 6, and <i>g</i>(<i>R</i>), the number of operations in each class, is 1 for <i>E</i>, 2 for 2<i>C</i><sub>3</sub> and 3 for 3σ<sub>v</sub>. In water every <i>g</i> was 1, so it was easy to ignore. In C<sub>3v</sub>, leaving it out is the most common mistake.</p>
     ${charTable(false)}
@@ -1011,7 +1011,7 @@ function selectionStep(kind){
     <p class="hint">This is a toy model, but it respects the molecule's symmetry, so it always agrees with the group theory below. For a degenerate pair, try both partners.</p>
     <h3>The group theory shortcut</h3>
     <p>The same argument as for IR, with α in place of μ: ⟨0|α|1⟩ survives only if the mode has the same symmetry as one of the components of α.</p>
-    <div class="callout"><strong>Rule:</strong> a vibration is <strong>Raman active</strong> if its row of the character table lists a quadratic function such as <i>x</i><sup>2</sup>, <i>z</i><sup>2</sup> or <i>xy</i> (underlined in blue below).</div>`;
+    <div class="callout"><strong>Rule:</strong> a vibration is <strong>Raman active</strong> if its row of the character table lists a quadratic function such as <i>z</i><sup>2</sup>, <i>x</i><sup>2</sup> + <i>y</i><sup>2</sup> or <i>xy</i> (underlined in blue below).</div>`;
   return `
     <p class="eyebrow">Step ${(kind === 'ir' ? SPEC_STEP : RA_STEP) + 1} of ${STEPS.length}</p>
     ${intro}
