@@ -593,7 +593,7 @@ function defaultCaption(){
   if (S.arrows === 'field'){
     const F = FIELDS[S.fieldId];
     if (F.parts) return `Showing ${F.partHTML[S.part]}, one partner of the degenerate pair ${F.html}. Apply an operation and see how much of each partner survives.`;
-    return `Showing ${F.name.toLowerCase()}. Apply an operation: does the yellow pattern stay the same (+1) or reverse (−1)?`;
+    return `Showing ${F.kind === 'vib' ? `${F.html}, the ${F.name.toLowerCase()}` : F.name.toLowerCase()}. Apply an operation: does the yellow pattern stay the same (+1) or reverse (−1)?`;
   }
   return 'Drag to rotate, scroll to zoom. Apply an operation to see what it does to the molecule.';
 }

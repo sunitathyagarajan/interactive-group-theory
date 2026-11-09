@@ -369,7 +369,7 @@ function buildModel(){
     Tz:{kind:'trans', html:'T<sub><i>z</i></sub>', name:'Translation along <i>z</i>', vecs:tr(V(0,0,1))},
     Rx:{kind:'rot', html:'R<sub><i>x</i></sub>', name:'Rotation about <i>x</i>', vecs:rot(V(1,0,0))},
     Ry:{kind:'rot', html:'R<sub><i>y</i></sub>', name:'Rotation about <i>y</i>', vecs:rot(V(0,1,0))},
-    nu1:{kind:'vib', html:'ν<sub>1</sub>', name:'Symmetric stretch', wn:'1388 / 1285', bands:[1388,1285],
+    nu1:{kind:'vib', html:'ν<sub>1</sub>', name:'Symmetric stretch', wn:'1285 / 1388', bands:[1285,1388],
          desc:'Both C=O bonds lengthen and shorten together. The carbon does not move at all.',
          vecs:norm([V(0,0,0), V(0,0,1), V(0,0,-1)])},
     nu2:{kind:'vib', html:'ν<sub>2</sub>', name:'Bend', wn:'667', bands:[667],
@@ -606,7 +606,7 @@ function defaultCaption(){
   if (S.arrows === 'field'){
     const F = FIELDS[S.fieldId];
     if (F.parts) return `Showing ${F.partHTML[S.part]}, one of the two bends. Apply an operation: does each bend stay the same (+1) or reverse (−1)?`;
-    return `Showing ${F.name.toLowerCase()}. Apply an operation: does the yellow pattern stay the same (+1) or reverse (−1)?`;
+    return `Showing ${F.kind === 'vib' ? `${F.html}, the ${F.name.toLowerCase()}` : F.name.toLowerCase()}. Apply an operation: does the yellow pattern stay the same (+1) or reverse (−1)?`;
   }
   return 'Drag to rotate, scroll to zoom. Apply an operation to see what it does to the molecule.';
 }
@@ -967,7 +967,7 @@ const STEPS = [
     <p>Each D<sub>∞h</sub> species becomes a fixed set of D<sub>2h</sub> species when you keep only the eight D<sub>2h</sub> operations. This is a <strong>correlation table</strong>:</p>
     ${corrTable()}
     <h3>Your turn</h3>
-    <p>Match ${repHTML(vibIrreps())} to D<sub>∞h</sub> species. Each D<sub>2h</sub> label can only be used once.</p>
+    <p>Try matching ${repHTML(vibIrreps())} to D<sub>∞h</sub> species yourself, using each D<sub>2h</sub> label once. Then press <em>Correlate</em> to check.</p>
     ${S.corrRevealed ? `
       <ul>
         <li>${chip(d2h('Ag'))} comes from ${chip(DINF[0])}. Δ<sub>g</sub> would also give A<sub>g</sub>, but it brings B<sub>1g</sub> along, and there is no B<sub>1g</sub>.</li>

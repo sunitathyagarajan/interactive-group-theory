@@ -332,6 +332,7 @@ const T = {
     return m; }},
   ethane:{pg:'D3d', axes:'<i>z</i> is the <i>C</i><sub>3</sub> axis, along the central bond. <i>x</i> is one of the three <i>C</i><sub>2</sub> axes; the <i>yz</i> plane is one of the σ<sub>d</sub> planes.', build(p){
     const m = mol(), h = p.rAA/2, a1 = m.at(p.A, [0,0,h]), a2 = m.at(p.A, [0,0,-h]); m.bd(a1, a2);
+    if (p.tors) m.bonds[m.bonds.length - 1].tors = p.tors;   // stiffer twist for bulky ends
     [90,210,330].forEach(t => m.lig(a1, p.B, polar(1, 180 - p.ang, t), p.rB));
     [270,30,150].forEach(t => m.lig(a2, p.B, polar(1, p.ang, t), p.rB));
     return m; }},
@@ -487,7 +488,7 @@ const MOLS = [
   // D3d
   ['c2h6','ethane','C_2H_6','ethane (staggered)',{A:'C',B:'H',rAA:1.536,rB:1.091,ang:110.9}],
   ['c2f6','ethane','C_2F_6','hexafluoroethane (staggered)',{A:'C',B:'F',rAA:1.545,rB:1.326,ang:109.8}],
-  ['c2cl6','ethane','C_2Cl_6','hexachloroethane (staggered)',{A:'C',B:'Cl',rAA:1.564,rB:1.769,ang:109.6}],
+  ['c2cl6','ethane','C_2Cl_6','hexachloroethane (staggered)',{A:'C',B:'Cl',rAA:1.564,rB:1.769,ang:109.6,tors:0.5}],   // rotation barrier ~5× ethane's
   ['si2h6','ethane','Si_2H_6','disilane (staggered)',{A:'Si',B:'H',rAA:2.331,rB:1.492,ang:110.3}],
   // Td
   ['ch4','tetAB4','CH_4','methane',{A:'C',B:'H',rB:1.087}],
@@ -580,7 +581,7 @@ const len = b => Math.hypot(...[0,1,2].map(c => atoms[b.i].pos[c] - atoms[b.j].p
 const bonds = built.bonds.map(b => {
   const d = len(b), H = atoms[b.i].el === 'H' || atoms[b.j].el === 'H';
   const k = (H ? 5.0 : 4.5*Math.pow(1.5/d, 2))*b.order;
-  return {i:b.i, j:b.j, k:Math.round(k*100)/100, order:b.order === 2 ? 2 : 1};
+  return {i:b.i, j:b.j, k:Math.round(k*100)/100, order:b.order === 2 ? 2 : 1, ...(b.tors ? {tors:b.tors} : {})};
 });
 const meanBond = bonds.reduce((s,b) => s + len(b), 0)/bonds.length;
 const nb = atoms.map(() => []); bonds.forEach(b => { nb[b.i].push(b.j); nb[b.j].push(b.i); });

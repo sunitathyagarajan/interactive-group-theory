@@ -556,7 +556,7 @@ function resultCaption(r){
 }
 function defaultCaption(){
   if (S.arrows === 'cart') return 'Nine unit vectors: <i>x</i>, <i>y</i>, <i>z</i> on each atom. Apply an operation and watch where each one ends up.';
-  if (S.arrows === 'field') return `Showing ${FIELDS[S.fieldId].name.toLowerCase()}. Apply an operation: does the yellow pattern stay the same (+1) or reverse (−1)?`;
+  if (S.arrows === 'field') { const F = FIELDS[S.fieldId]; return `Showing ${F.kind === 'vib' ? `${F.html}, the ${F.name.toLowerCase()}` : F.name.toLowerCase()}. Apply an operation: does the yellow pattern stay the same (+1) or reverse (−1)?`; }
   return 'Drag to rotate, scroll to zoom. Apply an operation to see what it does to the molecule.';
 }
 function setCaption(html){ $('caption').innerHTML = html; }
