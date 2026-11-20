@@ -6,9 +6,9 @@
   --a1:#1d7548; --a2:#7647b5; --b:#1a7aa1; --e:#b8640f;
   --stage:#0c141d; --stage-2:#142131; --stage-ink:#dbe5ee; --stage-muted:#8a9bab; --stage-line:#26384c;
   --x:#f2a23a; --y:#45d0a0; --z:#93a6ff; --mode:#ffd35c;
-  --display:"Segoe UI", Calibri, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
-  --body:"Segoe UI", Calibri, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
-  --mono:"Segoe UI", Calibri, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --display:Calibri, Carlito, "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --body:Calibri, Carlito, "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --mono:Calibri, Carlito, "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){

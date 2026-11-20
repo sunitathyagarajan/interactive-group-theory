@@ -38,7 +38,7 @@ Every page has a light/dark switch (remembered per browser) and a phone layout.
 - `practice.html` loads `assets/practice-molecules.js` before `assets/lesson.js`. That file holds the character tables, the geometry templates (bent AB₂, seesaw, octahedral cis/trans, and so on) and the compound list. It builds a `window.LESSON` with a `practice` block, which switches the engine into practice mode: step 1 asks for the point group and locks the other steps until it is found, and steps 4 and 6 ask for every entry. To add a molecule, add a line to `MOLS` that uses an existing template. The engine also handles triply degenerate (T) species for T<sub>d</sub> and O<sub>h</sub>.
 - The dioxygen lesson is `dioxygen-mo.html` with its script in `assets/dioxygen-mo.js`. It reuses `assets/lesson.css` for the page layout. Orbitals are Slater-type 2s/2p functions (ζ = 2.275 from Slater's rules), and the 3D shapes are isosurfaces built by marching tetrahedra.
 - `assets/site.css` and `assets/site.js` are loaded by every page. They provide the theme toggle and the phone layout.
-- Every page uses Segoe UI for all text. Segoe UI ships with Windows; on other systems the font stack falls back to Calibri, then the system font.
+- Every page uses Calibri for all text. Calibri ships with Windows and Microsoft Office; other systems load Carlito, a free Calibri look-alike, from Google Fonts, and fall back to the system font when offline.
 
 ## Running locally
 
